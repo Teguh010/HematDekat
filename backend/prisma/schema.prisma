@@ -1,0 +1,226 @@
+// Prisma schema for the Sembako Murah Map backend.
+// See plan.md at the repo root for the full domain model and decisions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum StoreType {
+  SUPERMARKET
+  MINIMARKET
+  MARKET
+  GROCERY_STALL
+}
+
+enum ProductCategory {
+  RICE
+  COOKING_OIL
+  SUGAR
+  EGGS
+  FLOUR
+  SALT
+  INSTANT_NOODLES
+  CHILI
+  SHALLOTS
+  GARLIC
+  CHICKEN
+  BEEF
+  FISH
+}
+
+enum ProductUnit {
+  KG
+  LITER
+  PCS
+  PACK
+  TRAY
+}
+
+enum ReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ActivityType {
+  PRICE_REPORT_SUBMITTED
+  PRICE_REPORT_APPROVED
+  PRICE_REPORT_REJECTED
+  PROMO_SUBMITTED
+  PROMO_APPROVED
+  PROMO_REJECTED
+  VOTE_CAST
+}
+
+model City {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  name      String
+  province  String
+  centerLat Float
+  centerLng Float
+
+  stores Store[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id      String    @id @default(cuid())
+  slug    String    @unique
+  name    String
+  placeId String    @unique
+  type    StoreType
+  city    City      @relation(fields: [cityId], references: [id])
+  cityId  String
+  district String?
+
+  // Coordinates are cached from Google Places for at most 30 days; fetchedAt
+  // tracks when they were last refreshed (see plan.md "Google Places notes").
+  lat       Float
+  lng       Float
+  fetchedAt DateTime @default(now())
+
+  priceReports PriceReport[]
+  promos       Promo[]
+  activities   Activity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cityId])
+}
+
+model Product {
+  id           String          @id @default(cuid())
+  slug         String          @unique
+  name         String
+  category     ProductCategory
+  defaultUnit  ProductUnit
+
+  priceReports PriceReport[]
+  promos       Promo[]
+  activities   Activity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String?
+  passwordHash String?
+  googleId     String? @unique
+  role         Role    @default(USER)
+
+  priceReports PriceReport[]
+  promos       Promo[]
+  votes        Vote[]
+  activities   Activity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PriceReport {
+  id                  String       @id @default(cuid())
+  store                Store        @relation(fields: [storeId], references: [id])
+  storeId              String
+  product              Product      @relation(fields: [productId], references: [id])
+  productId            String
+  reporter             User?        @relation(fields: [reporterId], references: [id])
+  reporterId           String?
+
+  // Prices are stored as integer rupiah, never floats (see AGENTS.md conventions).
+  price                Int
+  quantity             Float
+  unit                 ProductUnit
+  normalizedUnitPrice  Int
+
+  status               ReportStatus @default(PENDING)
+  verifiedAt           DateTime?
+  confirmationCount    Int          @default(0)
+
+  votes                Vote[]
+  activities           Activity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([productId])
+  @@index([status])
+}
+
+model Promo {
+  id          String       @id @default(cuid())
+  store       Store        @relation(fields: [storeId], references: [id])
+  storeId     String
+  product     Product      @relation(fields: [productId], references: [id])
+  productId   String
+  submitter   User?        @relation(fields: [submitterId], references: [id])
+  submitterId String?
+
+  promoPrice  Int?
+  discountPct Float?
+  conditions  String?
+  validFrom   DateTime
+  validTo     DateTime
+
+  status      ReportStatus @default(PENDING)
+
+  votes       Vote[]
+  activities  Activity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([productId])
+  @@index([status])
+}
+
+model Vote {
+  id            String       @id @default(cuid())
+  user          User         @relation(fields: [userId], references: [id])
+  userId        String
+  priceReport   PriceReport? @relation(fields: [priceReportId], references: [id])
+  priceReportId String?
+  promo         Promo?       @relation(fields: [promoId], references: [id])
+  promoId       String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, priceReportId])
+  @@unique([userId, promoId])
+}
+
+model Activity {
+  id            String       @id @default(cuid())
+  type          ActivityType
+  user          User?        @relation(fields: [userId], references: [id])
+  userId        String?
+  store         Store?       @relation(fields: [storeId], references: [id])
+  storeId       String?
+  product       Product?     @relation(fields: [productId], references: [id])
+  productId     String?
+  priceReport   PriceReport? @relation(fields: [priceReportId], references: [id])
+  priceReportId String?
+  promo         Promo?       @relation(fields: [promoId], references: [id])
+  promoId       String?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
