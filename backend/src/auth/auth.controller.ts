@@ -84,15 +84,8 @@ export class AuthController {
     const cookie = this.authService.buildJwtCookie(token);
     res.cookie(cookie.name, cookie.value, cookie.options);
 
-    return {
-      message: 'Google sign-in successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-    };
+    const frontendBaseUrl = (process.env.CORS_ORIGIN ?? 'http://localhost:3000').replace(/\/$/, '');
+    return res.redirect(`${frontendBaseUrl}/login?auth=google-success`);
   }
 
   @Get('me')

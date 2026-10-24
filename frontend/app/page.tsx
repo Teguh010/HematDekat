@@ -1,11 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
 
 import { getStores } from "@/lib/data/repository";
+
+const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+
+type AuthUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+};
 
 const productNames = [
   "Beras premium",
@@ -17,6 +26,30 @@ const productNames = [
 export default function Home() {
   const stores = getStores();
   const [selectedProduct, setSelectedProduct] = useState(productNames[0]);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch(`${backendBaseUrl}/auth/me`, {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          setCurrentUser(null);
+          return;
+        }
+
+        const data = (await response.json()) as AuthUser;
+        setCurrentUser(data);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    void fetchCurrentUser();
+  }, []);
+
   const cheapestStore = [...stores]
     .map((store) => ({
       ...store,
@@ -38,7 +71,31 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Link href="/cities" className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-400">Kota</Link>
             <Link href="/report" className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-400">Laporkan</Link>
-            <Link href="/login" className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-400">Masuk</Link>
+            {currentUser ? (
+              <>
+                <button
+                  type="button"
+                  className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200 transition hover:bg-emerald-500/15"
+                >
+                  Halo, {currentUser.name ?? currentUser.email.split("@")[0]}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await fetch(`${backendBaseUrl}/auth/logout`, {
+                      method: "POST",
+                      credentials: "include",
+                    });
+                    setCurrentUser(null);
+                  }}
+                  className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+                >
+                  Keluar
+                </button>
+              </>
+            ) : (
+              <Link href="/login" className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-400">Masuk</Link>
+            )}
             <Link href="/admin" className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200 transition hover:bg-emerald-500/15">Admin</Link>
           </div>
         </div>
