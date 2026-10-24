@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import * as argon2 from 'argon2';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 export type AppRole = 'USER' | 'ADMIN';
 
@@ -24,7 +25,10 @@ export class AuthService {
   private readonly users = new Map<string, AuthUser>();
   private readonly loginAttempts = new Map<string, number[]>();
 
-  constructor(private readonly jwtService: JwtService) {
+  constructor(
+    private readonly jwtService?: JwtService,
+    private readonly prisma?: PrismaService,
+  ) {
     void this.ensureSeedAdmin();
   }
 
@@ -37,7 +41,26 @@ export class AuthService {
   }
 
   async ensureSeedAdmin(): Promise<void> {
-    const adminEmail = (process.env.ADMIN_EMAIL ?? 'admin@sembakomurah.test').toLowerCase();
+    const adminEmail = (process.env.ADMIN_EMAIL ?? 'admin@example.com').toLowerCase();
+
+    if (this.prisma) {
+      const passwordHash = await this.hashPassword('admin123');
+      await this.prisma.user.upsert({
+        where: { email: adminEmail },
+        create: {
+          email: adminEmail,
+          name: 'Admin',
+          role: 'ADMIN',
+          passwordHash,
+        },
+        update: {
+          name: 'Admin',
+          role: 'ADMIN',
+          passwordHash,
+        },
+      });
+      return;
+    }
 
     if (this.users.has(adminEmail)) {
       return;
@@ -58,6 +81,31 @@ export class AuthService {
     await this.enforceRateLimit(email);
 
     const normalizedEmail = email.toLowerCase();
+
+    if (this.prisma) {
+      const user = await this.prisma.user.findUnique({
+        where: { email: normalizedEmail },
+      });
+
+      if (!user || !user.passwordHash) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      const passwordMatches = await this.verifyPassword(password, user.passwordHash);
+
+      if (!passwordMatches) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        googleId: user.googleId ?? null,
+      };
+    }
+
     const user = this.users.get(normalizedEmail);
 
     if (!user || !user.passwordHash) {
@@ -81,11 +129,36 @@ export class AuthService {
 
   async validateGoogleUser(profile: {
     id: string;
-    emails?: Array<{ value?: string }>; 
+    emails?: Array<{ value?: string }>;
     displayName?: string;
   }): Promise<AuthUser> {
     const email = profile.emails?.[0]?.value ?? `${profile.id}@google.local`;
     const normalizedEmail = email.toLowerCase();
+
+    if (this.prisma) {
+      const user = await this.prisma.user.upsert({
+        where: { email: normalizedEmail },
+        create: {
+          email: normalizedEmail,
+          name: profile.displayName ?? null,
+          role: 'USER',
+          googleId: profile.id,
+        },
+        update: {
+          name: profile.displayName ?? null,
+          googleId: profile.id,
+        },
+      });
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        googleId: user.googleId ?? null,
+      };
+    }
+
     const existing = this.users.get(normalizedEmail);
 
     if (existing) {
@@ -111,6 +184,10 @@ export class AuthService {
   }
 
   issueToken(user: Pick<AuthUser, 'id' | 'email' | 'role'>): string {
+    if (!this.jwtService) {
+      return `dev-token-${user.id}`;
+    }
+
     return this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
   }
 
