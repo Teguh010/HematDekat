@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getProductBySlug, getProductNames } from "@/lib/data/repository";
+
+export function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return params.then(({ slug }) => {
+    const product = getProductBySlug(slug);
+    return {
+      title: `${product?.name ?? "Produk"} | Sembako Murah`,
+      description: `Bandingkan toko dengan harga ${product?.name ?? "produk"} terendah di Indonesia.`,
+    };
+  });
+}
 
 export function generateStaticParams() {
   return getProductNames().map((name) => ({ slug: name.toLowerCase().replace(/\s+/g, "-") }));

@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getCities, getStores } from "@/lib/data/repository";
+
+export function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return params.then(({ slug }) => ({
+    title: `${slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")} | Sembako Murah`,
+    description: `Bandingkan harga sembako dan promo di ${slug.replace(/-/g, " ")}.`,
+  }));
+}
 
 export function generateStaticParams() {
   return getCities().map((city) => ({ slug: city.slug }));

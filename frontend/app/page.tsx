@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
+
 import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
 
 import { getStores } from "@/lib/data/repository";
@@ -13,11 +16,11 @@ const productNames = [
 
 export default function Home() {
   const stores = getStores();
-  const featuredProduct = productNames[0];
+  const [selectedProduct, setSelectedProduct] = useState(productNames[0]);
   const cheapestStore = [...stores]
     .map((store) => ({
       ...store,
-      product: store.products.find((item) => item.name === featuredProduct),
+      product: store.products.find((item) => item.name === selectedProduct),
     }))
     .filter((store) => store.product)
     .sort((a, b) => (a.product?.normalizedUnitPrice ?? 0) - (b.product?.normalizedUnitPrice ?? 0))[0];
@@ -32,9 +35,11 @@ export default function Home() {
             <p className="text-xs uppercase tracking-[0.25em] text-emerald-400">Sembako Murah</p>
             <h1 className="mt-1 text-2xl font-bold text-white">Map Harga Sembako</h1>
           </div>
-          <div className="flex items-center gap-3 rounded-full border border-emerald-400/30 bg-slate-900/80 px-4 py-2 text-sm text-slate-200">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-            14 kota tercakup
+          <div className="flex items-center gap-2">
+            <Link href="/cities" className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-400">Kota</Link>
+            <Link href="/report" className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-400">Laporkan</Link>
+            <Link href="/login" className="rounded-full border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-200 transition hover:border-emerald-400">Masuk</Link>
+            <Link href="/admin" className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200 transition hover:bg-emerald-500/15">Admin</Link>
           </div>
         </div>
       </header>
@@ -45,15 +50,17 @@ export default function Home() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-sm font-medium text-emerald-300">Produk terpilih</p>
-                <h2 className="mt-1 text-2xl font-semibold text-white">{featuredProduct}</h2>
+                <h2 className="mt-1 text-2xl font-semibold text-white">{selectedProduct}</h2>
               </div>
               <div className="flex flex-wrap gap-2">
                 {productNames.map((product) => (
                   <button
                     key={product}
                     type="button"
+                    aria-pressed={product === selectedProduct}
+                    onClick={() => setSelectedProduct(product)}
                     className={`rounded-full border px-3 py-1.5 text-sm transition ${
-                      product === featuredProduct
+                      product === selectedProduct
                         ? "border-emerald-400 bg-emerald-500/15 text-emerald-200"
                         : "border-white/10 bg-slate-800 text-slate-300 hover:border-slate-500"
                     }`}

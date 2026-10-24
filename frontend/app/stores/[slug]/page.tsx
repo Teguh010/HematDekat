@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getStoreBySlug, getStores } from "@/lib/data/repository";
+
+export function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return params.then(({ slug }) => {
+    const store = getStoreBySlug(slug);
+
+    return {
+      title: `${store?.name ?? "Toko"} | Sembako Murah`,
+      description: `Lihat harga sembako dan promo terbaru di ${store?.name ?? "toko ini"}.`,
+    };
+  });
+}
 
 export function generateStaticParams() {
   return getStores().map((store) => ({ slug: store.id }));
