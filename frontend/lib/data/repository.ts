@@ -33,6 +33,13 @@ export interface StoreWithProduct extends Store {
   product?: ProductPrice;
 }
 
+export interface CitySummary {
+  slug: string;
+  name: string;
+  province: string;
+  storeCount: number;
+}
+
 const stores: Store[] = [
   {
     id: "pasar-kranji",
@@ -142,4 +149,36 @@ export function getTopCheapestStores(productName: string): StoreWithProduct[] {
     .filter((store): store is StoreWithProduct & { product: ProductPrice } => Boolean(store.product))
     .sort((a, b) => a.product.normalizedUnitPrice - b.product.normalizedUnitPrice)
     .slice(0, 4);
+}
+
+export function getCities(): CitySummary[] {
+  return Array.from(
+    new Map(
+      stores.map((store) => [store.city, { slug: store.city.toLowerCase().replace(/\s+/g, "-"), name: store.city, province: store.city === "Jakarta" ? "DKI Jakarta" : store.city === "Bandung" ? "Jawa Barat" : store.city === "Surabaya" ? "Jawa Timur" : "Jawa Tengah", storeCount: 0 }]),
+    ).values(),
+  ).map((city) => ({
+    ...city,
+    storeCount: stores.filter((store) => store.city === city.name).length,
+  }));
+}
+
+export function getStoreBySlug(slug: string): Store | undefined {
+  return stores.find((store) => store.id === slug || store.name.toLowerCase().replace(/\s+/g, "-") === slug);
+}
+
+export function getProductNames(): string[] {
+  return Array.from(new Set(stores.flatMap((store) => store.products.map((product) => product.name))));
+}
+
+export function getProductBySlug(slug: string): { name: string; stores: StoreWithProduct[] } | undefined {
+  const productName = getProductNames().find((name) => name.toLowerCase().replace(/\s+/g, "-") === slug);
+
+  if (!productName) {
+    return undefined;
+  }
+
+  return {
+    name: productName,
+    stores: getTopCheapestStores(productName),
+  };
 }
