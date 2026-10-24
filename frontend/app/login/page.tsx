@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const authStatus = searchParams.get("auth");
@@ -58,5 +58,13 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-lg px-4 py-16 sm:px-6 lg:px-8"><div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-slate-300">Memuat halaman masuk...</div></main>}>
+      <LoginContent />
+    </Suspense>
   );
 }
