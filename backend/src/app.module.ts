@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AdminController } from './admin/admin.controller.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -11,7 +12,7 @@ import { StoresController } from './stores/stores.controller.js';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule],
-  controllers: [AppController, CitiesController, ProductsController, StoresController, PlacesController],
+  controllers: [AppController, AdminController, CitiesController, ProductsController, StoresController, PlacesController],
   providers: [AppService, PrismaService],
 })
 export class AppModule {}

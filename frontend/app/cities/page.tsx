@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
-import { getCities, getStores } from "@/lib/data/repository";
+import { fetchCities, fetchStores } from "@/lib/data/repository";
 
-export default function CitiesPage() {
-  const cities = getCities();
+async function CitiesPageContent() {
+  const [cities, stores] = await Promise.all([fetchCities(), fetchStores()]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -19,7 +20,7 @@ export default function CitiesPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cities.map((city) => {
-          const cityStores = getStores().filter((store) => store.city === city.name);
+          const cityStores = stores.filter((store) => store.city === city.name);
           const cheapest = [...cityStores]
             .flatMap((store) => store.products.map((product) => ({ store, product })))
             .sort((a, b) => a.product.normalizedUnitPrice - b.product.normalizedUnitPrice)[0];
@@ -61,5 +62,13 @@ export default function CitiesPage() {
         })}
       </div>
     </main>
+  );
+}
+
+export default function CitiesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-300">Memuat daftar kota...</div>}>
+      <CitiesPageContent />
+    </Suspense>
   );
 }

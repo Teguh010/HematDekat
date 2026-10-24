@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
 
-import { getStores } from "@/lib/data/repository";
+import { fetchStores, type Store } from "@/lib/data/repository";
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -24,7 +24,7 @@ const productNames = [
 ];
 
 export default function Home() {
-  const stores = getStores();
+  const [stores, setStores] = useState<Store[]>([]);
   const [selectedProduct, setSelectedProduct] = useState(productNames[0]);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
@@ -47,7 +47,17 @@ export default function Home() {
       }
     };
 
+    const loadStores = async () => {
+      const data = await fetchStores();
+      setStores(data);
+      const availableProducts = Array.from(new Set(data.flatMap((store) => store.products.map((product) => product.name))));
+      if (availableProducts.length > 0) {
+        setSelectedProduct((current) => (availableProducts.includes(current) ? current : availableProducts[0]));
+      }
+    };
+
     void fetchCurrentUser();
+    void loadStores();
   }, []);
 
   const cheapestStore = [...stores]
@@ -167,20 +177,24 @@ export default function Home() {
                     mapId="sembako-map"
                     style={{ width: "100%", height: "100%" }}
                   >
-                    {stores.map((store) => (
-                      <AdvancedMarker
-                        key={store.id}
-                        position={{ lat: store.coordinates.lat, lng: store.coordinates.lng }}
-                        title={store.name}
-                      >
-                        <div className="flex -translate-y-3 items-center justify-center">
-                          <div className="rounded-full border border-emerald-300 bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg shadow-emerald-500/50">
-                            Rp {Math.min(...store.products.map((item) => item.price)).toLocaleString("id-ID")}
+                    {stores.map((store) => {
+                      const lowestMarkerPrice = store.products.length > 0 ? Math.min(...store.products.map((item) => item.price)) : 0;
+
+                      return (
+                        <AdvancedMarker
+                          key={store.id}
+                          position={{ lat: store.coordinates.lat, lng: store.coordinates.lng }}
+                          title={store.name}
+                        >
+                          <div className="flex -translate-y-3 items-center justify-center">
+                            <div className="rounded-full border border-emerald-300 bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg shadow-emerald-500/50">
+                              Rp {lowestMarkerPrice.toLocaleString("id-ID")}
+                            </div>
+                            <div className="ml-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-400 shadow-md shadow-emerald-500/60" />
                           </div>
-                          <div className="ml-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-400 shadow-md shadow-emerald-500/60" />
-                        </div>
-                      </AdvancedMarker>
-                    ))}
+                        </AdvancedMarker>
+                      );
+                    })}
                   </Map>
                 </APIProvider>
               ) : (
@@ -199,7 +213,7 @@ export default function Home() {
 
             <div className="space-y-3">
               {stores.map((store) => {
-                const lowestProduct = [...store.products].sort((a, b) => a.price - b.price)[0];
+                const lowestProduct = store.products.length > 0 ? [...store.products].sort((a, b) => a.price - b.price)[0] : null;
 
                 return (
                   <article key={store.id} className="rounded-2xl border border-white/10 bg-slate-800 p-3">
@@ -221,9 +235,11 @@ export default function Home() {
                     <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/80 p-2">
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Harga paling murah</p>
                       <div className="mt-2 flex items-center justify-between">
-                        <span className="font-medium text-slate-200">{lowestProduct.name}</span>
+                        <span className="font-medium text-slate-200">{lowestProduct?.name ?? "-"}</span>
                         <span className="text-base font-bold text-emerald-300">
-                          {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(lowestProduct.price)}
+                          {lowestProduct
+                            ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(lowestProduct.price)
+                            : "-"}
                         </span>
                       </div>
                     </div>

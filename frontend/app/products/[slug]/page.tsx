@@ -1,30 +1,43 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-import { getProductBySlug, getProductNames } from "@/lib/data/repository";
+import { fetchProductBySlug, fetchStores } from "@/lib/data/repository";
 
-export function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  return params.then(({ slug }) => {
-    const product = getProductBySlug(slug);
-    return {
-      title: `${product?.name ?? "Produk"} | Sembako Murah`,
-      description: `Bandingkan toko dengan harga ${product?.name ?? "produk"} terendah di Indonesia.`,
-    };
-  });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await fetchProductBySlug(slug);
+
+  return {
+    title: `${product?.name ?? "Produk"} | Sembako Murah`,
+    description: `Bandingkan toko dengan harga ${product?.name ?? "produk"} terendah di Indonesia.`,
+  };
 }
 
-export function generateStaticParams() {
-  return getProductNames().map((name) => ({ slug: name.toLowerCase().replace(/\s+/g, "-") }));
+export async function generateStaticParams() {
+  const stores = await fetchStores();
+  const products = Array.from(new Set(stores.flatMap((store) => store.products.map((product) => product.name))));
+
+  if (products.length > 0) {
+    return products.map((name) => ({ slug: name.toLowerCase().replace(/\s+/g, "-") }));
+  }
+
+  return [
+    { slug: "beras-premium" },
+    { slug: "minyak-goreng-curah" },
+    { slug: "gula-pasir" },
+    { slug: "telur-ayam" },
+  ];
 }
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export default async function ProductPage({ params }: ProductPageProps) {
+async function ProductPageContent({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await fetchProductBySlug(slug);
 
   if (!product) {
     notFound();
@@ -76,5 +89,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ))}
       </div>
     </main>
+  );
+}
+
+export default function ProductPage(props: ProductPageProps) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-300">Memuat produk...</div>}>
+      <ProductPageContent {...props} />
+    </Suspense>
   );
 }

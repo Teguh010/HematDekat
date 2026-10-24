@@ -1,31 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-import { getStoreBySlug, getStores } from "@/lib/data/repository";
+import { fetchStoreBySlug, fetchStores } from "@/lib/data/repository";
 
-export function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  return params.then(({ slug }) => {
-    const store = getStoreBySlug(slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const store = await fetchStoreBySlug(slug);
 
-    return {
-      title: `${store?.name ?? "Toko"} | Sembako Murah`,
-      description: `Lihat harga sembako dan promo terbaru di ${store?.name ?? "toko ini"}.`,
-    };
-  });
+  return {
+    title: `${store?.name ?? "Toko"} | Sembako Murah`,
+    description: `Lihat harga sembako dan promo terbaru di ${store?.name ?? "toko ini"}.`,
+  };
 }
 
-export function generateStaticParams() {
-  return getStores().map((store) => ({ slug: store.id }));
+export async function generateStaticParams() {
+  const stores = await fetchStores();
+
+  if (stores.length > 0) {
+    return stores.map((store) => ({ slug: store.id }));
+  }
+
+  return [{ slug: "pasar-kranji" }, { slug: "mitra-grocery" }, { slug: "toko-rahma" }, { slug: "superindo-puri" }];
 }
 
 type StorePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export default async function StorePage({ params }: StorePageProps) {
+async function StorePageContent({ params }: StorePageProps) {
   const { slug } = await params;
-  const store = getStoreBySlug(slug);
+  const store = await fetchStoreBySlug(slug);
 
   if (!store) {
     notFound();
@@ -98,5 +104,13 @@ export default async function StorePage({ params }: StorePageProps) {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function StorePage(props: StorePageProps) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-300">Memuat toko...</div>}>
+      <StorePageContent {...props} />
+    </Suspense>
   );
 }

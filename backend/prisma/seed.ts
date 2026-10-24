@@ -166,6 +166,72 @@ async function seedCities(prisma: PrismaClient): Promise<void> {
   }
 }
 
+async function seedPriceReports(prisma: PrismaClient): Promise<void> {
+  await prisma.priceReport.deleteMany({});
+
+  const stores = await prisma.store.findMany();
+  const products = await prisma.product.findMany();
+  const productMap = new Map(products.map((product) => [product.name, product]));
+
+  const basePrices = {
+    'Beras premium': 14500,
+    'Minyak goreng curah': 17000,
+    'Gula pasir': 15000,
+    'Telur ayam': 2900,
+    'Tepung terigu': 12000,
+    'Garam': 5000,
+    'Mie instan': 3500,
+    'Cabai merah': 42000,
+    'Bawang merah': 25000,
+    'Bawang putih': 22000,
+    'Ayam broiler': 35000,
+    'Daging sapi': 120000,
+    'Ikan bandeng': 45000,
+  };
+
+  const priceEntries: Array<{
+    storeId: string;
+    productId: string;
+    price: number;
+    quantity: number;
+    unit: ProductUnit;
+    normalizedUnitPrice: number;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    confirmationCount: number;
+  }> = [];
+
+  for (const store of stores) {
+    for (const [productName, defaultPrice] of Object.entries(basePrices)) {
+      const product = productMap.get(productName);
+      if (!product) {
+        continue;
+      }
+
+      const unit = product.defaultUnit;
+      const price = Math.round(defaultPrice + (store.name.length % 5) * 250);
+
+      priceEntries.push({
+        storeId: store.id,
+        productId: product.id,
+        price,
+        quantity: 1,
+        unit,
+        normalizedUnitPrice: price,
+        status: 'APPROVED',
+        confirmationCount: 2,
+      });
+    }
+  }
+
+  if (priceEntries.length === 0) {
+    return;
+  }
+
+  await prisma.priceReport.createMany({
+    data: priceEntries,
+  });
+}
+
 async function seedStores(prisma: PrismaClient): Promise<void> {
   for (const city of citySeeds) {
     const cityRecord = await prisma.city.findUnique({
@@ -223,8 +289,9 @@ export async function seedDatabase(prisma = createPrismaClient()): Promise<void>
   await seedProducts(prisma);
   await seedCities(prisma);
   await seedStores(prisma);
+  await seedPriceReports(prisma);
 
-  console.log(`Seeded ${productCatalog.length} products, ${citySeeds.length} cities, and ${citySeeds.reduce((count, city) => count + city.stores.length, 0)} stores.`);
+  console.log(`Seeded ${productCatalog.length} products, ${citySeeds.length} cities, ${citySeeds.reduce((count, city) => count + city.stores.length, 0)} stores, and sample price reports.`);
 }
 
 export async function main(): Promise<void> {

@@ -1,35 +1,45 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-import { getCities, getStores } from "@/lib/data/repository";
+import { fetchCities, fetchStores } from "@/lib/data/repository";
 
-export function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  return params.then(({ slug }) => ({
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+
+  return {
     title: `${slug
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ")} | Sembako Murah`,
     description: `Bandingkan harga sembako dan promo di ${slug.replace(/-/g, " ")}.`,
-  }));
+  };
 }
 
-export function generateStaticParams() {
-  return getCities().map((city) => ({ slug: city.slug }));
+export async function generateStaticParams() {
+  const cities = await fetchCities();
+
+  if (cities.length > 0) {
+    return cities.map((city) => ({ slug: city.slug }));
+  }
+
+  return [{ slug: "jakarta" }, { slug: "bandung" }, { slug: "surabaya" }];
 }
 
 type CityPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export default async function CityPage({ params }: CityPageProps) {
+async function CityPageContent({ params }: CityPageProps) {
   const { slug } = await params;
   const cityName = slug
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  const cityStores = getStores().filter((store) => {
+  const stores = await fetchStores();
+  const cityStores = stores.filter((store) => {
     const storeSlug = store.city.toLowerCase().replace(/\s+/g, "-");
     return storeSlug === slug;
   });
@@ -57,7 +67,7 @@ export default async function CityPage({ params }: CityPageProps) {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cityStores.map((store) => {
-          const cheapestProduct = [...store.products].sort((a, b) => a.price - b.price)[0];
+          const cheapestProduct = store.products.length > 0 ? [...store.products].sort((a, b) => a.price - b.price)[0] : null;
 
           return (
             <Link
@@ -79,13 +89,15 @@ export default async function CityPage({ params }: CityPageProps) {
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Harga mulai</p>
                 <div className="mt-2 flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium text-slate-200">{cheapestProduct.name}</p>
+                    <p className="font-medium text-slate-200">{cheapestProduct?.name ?? "-"}</p>
                     <p className="text-sm text-slate-400">{store.district}</p>
                   </div>
                   <span className="text-lg font-bold text-emerald-300">
-                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
-                      cheapestProduct.price,
-                    )}
+                    {cheapestProduct
+                      ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
+                          cheapestProduct.price,
+                        )
+                      : "-"}
                   </span>
                 </div>
               </div>
@@ -94,5 +106,13 @@ export default async function CityPage({ params }: CityPageProps) {
         })}
       </div>
     </main>
+  );
+}
+
+export default function CityPage(props: CityPageProps) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-300">Memuat kota...</div>}>
+      <CityPageContent {...props} />
+    </Suspense>
   );
 }

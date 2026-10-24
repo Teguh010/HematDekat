@@ -52,6 +52,22 @@ type BackendProductPayload = {
   isPromo?: boolean;
 };
 
+type BackendPriceReportPayload = {
+  id?: string;
+  price?: number;
+  normalizedUnitPrice?: number;
+  status?: string;
+  isPromo?: boolean;
+  unit?: ProductPrice["unit"] | string;
+  product?: {
+    id?: string;
+    slug?: string;
+    name?: string;
+    category?: string;
+    defaultUnit?: string;
+  };
+};
+
 type BackendStorePayload = {
   id?: string;
   slug?: string;
@@ -73,6 +89,7 @@ type BackendStorePayload = {
   lat?: number;
   lng?: number;
   products?: BackendProductPayload[];
+  priceReports?: BackendPriceReportPayload[];
 };
 
 const mockStores: Store[] = [
@@ -168,8 +185,62 @@ const mockStores: Store[] = [
   },
 ];
 
+let storeCache: Store[] | null = null;
+let cityCache: CitySummary[] | null = null;
+
+function normalizeProductCategory(value: string | undefined): ProductPrice["category"] {
+  switch (String(value ?? "").toUpperCase()) {
+    case "RICE":
+      return "rice";
+    case "COOKING_OIL":
+    case "OIL":
+      return "oil";
+    case "SUGAR":
+      return "sugar";
+    case "EGGS":
+      return "eggs";
+    case "FLOUR":
+      return "flour";
+    case "SALT":
+      return "seasoning";
+    case "INSTANT_NOODLES":
+      return "seasoning";
+    case "CHILI":
+      return "seasoning";
+    case "SHALLOTS":
+      return "seasoning";
+    case "GARLIC":
+      return "seasoning";
+    case "CHICKEN":
+      return "proteins";
+    case "BEEF":
+      return "proteins";
+    case "FISH":
+      return "proteins";
+    default:
+      return "rice";
+  }
+}
+
+function normalizeProductUnit(value: string | undefined): ProductPrice["unit"] {
+  switch (String(value ?? "").toUpperCase()) {
+    case "LITER":
+      return "liter";
+    case "PCS":
+      return "pcs";
+    case "PACK":
+      return "pack";
+    case "TRAY":
+      return "pack";
+    case "KG":
+    default:
+      return "kg";
+  }
+}
+
 function normalizeStoreData(store: BackendStorePayload): Store {
   const cityName = typeof store.city === "string" ? store.city : store.city?.name ?? "Jakarta";
+  const rawProducts = Array.isArray(store.priceReports) && store.priceReports.length > 0 ? store.priceReports : store.products ?? [];
 
   return {
     id: String(store.id ?? store.slug ?? store.name ?? "store"),
@@ -187,24 +258,40 @@ function normalizeStoreData(store: BackendStorePayload): Store {
       lat: Number(store.coordinates?.lat ?? store.lat ?? 0),
       lng: Number(store.coordinates?.lng ?? store.lng ?? 0),
     },
-    products: (store.products ?? []).map((product) => ({
-      id: String(product.id ?? `${store.id ?? store.slug ?? store.name}-product`),
-      name: String(product.name ?? "Produk"),
-      category: (product.category ?? "rice") as ProductPrice["category"],
-      unit: (product.unit ?? "kg") as ProductPrice["unit"],
-      price: Number(product.price ?? product.normalizedUnitPrice ?? 0),
-      normalizedUnitPrice: Number(product.normalizedUnitPrice ?? product.price ?? 0),
-      isPromo: Boolean(product.isPromo ?? false),
-    })),
+    products: rawProducts
+      .filter((product) => {
+        const report = "status" in product ? product.status : undefined;
+        return !report || report.toUpperCase() !== "REJECTED";
+      })
+      .map((product, index) => {
+        const productName = "product" in product && product.product ? product.product.name : "name" in product ? product.name : undefined;
+        const productCategory = "product" in product && product.product ? product.product.category : "category" in product ? product.category : undefined;
+        const productUnit = "product" in product && product.product ? product.product.defaultUnit : "unit" in product ? product.unit : undefined;
+        const productId = "product" in product && product.product ? product.product.id : "id" in product ? product.id : undefined;
+
+        return {
+          id: String(productId ?? `${store.id ?? store.slug ?? store.name}-product-${index}`),
+          name: String(productName ?? "Produk"),
+          category: normalizeProductCategory(productCategory),
+          unit: normalizeProductUnit(productUnit),
+          price: Number("price" in product ? product.price ?? product.normalizedUnitPrice ?? 0 : 0),
+          normalizedUnitPrice: Number("normalizedUnitPrice" in product ? product.normalizedUnitPrice ?? product.price ?? 0 : 0),
+          isPromo: Boolean("isPromo" in product ? product.isPromo ?? false : false),
+        };
+      }),
   };
 }
 
 export async function fetchStores(): Promise<Store[]> {
   try {
     const data = await apiFetch<BackendStorePayload[]>("/stores?limit=20");
-    return Array.isArray(data) ? data.map(normalizeStoreData) : mockStores;
+    const normalized = Array.isArray(data) && data.length > 0 ? data.map(normalizeStoreData) : mockStores;
+    storeCache = normalized;
+    return normalized;
   } catch {
-    return mockStores;
+    const fallback = storeCache ?? mockStores;
+    storeCache = fallback;
+    return fallback;
   }
 }
 
@@ -212,27 +299,56 @@ export async function fetchCities(): Promise<CitySummary[]> {
   try {
     const data = await apiFetch<Array<{ slug?: string; name?: string; province?: string; storeCount?: number }>>("/cities");
 
-    if (!Array.isArray(data)) {
-      return getCities();
+    if (!Array.isArray(data) || data.length === 0) {
+      const fallback = cityCache ?? getCities();
+      cityCache = fallback;
+      return fallback;
     }
 
-    return data.map((city) => ({
+    const normalized = data.map((city) => ({
       slug: String(city.slug ?? city.name?.toLowerCase().replace(/\s+/g, "-") ?? "city"),
       name: String(city.name ?? "Kota"),
       province: String(city.province ?? "-"),
       storeCount: Number(city.storeCount ?? 0),
     }));
+    cityCache = normalized;
+    return normalized;
   } catch {
-    return getCities();
+    const fallback = cityCache ?? getCities();
+    cityCache = fallback;
+    return fallback;
   }
 }
 
+export async function fetchStoreBySlug(slug: string): Promise<Store | undefined> {
+  const stores = await fetchStores();
+  return stores.find((store) => store.id === slug || store.name.toLowerCase().replace(/\s+/g, "-") === slug);
+}
+
+export async function fetchProductBySlug(slug: string): Promise<{ name: string; stores: StoreWithProduct[] } | undefined> {
+  const stores = await fetchStores();
+  const productName = Array.from(new Set(stores.flatMap((store) => store.products.map((product) => product.name)))).find(
+    (name) => name.toLowerCase().replace(/\s+/g, "-") === slug,
+  );
+
+  if (!productName) {
+    return undefined;
+  }
+
+  return {
+    name: productName,
+    stores: getTopCheapestStores(productName),
+  };
+}
+
 export function getStores(): Store[] {
-  return mockStores;
+  return storeCache ?? mockStores;
 }
 
 export function getTopCheapestStores(productName: string): StoreWithProduct[] {
-  return [...mockStores]
+  const stores = getStores();
+
+  return [...stores]
     .map((store) => {
       const product = store.products.find((item) => item.name === productName);
       return {
@@ -246,22 +362,28 @@ export function getTopCheapestStores(productName: string): StoreWithProduct[] {
 }
 
 export function getCities(): CitySummary[] {
+  if (cityCache) {
+    return cityCache;
+  }
+
+  const stores = getStores();
+
   return Array.from(
     new Map(
-      mockStores.map((store) => [store.city, { slug: store.city.toLowerCase().replace(/\s+/g, "-"), name: store.city, province: store.city === "Jakarta" ? "DKI Jakarta" : store.city === "Bandung" ? "Jawa Barat" : store.city === "Surabaya" ? "Jawa Timur" : "Jawa Tengah", storeCount: 0 }]),
+      stores.map((store) => [store.city, { slug: store.city.toLowerCase().replace(/\s+/g, "-"), name: store.city, province: store.city === "Jakarta" ? "DKI Jakarta" : store.city === "Bandung" ? "Jawa Barat" : store.city === "Surabaya" ? "Jawa Timur" : "Jawa Tengah", storeCount: 0 }]),
     ).values(),
   ).map((city) => ({
     ...city,
-    storeCount: mockStores.filter((store) => store.city === city.name).length,
+    storeCount: stores.filter((store) => store.city === city.name).length,
   }));
 }
 
 export function getStoreBySlug(slug: string): Store | undefined {
-  return mockStores.find((store) => store.id === slug || store.name.toLowerCase().replace(/\s+/g, "-") === slug);
+  return getStores().find((store) => store.id === slug || store.name.toLowerCase().replace(/\s+/g, "-") === slug);
 }
 
 export function getProductNames(): string[] {
-  return Array.from(new Set(mockStores.flatMap((store) => store.products.map((product) => product.name))));
+  return Array.from(new Set(getStores().flatMap((store) => store.products.map((product) => product.name))));
 }
 
 export function getProductBySlug(slug: string): { name: string; stores: StoreWithProduct[] } | undefined {
