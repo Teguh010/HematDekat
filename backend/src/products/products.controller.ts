@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { z } from 'zod';
-import { ZodValidationPipe } from '../auth/zod-validation.pipe.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
+import { ProductsService } from './products.service.js';
 
 const productQuerySchema = z.object({
   category: z.string().optional(),
@@ -11,27 +11,10 @@ const productQuerySchema = z.object({
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly products: ProductsService) {}
 
   @Get()
-  async findAll(@Query(new ZodValidationPipe(productQuerySchema)) query: z.infer<typeof productQuerySchema>) {
-    const where: Record<string, unknown> = {};
-
-    if (query.category) {
-      where.category = query.category.toUpperCase();
-    }
-
-    if (query.search) {
-      where.name = {
-        contains: query.search,
-        mode: 'insensitive',
-      };
-    }
-
-    return this.prisma.product.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      take: query.limit,
-    });
+  list(@Query(new ZodValidationPipe(productQuerySchema)) query: z.infer<typeof productQuerySchema>) {
+    return this.products.list(query);
   }
 }

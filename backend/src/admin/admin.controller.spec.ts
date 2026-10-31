@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { AdminController } from './admin.controller.js';
+import { AdminService } from './admin.service.js';
 
-describe('AdminController', () => {
+describe('AdminService', () => {
   it('returns pending items in the public shape, newest first', async () => {
     const prisma = {
       priceReport: {
@@ -36,7 +36,7 @@ describe('AdminController', () => {
       },
     } as unknown as PrismaService;
 
-    const pending = await new AdminController(prisma).getPendingItems();
+    const pending = await new AdminService(prisma).listPending();
 
     expect(pending.map((item) => item.id)).toEqual(['promo-1', 'report-1']);
     expect(pending[0]).toMatchObject({

@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { z } from 'zod';
-import { ZodValidationPipe } from '../auth/zod-validation.pipe.js';
+import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
+import { PlacesService } from './places.service.js';
 
 const autocompleteSchema = z.object({
   input: z.string().min(2),
@@ -14,47 +15,15 @@ const detailsSchema = z.object({
 
 @Controller('places')
 export class PlacesController {
+  constructor(private readonly places: PlacesService) {}
+
   @Get('autocomplete')
-  async autocomplete(@Query(new ZodValidationPipe(autocompleteSchema)) query: z.infer<typeof autocompleteSchema>) {
-    const apiKey = process.env.GOOGLE_PLACES_SERVER_KEY;
-
-    if (!apiKey) {
-      return {
-        status: 'not-configured',
-        predictions: [],
-        message: 'Google Places server key is not configured.',
-      };
-    }
-
-    const url = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json');
-    url.searchParams.set('input', query.input);
-    url.searchParams.set('language', query.language);
-    url.searchParams.set('components', 'country:id');
-    url.searchParams.set('key', apiKey);
-
-    const response = await fetch(url);
-    return response.json();
+  autocomplete(@Query(new ZodValidationPipe(autocompleteSchema)) query: z.infer<typeof autocompleteSchema>) {
+    return this.places.autocomplete(query);
   }
 
   @Get('details')
-  async details(@Query(new ZodValidationPipe(detailsSchema)) query: z.infer<typeof detailsSchema>) {
-    const apiKey = process.env.GOOGLE_PLACES_SERVER_KEY;
-
-    if (!apiKey) {
-      return {
-        status: 'not-configured',
-        result: null,
-        message: 'Google Places server key is not configured.',
-      };
-    }
-
-    const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
-    url.searchParams.set('place_id', query.place_id);
-    url.searchParams.set('language', query.language);
-    url.searchParams.set('fields', 'place_id,name,formatted_address,geometry,types');
-    url.searchParams.set('key', apiKey);
-
-    const response = await fetch(url);
-    return response.json();
+  details(@Query(new ZodValidationPipe(detailsSchema)) query: z.infer<typeof detailsSchema>) {
+    return this.places.details(query);
   }
 }

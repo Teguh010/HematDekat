@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
 import { LocalAuthGuard } from './local-auth.guard.js';
 import { AuthService, type AuthUser } from './auth.service.js';
-import { ZodValidationPipe } from './zod-validation.pipe.js';
+import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 
 const loginSchema = z.object({
   email: z.string().email(),

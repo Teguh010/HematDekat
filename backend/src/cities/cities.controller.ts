@@ -1,28 +1,18 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { CitiesService } from './cities.service.js';
 
 @Controller('cities')
 export class CitiesController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly cities: CitiesService) {}
 
   @Get()
-  async findAll() {
-    return this.prisma.city.findMany({
-      orderBy: { name: 'asc' },
-    });
+  list() {
+    return this.cities.list();
   }
 
   @Get(':slug')
   async findOne(@Param('slug') slug: string) {
-    const city = await this.prisma.city.findUnique({
-      where: { slug },
-      include: {
-        stores: {
-          orderBy: { name: 'asc' },
-          take: 20,
-        },
-      },
-    });
+    const city = await this.cities.findBySlug(slug);
 
     if (!city) {
       throw new NotFoundException(`City with slug "${slug}" not found`);
