@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   Req,
   Res,
@@ -26,6 +27,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   async login(
     @Body(new ZodValidationPipe(loginSchema)) body: z.infer<typeof loginSchema>,
@@ -43,15 +45,7 @@ export class AuthController {
 
     res.cookie(cookie.name, cookie.value, cookie.options);
 
-    return {
-      message: 'Signed in successfully',
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-    };
+    return this.authService.toCurrentUser(user);
   }
 
   @Get('google')
@@ -91,12 +85,17 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getCurrentUser(@Req() req: Request & { user?: AuthUser }) {
-    return req.user;
+    if (!req.user) {
+      throw new UnauthorizedException('Not signed in');
+    }
+
+    return this.authService.getCurrentUser(req.user.id);
   }
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token', { path: '/', httpOnly: true, sameSite: 'lax' });
-    return { message: 'Signed out' };
+    const cookie = this.authService.buildJwtCookie('');
+    res.clearCookie(cookie.name, cookie.options);
+    return { ok: true };
   }
 }

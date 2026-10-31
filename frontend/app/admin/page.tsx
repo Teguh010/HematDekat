@@ -11,15 +11,22 @@ import { formatRupiah } from "@/lib/format";
 const pendingItemSchema = z.object({
   id: z.string(),
   kind: z.enum(["price-report", "promo"]),
-  product: z.string(),
-  store: z.string(),
-  reporter: z.string().optional(),
-  submitter: z.string().optional(),
-  price: z.number().optional(),
-  promoPrice: z.number().nullable().optional(),
-  discountPct: z.number().nullable().optional(),
-  normalizedUnitPrice: z.number().optional(),
-  status: z.string(),
+  product: z.object({
+    slug: z.string(),
+    name: z.string(),
+    defaultUnit: z.enum(["kg", "liter", "pcs", "pack", "tray"]),
+  }),
+  store: z.object({ slug: z.string(), name: z.string() }),
+  submittedBy: z.string(),
+  price: z.number().nullable(),
+  quantity: z.number().nullable(),
+  normalizedUnitPrice: z.number().nullable(),
+  promoPrice: z.number().nullable(),
+  discountPct: z.number().nullable(),
+  validFrom: z.string().nullable(),
+  validTo: z.string().nullable(),
+  flagged: z.boolean(),
+  flagReason: z.string().nullable(),
   createdAt: z.string(),
 });
 
@@ -52,14 +59,14 @@ export default function AdminPage() {
     void loadItems();
   }, [loadItems]);
 
-  const handleDecision = async (item: PendingItem, status: "APPROVED" | "REJECTED") => {
+  const handleDecision = async (item: PendingItem, status: "approved" | "rejected") => {
     const endpoint = item.kind === "price-report" ? `price-reports/${item.id}/status` : `promos/${item.id}/status`;
 
     try {
       await apiFetch(`/admin/${endpoint}`, {
         method: "PATCH",
         body: { status },
-        schema: z.union([z.object({ ok: z.boolean() }), z.null()]),
+        schema: z.object({ id: z.string(), status: z.enum(["approved", "rejected"]) }),
       });
       await loadItems();
     } catch {
@@ -90,28 +97,29 @@ export default function AdminPage() {
       ) : (
         <div className="space-y-4">
           {items.map((item) => {
-            const formattedPrice = item.price ? formatRupiah(item.price) : item.promoPrice ? formatRupiah(item.promoPrice) : "-";
+            const amount = item.price ?? item.promoPrice;
+            const formattedPrice = amount === null ? "-" : formatRupiah(amount);
 
             return (
               <div key={`${item.kind}-${item.id}`} className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-slate-900 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-lg font-semibold text-white">{item.store}</p>
+                  <p className="text-lg font-semibold text-white">{item.store.name}</p>
                   <p className="text-sm text-slate-400">
-                    {item.product} • {formattedPrice} • {item.kind === "price-report" ? item.reporter ?? t("reporter") : item.submitter ?? t("submitter")}
+                    {item.product.name} • {formattedPrice} • {item.submittedBy}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-300">{t("pending")}</span>
                   <button
                     type="button"
-                    onClick={() => void handleDecision(item, "APPROVED")}
+                    onClick={() => void handleDecision(item, "approved")}
                     className="rounded-full bg-emerald-500 px-3 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
                   >
                     {t("approve")}
                   </button>
                   <button
                     type="button"
-                    onClick={() => void handleDecision(item, "REJECTED")}
+                    onClick={() => void handleDecision(item, "rejected")}
                     className="rounded-full border border-white/10 bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:border-slate-500"
                   >
                     {t("reject")}

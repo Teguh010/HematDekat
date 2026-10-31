@@ -5,6 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { GoogleStrategy } from './google.strategy.js';
+import { assertJwtSecret } from './jwt-secret.js';
 import { JwtStrategy } from './jwt.strategy.js';
 import { LocalStrategy } from './local.strategy.js';
 
@@ -13,8 +14,8 @@ import { LocalStrategy } from './local.strategy.js';
     PassportModule,
     PrismaModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET ?? 'dev-secret',
-      signOptions: { expiresIn: '1h' },
+      secret: assertJwtSecret(process.env.JWT_SECRET),
+      signOptions: { expiresIn: '7d' },
     }),
   ],
   controllers: [AuthController],

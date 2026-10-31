@@ -1,114 +1,155 @@
-import {
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  Param,
-  Patch,
-  Req,
-} from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import type { Prisma, ProductUnit } from '@prisma/client';
 import { z } from 'zod';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { Roles } from '../common/roles.decorator.js';
+import { RolesGuard } from '../common/roles.guard.js';
 import { ZodValidationPipe } from '../auth/zod-validation.pipe.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 const moderationStatusSchema = z.object({
-  status: z.enum(['APPROVED', 'REJECTED']),
+  status: z.enum(['approved', 'rejected']),
 });
 
-type AdminRequest = Request & { user?: { role?: 'USER' | 'ADMIN' } };
+const unitToApi = {
+  KG: 'kg',
+  LITER: 'liter',
+  PCS: 'pcs',
+  PACK: 'pack',
+  TRAY: 'tray',
+} as const satisfies Record<ProductUnit, string>;
+
+type PendingItem = {
+  kind: 'price-report' | 'promo';
+  id: string;
+  store: { slug: string; name: string };
+  product: { slug: string; name: string; defaultUnit: (typeof unitToApi)[ProductUnit] };
+  submittedBy: string;
+  price: number | null;
+  quantity: number | null;
+  normalizedUnitPrice: number | null;
+  promoPrice: number | null;
+  discountPct: number | null;
+  validFrom: string | null;
+  validTo: string | null;
+  flagged: boolean;
+  flagReason: string | null;
+  createdAt: string;
+};
+
+function submittedBy(person: { name: string | null; email: string } | null): string {
+  if (!person) {
+    return 'Anonymous';
+  }
+
+  return person.name ?? person.email.split('@')[0] ?? 'Anonymous';
+}
+
+function toPrismaStatus(status: 'approved' | 'rejected'): 'APPROVED' | 'REJECTED' {
+  return status === 'approved' ? 'APPROVED' : 'REJECTED';
+}
+
+const pendingInclude = {
+  product: true,
+  store: true,
+} satisfies Prisma.PriceReportInclude;
 
 @Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class AdminController {
   constructor(private readonly prisma: PrismaService) {}
 
-  async requireAdmin(req: AdminRequest): Promise<void> {
-    if (!req.user || req.user.role !== 'ADMIN') {
-      throw new ForbiddenException('Admin access required');
-    }
+  @Get('pending')
+  async getPending() {
+    return { items: await this.getPendingItems() };
   }
 
-  async getPendingItems() {
+  async getPendingItems(): Promise<PendingItem[]> {
     const [priceReports, promos] = await Promise.all([
       this.prisma.priceReport.findMany({
         where: { status: 'PENDING' },
-        include: {
-          product: true,
-          store: true,
-          reporter: true,
-        },
+        include: { ...pendingInclude, reporter: true },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.promo.findMany({
         where: { status: 'PENDING' },
-        include: {
-          product: true,
-          store: true,
-          submitter: true,
-        },
+        include: { ...pendingInclude, submitter: true },
         orderBy: { createdAt: 'desc' },
       }),
     ]);
 
-    const items = [
+    const items: PendingItem[] = [
       ...priceReports.map((report) => ({
-        kind: 'price-report',
+        kind: 'price-report' as const,
         id: report.id,
-        status: report.status,
-        product: report.product.name,
-        store: report.store.name,
-        reporter: report.reporter?.name ?? report.reporter?.email ?? 'Anonymous',
+        store: { slug: report.store.slug, name: report.store.name },
+        product: {
+          slug: report.product.slug,
+          name: report.product.name,
+          defaultUnit: unitToApi[report.product.defaultUnit],
+        },
+        submittedBy: submittedBy(report.reporter),
         price: report.price,
-        unit: report.unit,
+        quantity: report.quantity,
         normalizedUnitPrice: report.normalizedUnitPrice,
-        createdAt: report.createdAt,
+        promoPrice: null,
+        discountPct: null,
+        validFrom: null,
+        validTo: null,
+        flagged: false,
+        flagReason: null,
+        createdAt: report.createdAt.toISOString(),
       })),
       ...promos.map((promo) => ({
-        kind: 'promo',
+        kind: 'promo' as const,
         id: promo.id,
-        status: promo.status,
-        product: promo.product.name,
-        store: promo.store.name,
-        submitter: promo.submitter?.name ?? promo.submitter?.email ?? 'Anonymous',
+        store: { slug: promo.store.slug, name: promo.store.name },
+        product: {
+          slug: promo.product.slug,
+          name: promo.product.name,
+          defaultUnit: unitToApi[promo.product.defaultUnit],
+        },
+        submittedBy: submittedBy(promo.submitter),
+        price: null,
+        quantity: null,
+        normalizedUnitPrice: null,
         promoPrice: promo.promoPrice,
         discountPct: promo.discountPct,
-        createdAt: promo.createdAt,
+        validFrom: promo.validFrom.toISOString(),
+        validTo: promo.validTo.toISOString(),
+        flagged: false,
+        flagReason: null,
+        createdAt: promo.createdAt.toISOString(),
       })),
     ];
 
-    return { items };
-  }
+    return items.sort((a, b) => {
+      if (a.flagged !== b.flagged) {
+        return a.flagged ? -1 : 1;
+      }
 
-  @Get('pending')
-  async getPending(@Req() req: AdminRequest) {
-    await this.requireAdmin(req);
-    return this.getPendingItems();
+      return b.createdAt.localeCompare(a.createdAt);
+    });
   }
 
   @Patch('price-reports/:id/status')
   async updatePriceReportStatus(
-    @Req() req: AdminRequest,
     @Param('id') id: string,
     @Body(new ZodValidationPipe(moderationStatusSchema)) body: z.infer<typeof moderationStatusSchema>,
   ) {
-    await this.requireAdmin(req);
-
+    const status = toPrismaStatus(body.status);
     const report = await this.prisma.priceReport.update({
       where: { id },
       data: {
-        status: body.status,
-        verifiedAt: new Date(),
-      },
-      include: {
-        product: true,
-        store: true,
-        reporter: true,
+        status,
+        ...(status === 'APPROVED' ? { verifiedAt: new Date() } : {}),
       },
     });
 
     await this.prisma.activity.create({
       data: {
-        type: body.status === 'APPROVED' ? 'PRICE_REPORT_APPROVED' : 'PRICE_REPORT_REJECTED',
+        type: status === 'APPROVED' ? 'PRICE_REPORT_APPROVED' : 'PRICE_REPORT_REJECTED',
         userId: report.reporterId ?? undefined,
         storeId: report.storeId,
         productId: report.productId,
@@ -116,34 +157,23 @@ export class AdminController {
       },
     });
 
-    return {
-      id: report.id,
-      status: report.status,
-      message: `Price report ${body.status.toLowerCase()}`,
-    };
+    return { id: report.id, status: body.status };
   }
 
   @Patch('promos/:id/status')
   async updatePromoStatus(
-    @Req() req: AdminRequest,
     @Param('id') id: string,
     @Body(new ZodValidationPipe(moderationStatusSchema)) body: z.infer<typeof moderationStatusSchema>,
   ) {
-    await this.requireAdmin(req);
-
+    const status = toPrismaStatus(body.status);
     const promo = await this.prisma.promo.update({
       where: { id },
-      data: { status: body.status },
-      include: {
-        product: true,
-        store: true,
-        submitter: true,
-      },
+      data: { status },
     });
 
     await this.prisma.activity.create({
       data: {
-        type: body.status === 'APPROVED' ? 'PROMO_APPROVED' : 'PROMO_REJECTED',
+        type: status === 'APPROVED' ? 'PROMO_APPROVED' : 'PROMO_REJECTED',
         userId: promo.submitterId ?? undefined,
         storeId: promo.storeId,
         productId: promo.productId,
@@ -151,10 +181,6 @@ export class AdminController {
       },
     });
 
-    return {
-      id: promo.id,
-      status: promo.status,
-      message: `Promo ${body.status.toLowerCase()}`,
-    };
+    return { id: promo.id, status: body.status };
   }
 }

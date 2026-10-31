@@ -5,32 +5,37 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { randomUUID } from 'node:crypto';
 import * as argon2 from 'argon2';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type AppRole = 'USER' | 'ADMIN';
+
+export type PublicRole = 'user' | 'admin';
 
 export interface AuthUser {
   id: string;
   email: string;
   name: string | null;
   role: AppRole;
-  passwordHash?: string | null;
-  googleId?: string | null;
 }
+
+export interface CurrentUserDto {
+  id: string;
+  email: string;
+  name: string | null;
+  role: PublicRole;
+}
+
+const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
-  private readonly users = new Map<string, AuthUser>();
   private readonly loginAttempts = new Map<string, number[]>();
 
   constructor(
-    private readonly jwtService?: JwtService,
-    private readonly prisma?: PrismaService,
-  ) {
-    void this.ensureSeedAdmin();
-  }
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async hashPassword(password: string): Promise<string> {
     return argon2.hash(password);
@@ -40,73 +45,13 @@ export class AuthService {
     return argon2.verify(hash, password);
   }
 
-  async ensureSeedAdmin(): Promise<void> {
-    const adminEmail = (process.env.ADMIN_EMAIL ?? 'admin@example.com').toLowerCase();
-
-    if (this.prisma) {
-      const passwordHash = await this.hashPassword('admin123');
-      await this.prisma.user.upsert({
-        where: { email: adminEmail },
-        create: {
-          email: adminEmail,
-          name: 'Admin',
-          role: 'ADMIN',
-          passwordHash,
-        },
-        update: {
-          name: 'Admin',
-          role: 'ADMIN',
-          passwordHash,
-        },
-      });
-      return;
-    }
-
-    if (this.users.has(adminEmail)) {
-      return;
-    }
-
-    const passwordHash = await this.hashPassword('admin123');
-    this.users.set(adminEmail, {
-      id: randomUUID(),
-      email: adminEmail,
-      name: 'Admin',
-      role: 'ADMIN',
-      passwordHash,
-    });
-  }
-
   async validateLocalUser(email: string, password: string): Promise<AuthUser> {
-    await this.ensureSeedAdmin();
     await this.enforceRateLimit(email);
 
     const normalizedEmail = email.toLowerCase();
-
-    if (this.prisma) {
-      const user = await this.prisma.user.findUnique({
-        where: { email: normalizedEmail },
-      });
-
-      if (!user || !user.passwordHash) {
-        throw new UnauthorizedException('Invalid email or password');
-      }
-
-      const passwordMatches = await this.verifyPassword(password, user.passwordHash);
-
-      if (!passwordMatches) {
-        throw new UnauthorizedException('Invalid email or password');
-      }
-
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        googleId: user.googleId ?? null,
-      };
-    }
-
-    const user = this.users.get(normalizedEmail);
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
 
     if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid email or password');
@@ -123,7 +68,6 @@ export class AuthService {
       email: user.email,
       name: user.name,
       role: user.role,
-      googleId: user.googleId ?? null,
     };
   }
 
@@ -135,59 +79,50 @@ export class AuthService {
     const email = profile.emails?.[0]?.value ?? `${profile.id}@google.local`;
     const normalizedEmail = email.toLowerCase();
 
-    if (this.prisma) {
-      const user = await this.prisma.user.upsert({
-        where: { email: normalizedEmail },
-        create: {
-          email: normalizedEmail,
-          name: profile.displayName ?? null,
-          role: 'USER',
-          googleId: profile.id,
-        },
-        update: {
-          name: profile.displayName ?? null,
-          googleId: profile.id,
-        },
-      });
+    const user = await this.prisma.user.upsert({
+      where: { email: normalizedEmail },
+      create: {
+        email: normalizedEmail,
+        name: profile.displayName ?? null,
+        role: 'USER',
+        googleId: profile.id,
+      },
+      update: {
+        name: profile.displayName ?? null,
+        googleId: profile.id,
+      },
+    });
 
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        googleId: user.googleId ?? null,
-      };
-    }
-
-    const existing = this.users.get(normalizedEmail);
-
-    if (existing) {
-      return {
-        id: existing.id,
-        email: existing.email,
-        name: existing.name ?? profile.displayName ?? null,
-        role: existing.role,
-        googleId: existing.googleId ?? profile.id,
-      };
-    }
-
-    const createdUser: AuthUser = {
-      id: randomUUID(),
-      email: normalizedEmail,
-      name: profile.displayName ?? null,
-      role: 'USER',
-      googleId: profile.id,
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
     };
+  }
 
-    this.users.set(normalizedEmail, createdUser);
-    return createdUser;
+  async getCurrentUser(userId: string): Promise<CurrentUserDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return this.toCurrentUser(user);
+  }
+
+  toCurrentUser(user: Pick<AuthUser, 'id' | 'email' | 'name' | 'role'>): CurrentUserDto {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role === 'ADMIN' ? 'admin' : 'user',
+    };
   }
 
   issueToken(user: Pick<AuthUser, 'id' | 'email' | 'role'>): string {
-    if (!this.jwtService) {
-      return `dev-token-${user.id}`;
-    }
-
     return this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
   }
 
@@ -209,7 +144,7 @@ export class AuthService {
         sameSite: 'lax' as const,
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        maxAge: 60 * 60 * 1000,
+        maxAge: COOKIE_MAX_AGE_MS,
       },
     };
   }
