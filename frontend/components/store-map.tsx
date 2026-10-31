@@ -3,11 +3,11 @@
 import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
 import { useTranslations } from "next-intl";
 
-import type { Store } from "@/lib/data/repository";
+import type { StoreSummary } from "@/lib/data/types";
 import { formatRupiah } from "@/lib/format";
 
 type StoreMapProps = {
-  stores: Store[];
+  stores: StoreSummary[];
   apiKey: string;
   defaultCenter?: { lat: number; lng: number };
   defaultZoom?: number;
@@ -40,14 +40,10 @@ export function StoreMap({
         style={{ width: "100%", height: "100%" }}
       >
         {stores.map((store) => {
-          const lowestMarkerPrice = store.products.length > 0 ? Math.min(...store.products.map((item) => item.price)) : 0;
+          const lowestMarkerPrice = store.price?.normalizedUnitPrice ?? 0;
 
           return (
-            <AdvancedMarker
-              key={store.id}
-              position={{ lat: store.coordinates.lat, lng: store.coordinates.lng }}
-              title={store.name}
-            >
+            <AdvancedMarker key={store.id} position={{ lat: store.lat, lng: store.lng }} title={store.name}>
               <div className="flex -translate-y-3 items-center justify-center">
                 <div className="rounded-full border border-emerald-300 bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg shadow-emerald-500/50">
                   {formatRupiah(lowestMarkerPrice)}

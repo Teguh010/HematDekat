@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import { ProductSelector } from "@/components/product-selector";
 import { StoreCard } from "@/components/store-card";
 import { StoreMap } from "@/components/store-map";
-import { fetchStores, type Store } from "@/lib/data/repository";
+import { listStores } from "@/lib/data/repository";
+import type { StoreSummary } from "@/lib/data/types";
 import { formatRupiah } from "@/lib/format";
 
 export default function Home() {
@@ -17,14 +18,14 @@ export default function Home() {
     t("productNames.gulaPasir"),
     t("productNames.telurAyam"),
   ];
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<StoreSummary[]>([]);
   const [selectedProduct, setSelectedProduct] = useState(productNames[0]);
 
   useEffect(() => {
     const loadStores = async () => {
-      const data = await fetchStores();
-      setStores(data);
-      const availableProducts = Array.from(new Set(data.flatMap((store) => store.products.map((product) => product.name))));
+      const data = await listStores({ limit: 20 });
+      setStores(data.items);
+      const availableProducts = Array.from(new Set(data.items.flatMap((store) => (store.price ? [store.price.productName] : []))));
       if (availableProducts.length > 0) {
         setSelectedProduct((current) => (availableProducts.includes(current) ? current : availableProducts[0]));
       }
@@ -34,12 +35,8 @@ export default function Home() {
   }, []);
 
   const cheapestStore = [...stores]
-    .map((store) => ({
-      ...store,
-      product: store.products.find((item) => item.name === selectedProduct),
-    }))
-    .filter((store) => store.product)
-    .sort((a, b) => (a.product?.normalizedUnitPrice ?? 0) - (b.product?.normalizedUnitPrice ?? 0))[0];
+    .filter((store) => store.price && store.price.productName === selectedProduct)
+    .sort((a, b) => (a.price?.normalizedUnitPrice ?? 0) - (b.price?.normalizedUnitPrice ?? 0))[0];
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
@@ -62,7 +59,7 @@ export default function Home() {
             <div className="mt-3 space-y-2">
               <p className="text-2xl font-bold text-white">{cheapestStore?.name ?? "-"}</p>
               <p className="text-sm text-slate-300">{cheapestStore?.district ?? "-"}</p>
-              <p className="text-3xl font-black text-emerald-300">{formatRupiah(cheapestStore?.product?.normalizedUnitPrice ?? 0)}</p>
+              <p className="text-3xl font-black text-emerald-300">{formatRupiah(cheapestStore?.price?.normalizedUnitPrice ?? 0)}</p>
             </div>
           </div>
         </section>

@@ -6,28 +6,18 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { fetchStoreBySlug, fetchStores } from "@/lib/data/repository";
+import { getStore, listStores } from "@/lib/data/repository";
 import { formatRupiah } from "@/lib/format";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const t = await getTranslations("store");
-  const store = await fetchStoreBySlug(slug);
+  const store = await getStore(slug).catch(() => null);
 
   return {
     title: t("storePageTitle", { name: store?.name ?? "Toko" }),
     description: t("storePageDescription", { name: store?.name ?? "toko ini" }),
   };
-}
-
-export async function generateStaticParams() {
-  const stores = await fetchStores();
-
-  if (stores.length > 0) {
-    return stores.map((store) => ({ slug: store.id }));
-  }
-
-  return [{ slug: "pasar-kranji" }, { slug: "mitra-grocery" }, { slug: "toko-rahma" }, { slug: "superindo-puri" }];
 }
 
 type StorePageProps = {
@@ -38,7 +28,7 @@ async function StorePageContent({ params }: StorePageProps) {
   const { slug } = await params;
   const t = await getTranslations("store");
   const commonT = await getTranslations("common");
-  const store = await fetchStoreBySlug(slug);
+  const store = await getStore(slug).catch(() => null);
 
   if (!store) {
     notFound();
@@ -67,19 +57,19 @@ async function StorePageContent({ params }: StorePageProps) {
           <dl className="mt-4 space-y-3 text-sm text-slate-300">
             <div className="flex items-center justify-between gap-3">
               <dt className="text-slate-400">{t("city")}</dt>
-              <dd className="font-medium text-white">{store.city}</dd>
+              <dd className="font-medium text-white">{store.city.name}</dd>
             </div>
             <div className="flex items-center justify-between gap-3">
               <dt className="text-slate-400">{t("district")}</dt>
-              <dd className="font-medium text-white">{store.district}</dd>
+              <dd className="font-medium text-white">{store.district ?? "-"}</dd>
             </div>
             <div className="flex items-center justify-between gap-3">
               <dt className="text-slate-400">{t("distance")}</dt>
-              <dd className="font-medium text-white">{store.distanceKm} km</dd>
+              <dd className="font-medium text-white">0 km</dd>
             </div>
             <div className="flex items-center justify-between gap-3">
               <dt className="text-slate-400">{t("rating")}</dt>
-              <dd className="font-medium text-white">⭐ {store.rating} ({store.reviewCount} ulasan)</dd>
+              <dd className="font-medium text-white">{store.promos.length} promo aktif</dd>
             </div>
           </dl>
         </div>
@@ -88,20 +78,20 @@ async function StorePageContent({ params }: StorePageProps) {
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-white">{t("priceList")}</h2>
             <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300">
-              {t("lastUpdated", { date: store.updatedAt })}
+              {store.prices.length > 0 ? t("lastUpdated", { date: store.prices[0].verifiedAt }) : "-"}
             </span>
           </div>
 
           <div className="space-y-3">
-            {store.products.map((product) => (
-              <div key={product.id} className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-slate-950/50 p-3">
+            {store.prices.map((price) => (
+              <div key={price.priceReportId} className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-slate-950/50 p-3">
                 <div>
-                  <p className="font-medium text-slate-100">{product.name}</p>
-                  <p className="text-sm text-slate-400">{product.unit}</p>
+                  <p className="font-medium text-slate-100">{price.productName}</p>
+                  <p className="text-sm text-slate-400">{price.unit}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-emerald-300">{formatRupiah(product.price)}</p>
-                  {product.isPromo ? <p className="text-xs text-emerald-300">{t("promoActive")}</p> : null}
+                  <p className="text-lg font-bold text-emerald-300">{formatRupiah(price.normalizedUnitPrice)}</p>
+                  {store.hasActivePromo ? <p className="text-xs text-emerald-300">{t("promoActive")}</p> : null}
                 </div>
               </div>
             ))}

@@ -4,13 +4,14 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
-import { fetchCities, fetchStores } from "@/lib/data/repository";
+import { listCities, listStores } from "@/lib/data/repository";
 import { formatRupiah } from "@/lib/format";
 
 async function CitiesPageContent() {
   const t = await getTranslations("city");
   const commonT = await getTranslations("common");
-  const [cities, stores] = await Promise.all([fetchCities(), fetchStores()]);
+  const [cities, storesPage] = await Promise.all([listCities(), listStores({ limit: 100 })]);
+  const stores = storesPage.items;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -26,10 +27,10 @@ async function CitiesPageContent() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cities.map((city) => {
-          const cityStores = stores.filter((store) => store.city === city.name);
+          const cityStores = stores.filter((store) => store.city.name === city.name);
           const cheapest = [...cityStores]
-            .flatMap((store) => store.products.map((product) => ({ store, product })))
-            .sort((a, b) => a.product.normalizedUnitPrice - b.product.normalizedUnitPrice)[0];
+            .filter((store) => store.price)
+            .sort((a, b) => (a.price?.normalizedUnitPrice ?? 0) - (b.price?.normalizedUnitPrice ?? 0))[0];
 
           return (
             <Link
@@ -51,11 +52,11 @@ async function CitiesPageContent() {
                 <p className="text-xs uppercase tracking-[0.24em] text-slate-400">{t("priceCheapest")}</p>
                 <div className="mt-2 flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium text-slate-200">{cheapest?.product.name ?? "-"}</p>
-                    <p className="text-sm text-slate-400">{cheapest?.store.name ?? commonT("notAvailable")}</p>
+                    <p className="font-medium text-slate-200">{cheapest?.price?.productName ?? "-"}</p>
+                    <p className="text-sm text-slate-400">{cheapest?.name ?? commonT("notAvailable")}</p>
                   </div>
                   <span className="text-lg font-bold text-emerald-300">
-                    {cheapest ? formatRupiah(cheapest.product.normalizedUnitPrice) : "-"}
+                    {cheapest ? formatRupiah(cheapest.price?.normalizedUnitPrice ?? 0) : "-"}
                   </span>
                 </div>
               </div>
