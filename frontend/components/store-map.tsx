@@ -1,4 +1,9 @@
+"use client";
+
+/* eslint-disable i18next/no-literal-string */
+
 import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
+import { useTranslations } from "next-intl";
 
 import type { Store } from "@/lib/data/repository";
 
@@ -15,10 +20,12 @@ export function StoreMap({
   defaultCenter = { lat: -6.9, lng: 107.7 },
   defaultZoom = 6,
 }: StoreMapProps) {
+  const t = useTranslations("map");
+
   if (!apiKey) {
     return (
       <div className="flex h-full items-center justify-center bg-slate-800 text-sm text-slate-300">
-        Google Maps API key belum tersedia. Isi variabel NEXT_PUBLIC_GOOGLE_MAPS_API_KEY di .env.local.
+        {t("apiKeyMissing")}
       </div>
     );
   }

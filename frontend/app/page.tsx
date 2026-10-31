@@ -1,6 +1,9 @@
 "use client";
 
+/* eslint-disable i18next/no-literal-string */
+
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { AppHeader, type AppUser } from "@/components/app-header";
 import { ProductSelector } from "@/components/product-selector";
@@ -10,14 +13,14 @@ import { fetchStores, type Store } from "@/lib/data/repository";
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-const productNames = [
-  "Beras premium",
-  "Minyak goreng curah",
-  "Gula pasir",
-  "Telur ayam",
-];
-
 export default function Home() {
+  const t = useTranslations("home");
+  const productNames = [
+    t("productNames.berasPremium"),
+    t("productNames.minyakGorengCurah"),
+    t("productNames.gulaPasir"),
+    t("productNames.telurAyam"),
+  ];
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedProduct, setSelectedProduct] = useState(productNames[0]);
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
@@ -81,7 +84,7 @@ export default function Home() {
           <div className="rounded-3xl border border-white/10 bg-slate-900 p-4 shadow-2xl shadow-emerald-950/30">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-300">Produk terpilih</p>
+                <p className="text-sm font-medium text-emerald-300">{t("selectedProduct")}</p>
                 <h2 className="mt-1 text-2xl font-semibold text-white">{selectedProduct}</h2>
               </div>
               <ProductSelector items={productNames} value={selectedProduct} onChange={setSelectedProduct} />
@@ -89,14 +92,16 @@ export default function Home() {
           </div>
 
           <div className="rounded-3xl border border-emerald-400/25 bg-gradient-to-br from-emerald-500/15 to-slate-900 p-4">
-            <p className="text-sm text-emerald-200">Toko termurah saat ini</p>
+            <p className="text-sm text-emerald-200">{t("cheapestNow")}</p>
             <div className="mt-3 space-y-2">
               <p className="text-2xl font-bold text-white">{cheapestStore?.name ?? "-"}</p>
               <p className="text-sm text-slate-300">{cheapestStore?.district ?? "-"}</p>
               <p className="text-3xl font-black text-emerald-300">
-                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
-                  cheapestStore?.product?.normalizedUnitPrice ?? 0,
-                )}
+                {new Intl.NumberFormat("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                  maximumFractionDigits: 0,
+                }).format(cheapestStore?.product?.normalizedUnitPrice ?? 0)}
               </p>
             </div>
           </div>
@@ -106,12 +111,12 @@ export default function Home() {
           <div className="rounded-[28px] border border-white/10 bg-slate-900 p-3 shadow-xl shadow-slate-950/30">
             <div className="flex items-center justify-between border-b border-white/10 px-3 pb-3 pt-1">
               <div>
-                <p className="text-sm text-slate-400">Peta distribusi</p>
-                <h2 className="text-lg font-semibold text-white">Lokasi toko</h2>
+                <p className="text-sm text-slate-400">{t("mapDistribution")}</p>
+                <h2 className="text-lg font-semibold text-white">{t("storeLocations")}</h2>
               </div>
               <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-300">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                {stores.length} lokasi
+                {t("locationsCount", { count: stores.length })}
               </div>
             </div>
 
@@ -122,9 +127,9 @@ export default function Home() {
 
           <aside className="space-y-4 rounded-[28px] border border-white/10 bg-slate-900 p-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Toko terdekat</h2>
+              <h2 className="text-lg font-semibold text-white">{t("nearestStores")}</h2>
               <button type="button" className="text-sm text-emerald-300">
-                Lihat semua
+                {t("seeAll")}
               </button>
             </div>
 

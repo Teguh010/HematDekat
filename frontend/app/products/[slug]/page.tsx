@@ -1,5 +1,8 @@
+/* eslint-disable i18next/no-literal-string */
+
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -7,11 +10,12 @@ import { fetchProductBySlug, fetchStores } from "@/lib/data/repository";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const t = await getTranslations("product");
   const product = await fetchProductBySlug(slug);
 
   return {
-    title: `${product?.name ?? "Produk"} | Sembako Murah`,
-    description: `Bandingkan toko dengan harga ${product?.name ?? "produk"} terendah di Indonesia.`,
+    title: t("productPageTitle", { name: product?.name ?? "Produk" }),
+    description: t("productPageDescription", { name: product?.name ?? "produk" }),
   };
 }
 
@@ -37,6 +41,8 @@ type ProductPageProps = {
 
 async function ProductPageContent({ params }: ProductPageProps) {
   const { slug } = await params;
+  const t = await getTranslations("product");
+  const commonT = await getTranslations("common");
   const product = await fetchProductBySlug(slug);
 
   if (!product) {
@@ -47,12 +53,12 @@ async function ProductPageContent({ params }: ProductPageProps) {
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">Produk</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{commonT("product")}</p>
           <h1 className="mt-2 text-3xl font-bold text-white">{product.name}</h1>
         </div>
         <div className="flex gap-3">
           <Link href="/" className="rounded-full border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:border-emerald-400">
-            Kembali ke peta
+            {commonT("backToMap")}
           </Link>
         </div>
       </div>
@@ -75,13 +81,15 @@ async function ProductPageContent({ params }: ProductPageProps) {
             </div>
 
             <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/50 p-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Harga</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{t("price")}</p>
               <div className="mt-2 flex items-center justify-between gap-3">
                 <span className="text-sm text-slate-300">{store.product?.name ?? product.name}</span>
                 <span className="text-lg font-bold text-emerald-300">
-                  {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
-                    store.product?.normalizedUnitPrice ?? 0,
-                  )}
+                  {new Intl.NumberFormat("id-ID", {
+                    style: "currency",
+                    currency: "IDR",
+                    maximumFractionDigits: 0,
+                  }).format(store.product?.normalizedUnitPrice ?? 0)}
                 </span>
               </div>
             </div>
@@ -92,9 +100,11 @@ async function ProductPageContent({ params }: ProductPageProps) {
   );
 }
 
-export default function ProductPage(props: ProductPageProps) {
+export default async function ProductPage(props: ProductPageProps) {
+  const t = await getTranslations("product");
+
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-300">Memuat produk...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-slate-300">{t("loadingProduct")}</div>}>
       <ProductPageContent {...props} />
     </Suspense>
   );

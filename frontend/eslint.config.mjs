@@ -11,7 +11,7 @@ const eslintConfig = defineConfig([
     plugins: { i18next },
     rules: {
       "i18next/no-literal-string": [
-        "warn",
+        "error",
         {
           mode: "jsx-only",
           "jsx-attributes": {

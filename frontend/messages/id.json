@@ -1,25 +1,127 @@
 {
   "common": {
     "appName": "HematDekat",
-    "tagline": "Cari sembako termurah di dekatmu"
+    "tagline": "Cari sembako termurah di dekatmu",
+    "loading": "Memuat...",
+    "store": "Toko",
+    "city": "Kota",
+    "product": "Produk",
+    "admin": "Admin",
+    "backToMap": "Kembali ke peta",
+    "goToMap": "Ke peta",
+    "backToCity": "Kembali ke kota",
+    "allCities": "Semua kota",
+    "unknown": "Tidak diketahui",
+    "notAvailable": "Belum ada data",
+    "priceFrom": "Harga mulai",
+    "distance": "{distance} km"
   },
   "header": {
     "home": "Beranda",
     "cities": "Kota",
-    "reportPrice": "Laporkan harga"
+    "reportPrice": "Laporkan harga",
+    "brand": "HematDekat",
+    "subtitle": "Map Harga Sembako",
+    "login": "Masuk",
+    "logout": "Keluar",
+    "admin": "Admin",
+    "greeting": "Halo, {name}",
+    "report": "Laporkan"
   },
   "footer": {
     "copyright": "© HematDekat"
   },
-  "home": {},
+  "home": {
+    "selectedProduct": "Produk terpilih",
+    "cheapestNow": "Toko termurah saat ini",
+    "mapDistribution": "Peta distribusi",
+    "storeLocations": "Lokasi toko",
+    "nearestStores": "Toko terdekat",
+    "seeAll": "Lihat semua",
+    "locationsCount": "{count} lokasi",
+    "productNames": {
+      "berasPremium": "Beras premium",
+      "minyakGorengCurah": "Minyak goreng curah",
+      "gulaPasir": "Gula pasir",
+      "telurAyam": "Telur ayam"
+    }
+  },
   "filters": {},
-  "map": {},
-  "store": {},
-  "city": {},
-  "product": {},
-  "report": {},
-  "auth": {},
-  "admin": {},
+  "map": {
+    "apiKeyMissing": "Google Maps API key belum tersedia. Isi variabel NEXT_PUBLIC_GOOGLE_MAPS_API_KEY di .env.local."
+  },
+  "store": {
+    "infoStore": "Info toko",
+    "city": "Kota",
+    "district": "Kecamatan",
+    "distance": "Jarak",
+    "rating": "Rating",
+    "priceList": "Daftar harga sembako",
+    "lastUpdated": "Terakhir update {date}",
+    "promoActive": "Promo aktif",
+    "loading": "Memuat toko...",
+    "storePageTitle": "{name} | HematDekat",
+    "storePageDescription": "Lihat harga sembako dan promo terbaru di {name}."
+  },
+  "city": {
+    "title": "Kota dan pasar",
+    "loadingCities": "Memuat daftar kota...",
+    "loadingCity": "Memuat kota...",
+    "priceCheapest": "Harga termurah",
+    "storeCount": "{count} toko",
+    "priceFrom": "Harga mulai",
+    "cityLabel": "Kota",
+    "allCities": "Semua kota",
+    "cityPageTitle": "{name} | HematDekat",
+    "cityPageDescription": "Bandingkan harga sembako dan promo di {name}."
+  },
+  "product": {
+    "loadingProduct": "Memuat produk...",
+    "productPageTitle": "{name} | HematDekat",
+    "productPageDescription": "Bandingkan toko dengan harga {name} terendah di Indonesia.",
+    "price": "Harga"
+  },
+  "report": {
+    "title": "Laporan",
+    "backToMap": "Kembali ke peta",
+    "reportFormTitle": "Laporkan harga atau promo",
+    "storeName": "Nama toko",
+    "storeExample": "Contoh: Pasar Kramat Jati",
+    "product": "Produk",
+    "productExample": "Contoh: Beras premium",
+    "price": "Harga",
+    "priceExample": "Rp 14.500",
+    "unit": "Satuan",
+    "promoNote": "Catatan promo",
+    "promoNoteExample": "Diskon, potongan, atau catatan pembelian",
+    "submit": "Kirim laporan",
+    "loading": "Memuat halaman masuk..."
+  },
+  "auth": {
+    "account": "Akun",
+    "signInTitle": "Masuk ke HematDekat",
+    "googleSuccess": "Berhasil masuk dengan Google. Anda akan diarahkan ke halaman utama dalam beberapa saat.",
+    "continueWithGoogle": "Lanjutkan dengan Google",
+    "signInWithEmail": "Masuk dengan email",
+    "googleInfo": "Login Google diproses di backend NestJS. Setelah login berhasil, browser akan menerima cookie auth yang dikirim dari API backend.",
+    "noAccount": "Belum punya akun?",
+    "goToMap": "Lanjut ke peta",
+    "loading": "Memuat halaman masuk..."
+  },
+  "admin": {
+    "title": "Moderasi harga",
+    "accessRequired": "Akses admin diperlukan.",
+    "loadFailure": "Gagal memuat item moderasi.",
+    "statusFailure": "Gagal mengubah status moderasi.",
+    "loading": "Memuat item moderasi...",
+    "noItems": "Tidak ada item moderasi yang tertunda.",
+    "pending": "Pending",
+    "approve": "Approve",
+    "reject": "Reject",
+    "reporter": "Reporter",
+    "submitter": "Submitter",
+    "backToMap": "Ke peta"
+  },
   "errors": {},
   "freshness": {},
   "storeType": {},

@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import type { Store } from "@/lib/data/repository";
 
 function formatCurrency(value: number) {
@@ -13,6 +17,7 @@ type StoreCardProps = {
 };
 
 export function StoreCard({ store }: StoreCardProps) {
+  const t = useTranslations("home");
   const lowestProduct = store.products.length > 0 ? [...store.products].sort((a, b) => a.price - b.price)[0] : null;
 
   return (
@@ -31,11 +36,11 @@ export function StoreCard({ store }: StoreCardProps) {
 
       <div className="mt-3 flex items-center justify-between text-sm text-slate-300">
         <span>⭐ {store.rating}</span>
-        <span>{store.distanceKm} km</span>
+        <span>{t("distance", { distance: store.distanceKm })}</span>
       </div>
 
       <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/80 p-2">
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Harga paling murah</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{t("cheapestNow")}</p>
         <div className="mt-2 flex items-center justify-between">
           <span className="font-medium text-slate-200">{lowestProduct?.name ?? "-"}</span>
           <span className="text-base font-bold text-emerald-300">
