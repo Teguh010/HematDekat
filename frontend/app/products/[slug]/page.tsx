@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { fetchProductBySlug, fetchStores } from "@/lib/data/repository";
+import { formatRupiah } from "@/lib/format";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -84,13 +85,7 @@ async function ProductPageContent({ params }: ProductPageProps) {
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{t("price")}</p>
               <div className="mt-2 flex items-center justify-between gap-3">
                 <span className="text-sm text-slate-300">{store.product?.name ?? product.name}</span>
-                <span className="text-lg font-bold text-emerald-300">
-                  {new Intl.NumberFormat("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                    maximumFractionDigits: 0,
-                  }).format(store.product?.normalizedUnitPrice ?? 0)}
-                </span>
+                <span className="text-lg font-bold text-emerald-300">{formatRupiah(store.product?.normalizedUnitPrice ?? 0)}</span>
               </div>
             </div>
           </Link>

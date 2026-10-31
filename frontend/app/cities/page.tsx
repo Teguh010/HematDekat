@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
 import { fetchCities, fetchStores } from "@/lib/data/repository";
+import { formatRupiah } from "@/lib/format";
 
 async function CitiesPageContent() {
   const t = await getTranslations("city");
@@ -54,13 +55,7 @@ async function CitiesPageContent() {
                     <p className="text-sm text-slate-400">{cheapest?.store.name ?? commonT("notAvailable")}</p>
                   </div>
                   <span className="text-lg font-bold text-emerald-300">
-                    {cheapest
-                      ? new Intl.NumberFormat("id-ID", {
-                          style: "currency",
-                          currency: "IDR",
-                          maximumFractionDigits: 0,
-                        }).format(cheapest.product.normalizedUnitPrice)
-                      : "-"}
+                    {cheapest ? formatRupiah(cheapest.product.normalizedUnitPrice) : "-"}
                   </span>
                 </div>
               </div>

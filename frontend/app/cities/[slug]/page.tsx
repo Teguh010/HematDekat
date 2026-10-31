@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { fetchCities, fetchStores } from "@/lib/data/repository";
+import { formatRupiah } from "@/lib/format";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -101,13 +102,7 @@ async function CityPageContent({ params }: CityPageProps) {
                     <p className="text-sm text-slate-400">{store.district}</p>
                   </div>
                   <span className="text-lg font-bold text-emerald-300">
-                    {cheapestProduct
-                      ? new Intl.NumberFormat("id-ID", {
-                          style: "currency",
-                          currency: "IDR",
-                          maximumFractionDigits: 0,
-                        }).format(cheapestProduct.price)
-                      : "-"}
+                    {cheapestProduct ? formatRupiah(cheapestProduct.price) : "-"}
                   </span>
                 </div>
               </div>

@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { fetchStoreBySlug, fetchStores } from "@/lib/data/repository";
+import { formatRupiah } from "@/lib/format";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -99,13 +100,7 @@ async function StorePageContent({ params }: StorePageProps) {
                   <p className="text-sm text-slate-400">{product.unit}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-emerald-300">
-                    {new Intl.NumberFormat("id-ID", {
-                      style: "currency",
-                      currency: "IDR",
-                      maximumFractionDigits: 0,
-                    }).format(product.price)}
-                  </p>
+                  <p className="text-lg font-bold text-emerald-300">{formatRupiah(product.price)}</p>
                   {product.isPromo ? <p className="text-xs text-emerald-300">{t("promoActive")}</p> : null}
                 </div>
               </div>

@@ -1,10 +1,10 @@
 "use client";
 
-/* eslint-disable i18next/no-literal-string */
-
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+
+import { formatRupiah } from "@/lib/format";
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -99,19 +99,7 @@ export default function AdminPage() {
       ) : (
         <div className="space-y-4">
           {items.map((item) => {
-            const formattedPrice = item.price
-              ? new Intl.NumberFormat("id-ID", {
-                  style: "currency",
-                  currency: "IDR",
-                  maximumFractionDigits: 0,
-                }).format(item.price)
-              : item.promoPrice
-                ? new Intl.NumberFormat("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                    maximumFractionDigits: 0,
-                  }).format(item.promoPrice)
-                : "-";
+            const formattedPrice = item.price ? formatRupiah(item.price) : item.promoPrice ? formatRupiah(item.promoPrice) : "-";
 
             return (
               <div key={`${item.kind}-${item.id}`} className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-slate-900 p-5 sm:flex-row sm:items-center sm:justify-between">

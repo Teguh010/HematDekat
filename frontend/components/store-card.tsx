@@ -3,14 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import type { Store } from "@/lib/data/repository";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+import { formatRupiah } from "@/lib/format";
 
 type StoreCardProps = {
   store: Store;
@@ -44,7 +37,7 @@ export function StoreCard({ store }: StoreCardProps) {
         <div className="mt-2 flex items-center justify-between">
           <span className="font-medium text-slate-200">{lowestProduct?.name ?? "-"}</span>
           <span className="text-base font-bold text-emerald-300">
-            {lowestProduct ? formatCurrency(lowestProduct.price) : "-"}
+            {lowestProduct ? formatRupiah(lowestProduct.price) : "-"}
           </span>
         </div>
       </div>

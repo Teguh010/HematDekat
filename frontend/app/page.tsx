@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint-disable i18next/no-literal-string */
-
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -10,6 +8,7 @@ import { ProductSelector } from "@/components/product-selector";
 import { StoreCard } from "@/components/store-card";
 import { StoreMap } from "@/components/store-map";
 import { fetchStores, type Store } from "@/lib/data/repository";
+import { formatRupiah } from "@/lib/format";
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -96,13 +95,7 @@ export default function Home() {
             <div className="mt-3 space-y-2">
               <p className="text-2xl font-bold text-white">{cheapestStore?.name ?? "-"}</p>
               <p className="text-sm text-slate-300">{cheapestStore?.district ?? "-"}</p>
-              <p className="text-3xl font-black text-emerald-300">
-                {new Intl.NumberFormat("id-ID", {
-                  style: "currency",
-                  currency: "IDR",
-                  maximumFractionDigits: 0,
-                }).format(cheapestStore?.product?.normalizedUnitPrice ?? 0)}
-              </p>
+              <p className="text-3xl font-black text-emerald-300">{formatRupiah(cheapestStore?.product?.normalizedUnitPrice ?? 0)}</p>
             </div>
           </div>
         </section>

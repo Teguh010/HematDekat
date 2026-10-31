@@ -1,11 +1,10 @@
 "use client";
 
-/* eslint-disable i18next/no-literal-string */
-
 import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
 import { useTranslations } from "next-intl";
 
 import type { Store } from "@/lib/data/repository";
+import { formatRupiah } from "@/lib/format";
 
 type StoreMapProps = {
   stores: Store[];
@@ -51,7 +50,7 @@ export function StoreMap({
             >
               <div className="flex -translate-y-3 items-center justify-center">
                 <div className="rounded-full border border-emerald-300 bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg shadow-emerald-500/50">
-                  Rp {lowestMarkerPrice.toLocaleString("id-ID")}
+                  {formatRupiah(lowestMarkerPrice)}
                 </div>
                 <div className="ml-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-400 shadow-md shadow-emerald-500/60" />
               </div>
