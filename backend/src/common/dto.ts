@@ -1,6 +1,6 @@
 import type { City, PriceReport, Prisma, Product, Promo, Store } from '@prisma/client';
 
-import { toApiStoreType, toApiUnit } from './enums.js';
+import { toApiCategory, toApiStoreType, toApiUnit } from './enums.js';
 
 export type CityDto = {
   slug: string;
@@ -21,6 +21,13 @@ export type PriceSummaryDto = {
   normalizedUnitPrice: number;
   verifiedAt: string;
   confirmationCount: number;
+};
+
+export type ProductDto = {
+  slug: string;
+  name: string;
+  category: ReturnType<typeof toApiCategory>;
+  defaultUnit: ReturnType<typeof toApiUnit>;
 };
 
 export type StoreSummaryDto = {
@@ -62,6 +69,15 @@ export const currentPriceOrderBy: Prisma.PriceReportOrderByWithRelationInput[] =
   { verifiedAt: { sort: 'desc', nulls: 'last' } },
   { createdAt: 'desc' },
 ];
+
+export function toProductDto(product: Product): ProductDto {
+  return {
+    slug: product.slug,
+    name: product.name,
+    category: toApiCategory(product.category),
+    defaultUnit: toApiUnit(product.defaultUnit),
+  };
+}
 
 export function toCityDto(city: City & { _count: { stores: number } }): CityDto {
   return {

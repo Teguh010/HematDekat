@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { publicStoreWhere, toCityDto, toPriceSummary } from './dto.js';
-import { toApiUnit, toDbUnit, toStoreType } from './enums.js';
+import { publicStoreWhere, toCityDto, toPriceSummary, toProductDto } from './dto.js';
+import { toApiCategory, toApiUnit, toDbCategory, toDbUnit, toStoreType } from './enums.js';
 
 describe('public DTO helpers', () => {
   it('maps city counts and public-store visibility without exposing pending reports', () => {
@@ -35,6 +35,8 @@ describe('public DTO helpers', () => {
   });
 
   it('maps DB enums to API enums and price summaries', () => {
+    expect(toApiCategory('RICE')).toBe('rice');
+    expect(toDbCategory('rice')).toBe('RICE');
     expect(toApiUnit('KG')).toBe('kg');
     expect(toDbUnit('kg')).toBe('KG');
     expect(toStoreType('SUPERMARKET')).toBe('supermarket');
@@ -61,6 +63,20 @@ describe('public DTO helpers', () => {
       normalizedUnitPrice: 2800,
       verifiedAt: '2026-01-14T00:00:00.000Z',
       confirmationCount: 3,
+    });
+
+    const product = {
+      slug: 'beras-premium',
+      name: 'Beras premium',
+      category: 'RICE',
+      defaultUnit: 'KG',
+    };
+
+    expect(toProductDto(product as never)).toEqual({
+      slug: 'beras-premium',
+      name: 'Beras premium',
+      category: 'rice',
+      defaultUnit: 'kg',
     });
   });
 });

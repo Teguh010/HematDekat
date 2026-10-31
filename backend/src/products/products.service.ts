@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { activePromoWhere } from '../common/dto.js';
+import { activePromoWhere, toProductDto } from '../common/dto.js';
+import { toDbCategory } from '../common/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type ProductListQuery = {
@@ -23,7 +24,10 @@ export class ProductsService {
     };
 
     if (query.category) {
-      where.category = query.category.toUpperCase();
+      const categoryKey = query.category.trim().toLowerCase();
+      if (categoryKey in { rice: 'RICE', 'cooking-oil': 'COOKING_OIL', sugar: 'SUGAR', eggs: 'EGGS', flour: 'FLOUR', salt: 'SALT', 'instant-noodles': 'INSTANT_NOODLES', chili: 'CHILI', shallots: 'SHALLOTS', garlic: 'GARLIC', chicken: 'CHICKEN', beef: 'BEEF', fish: 'FISH' }) {
+        where.category = toDbCategory(categoryKey as never);
+      }
     }
 
     if (query.search) {
@@ -37,6 +41,6 @@ export class ProductsService {
       where,
       orderBy: { name: 'asc' },
       take: query.limit,
-    });
+    }).then((products) => products.map((product) => toProductDto(product)));
   }
 }

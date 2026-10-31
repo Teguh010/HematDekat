@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { StoreMap } from "@/components/store-map";
+import { StoreMap } from "@/components/map/store-map";
 import type { City, Page, Product, StoreSummary } from "@/lib/data/types";
 import { ProductSelector } from "./product-selector";
 import { StoreCard } from "./store-card";
@@ -41,6 +41,8 @@ export function HomeExplorer({ products, cities, initialPage, params }: HomeExpl
   });
 
   const [mobileView, setMobileView] = useState<"map" | "list">("map");
+  const [hoveredStoreId, setHoveredStoreId] = useState<string | null>(null);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
   const filteredStores = useMemo(() => {
     const stores = initialPage.items.filter((store) => {
@@ -61,6 +63,30 @@ export function HomeExplorer({ products, cities, initialPage, params }: HomeExpl
       return aPrice - bPrice;
     });
   }, [initialPage.items, selectedCity, selectedProduct]);
+
+  const selectedCityCenter = useMemo(() => {
+    if (selectedCity === "all") {
+      return { lat: -2.5, lng: 118 };
+    }
+
+    const city = cities.find((item) => item.slug === selectedCity);
+    if (!city) {
+      return { lat: -2.5, lng: 118 };
+    }
+
+    return { lat: city.centerLat, lng: city.centerLng };
+  }, [cities, selectedCity]);
+
+  useEffect(() => {
+    if (!selectedStoreId) {
+      return;
+    }
+
+    const node = document.querySelector(`[data-store-id="${selectedStoreId}"]`);
+    if (node instanceof HTMLElement) {
+      node.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [selectedStoreId]);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
@@ -143,26 +169,58 @@ export function HomeExplorer({ products, cities, initialPage, params }: HomeExpl
           </div>
           <div className="space-y-3">
             {filteredStores.map((store) => (
-              <StoreCard key={store.id} store={store} selectedProduct={selectedProduct} />
+              <StoreCard
+                key={store.id}
+                store={store}
+                selectedProduct={selectedProduct}
+                isHighlighted={store.id === hoveredStoreId || store.id === selectedStoreId}
+                onHoverChange={setHoveredStoreId}
+                onSelect={setSelectedStoreId}
+              />
             ))}
           </div>
         </aside>
 
         <div className="min-h-0 flex-1 overflow-hidden rounded-[28px] border border-white/10 bg-slate-900">
-          <StoreMap stores={filteredStores} apiKey={apiKey} />
+          <StoreMap
+            stores={filteredStores}
+            apiKey={apiKey}
+            defaultCenter={selectedCityCenter}
+            defaultZoom={selectedCity === "all" ? 5 : 12}
+            hoveredStoreId={hoveredStoreId}
+            selectedStoreId={selectedStoreId}
+            onSelectStore={setSelectedStoreId}
+            onHoverStore={setHoveredStoreId}
+          />
         </div>
       </div>
 
       <div className="flex flex-1 min-h-0 lg:hidden">
         {mobileView === "map" ? (
           <div className="h-[calc(100dvh-64px-64px)] w-full overflow-hidden bg-slate-900">
-            <StoreMap stores={filteredStores} apiKey={apiKey} />
+            <StoreMap
+              stores={filteredStores}
+              apiKey={apiKey}
+              defaultCenter={selectedCityCenter}
+              defaultZoom={selectedCity === "all" ? 5 : 12}
+              hoveredStoreId={hoveredStoreId}
+              selectedStoreId={selectedStoreId}
+              onSelectStore={setSelectedStoreId}
+              onHoverStore={setHoveredStoreId}
+            />
           </div>
         ) : (
           <div className="w-full overflow-y-auto p-4">
             <div className="space-y-3">
               {filteredStores.map((store) => (
-                <StoreCard key={store.id} store={store} selectedProduct={selectedProduct} />
+                <StoreCard
+                  key={store.id}
+                  store={store}
+                  selectedProduct={selectedProduct}
+                  isHighlighted={store.id === hoveredStoreId || store.id === selectedStoreId}
+                  onHoverChange={setHoveredStoreId}
+                  onSelect={setSelectedStoreId}
+                />
               ))}
             </div>
           </div>

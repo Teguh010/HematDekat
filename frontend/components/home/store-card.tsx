@@ -12,6 +12,7 @@ type StoreCardProps = {
   selectedProduct?: string;
   isHighlighted?: boolean;
   onHoverChange?: (storeId: string | null) => void;
+  onSelect?: (storeId: string) => void;
 };
 
 export function StoreCard({
@@ -19,6 +20,7 @@ export function StoreCard({
   selectedProduct,
   isHighlighted = false,
   onHoverChange,
+  onSelect,
 }: StoreCardProps) {
   const t = useTranslations("home");
   const storeTypeT = useTranslations("storeType");
@@ -33,6 +35,7 @@ export function StoreCard({
   return (
     <Link
       href={`/stores/${store.slug}`}
+      data-store-id={store.id}
       className={`block rounded-2xl border p-3 transition ${
         isHighlighted ? "border-emerald-400 bg-emerald-500/5" : "border-white/10 bg-slate-800"
       }`}
@@ -40,6 +43,7 @@ export function StoreCard({
       onMouseLeave={() => onHoverChange?.(null)}
       onFocus={() => onHoverChange?.(store.id)}
       onBlur={() => onHoverChange?.(null)}
+      onClick={() => onSelect?.(store.id)}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
