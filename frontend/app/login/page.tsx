@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
-const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getApiBaseUrl } from "@/lib/api-client";
 
 function LoginContent() {
   const t = useTranslations("auth");
@@ -40,7 +40,7 @@ function LoginContent() {
 
         <div className="mt-6 space-y-3">
           <a
-            href={`${backendBaseUrl}/auth/google`}
+            href={`${getApiBaseUrl()}/auth/google`}
             className="block w-full rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-center text-sm font-medium text-emerald-200 transition hover:bg-emerald-500/15"
           >
             {t("continueWithGoogle")}

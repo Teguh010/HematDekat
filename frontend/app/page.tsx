@@ -3,14 +3,11 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { AppHeader, type AppUser } from "@/components/app-header";
 import { ProductSelector } from "@/components/product-selector";
 import { StoreCard } from "@/components/store-card";
 import { StoreMap } from "@/components/store-map";
 import { fetchStores, type Store } from "@/lib/data/repository";
 import { formatRupiah } from "@/lib/format";
-
-const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export default function Home() {
   const t = useTranslations("home");
@@ -22,27 +19,8 @@ export default function Home() {
   ];
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedProduct, setSelectedProduct] = useState(productNames[0]);
-  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await fetch(`${backendBaseUrl}/auth/me`, {
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          setCurrentUser(null);
-          return;
-        }
-
-        const data = (await response.json()) as AppUser;
-        setCurrentUser(data);
-      } catch {
-        setCurrentUser(null);
-      }
-    };
-
     const loadStores = async () => {
       const data = await fetchStores();
       setStores(data);
@@ -52,7 +30,6 @@ export default function Home() {
       }
     };
 
-    void fetchCurrentUser();
     void loadStores();
   }, []);
 
@@ -66,18 +43,8 @@ export default function Home() {
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
-  const handleLogout = async () => {
-    await fetch(`${backendBaseUrl}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-    setCurrentUser(null);
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
-      <AppHeader currentUser={currentUser} onLogout={handleLogout} />
-
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
         <section className="grid gap-4 md:grid-cols-[1.4fr_0.6fr]">
           <div className="rounded-3xl border border-white/10 bg-slate-900 p-4 shadow-2xl shadow-emerald-950/30">

@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { apiFetch } from "../api-client";
 
 export type StoreType = "supermarket" | "minimarket" | "market" | "grocery-stall";
@@ -42,55 +44,70 @@ export interface CitySummary {
   storeCount: number;
 }
 
-type BackendProductPayload = {
-  id?: string;
-  name?: string;
-  category?: ProductPrice["category"];
-  unit?: ProductPrice["unit"];
-  price?: number;
-  normalizedUnitPrice?: number;
-  isPromo?: boolean;
-};
+const backendStoreSchema = z.object({
+  id: z.string().optional(),
+  slug: z.string().optional(),
+  name: z.string().optional(),
+  city: z.union([z.string(), z.object({ name: z.string().optional() })]).optional(),
+  district: z.string().optional(),
+  address: z.string().optional(),
+  type: z.enum(["supermarket", "minimarket", "market", "grocery-stall"]).optional(),
+  rating: z.number().optional(),
+  reviewCount: z.number().optional(),
+  distanceKm: z.number().optional(),
+  updatedAt: z.string().optional(),
+  coordinates: z
+    .object({
+      x: z.number().optional(),
+      y: z.number().optional(),
+      lat: z.number().optional(),
+      lng: z.number().optional(),
+    })
+    .optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  products: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().optional(),
+        category: z.string().optional(),
+        unit: z.string().optional(),
+        price: z.number().optional(),
+        normalizedUnitPrice: z.number().optional(),
+        isPromo: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+  priceReports: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        price: z.number().optional(),
+        normalizedUnitPrice: z.number().optional(),
+        status: z.string().optional(),
+        isPromo: z.boolean().optional(),
+        unit: z.union([z.string(), z.undefined()]).optional(),
+        product: z
+          .object({
+            id: z.string().optional(),
+            slug: z.string().optional(),
+            name: z.string().optional(),
+            category: z.string().optional(),
+            defaultUnit: z.string().optional(),
+          })
+          .optional(),
+      }),
+    )
+    .optional(),
+});
 
-type BackendPriceReportPayload = {
-  id?: string;
-  price?: number;
-  normalizedUnitPrice?: number;
-  status?: string;
-  isPromo?: boolean;
-  unit?: ProductPrice["unit"] | string;
-  product?: {
-    id?: string;
-    slug?: string;
-    name?: string;
-    category?: string;
-    defaultUnit?: string;
-  };
-};
-
-type BackendStorePayload = {
-  id?: string;
-  slug?: string;
-  name?: string;
-  city?: string | { name?: string };
-  district?: string;
-  address?: string;
-  type?: StoreType;
-  rating?: number;
-  reviewCount?: number;
-  distanceKm?: number;
-  updatedAt?: string;
-  coordinates?: {
-    x?: number;
-    y?: number;
-    lat?: number;
-    lng?: number;
-  };
-  lat?: number;
-  lng?: number;
-  products?: BackendProductPayload[];
-  priceReports?: BackendPriceReportPayload[];
-};
+const backendCitySchema = z.object({
+  slug: z.string().optional(),
+  name: z.string().optional(),
+  province: z.string().optional(),
+  storeCount: z.number().optional(),
+});
 
 const mockStores: Store[] = [
   {
@@ -238,7 +255,7 @@ function normalizeProductUnit(value: string | undefined): ProductPrice["unit"] {
   }
 }
 
-function normalizeStoreData(store: BackendStorePayload): Store {
+function normalizeStoreData(store: z.infer<typeof backendStoreSchema>): Store {
   const cityName = typeof store.city === "string" ? store.city : store.city?.name ?? "Jakarta";
   const rawProducts = Array.isArray(store.priceReports) && store.priceReports.length > 0 ? store.priceReports : store.products ?? [];
 
@@ -284,7 +301,9 @@ function normalizeStoreData(store: BackendStorePayload): Store {
 
 export async function fetchStores(): Promise<Store[]> {
   try {
-    const data = await apiFetch<BackendStorePayload[]>("/stores?limit=20");
+    const data = await apiFetch("/stores?limit=20", {
+      schema: z.array(backendStoreSchema),
+    });
     const normalized = Array.isArray(data) && data.length > 0 ? data.map(normalizeStoreData) : mockStores;
     storeCache = normalized;
     return normalized;
@@ -297,7 +316,9 @@ export async function fetchStores(): Promise<Store[]> {
 
 export async function fetchCities(): Promise<CitySummary[]> {
   try {
-    const data = await apiFetch<Array<{ slug?: string; name?: string; province?: string; storeCount?: number }>>("/cities");
+    const data = await apiFetch("/cities", {
+      schema: z.array(backendCitySchema),
+    });
 
     if (!Array.isArray(data) || data.length === 0) {
       const fallback = cityCache ?? getCities();

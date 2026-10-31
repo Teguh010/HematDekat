@@ -3,25 +3,29 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+import { z } from "zod";
 
+import { apiFetch } from "@/lib/api-client";
 import { formatRupiah } from "@/lib/format";
 
-const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const pendingItemSchema = z.object({
+  id: z.string(),
+  kind: z.enum(["price-report", "promo"]),
+  product: z.string(),
+  store: z.string(),
+  reporter: z.string().optional(),
+  submitter: z.string().optional(),
+  price: z.number().optional(),
+  promoPrice: z.number().nullable().optional(),
+  discountPct: z.number().nullable().optional(),
+  normalizedUnitPrice: z.number().optional(),
+  status: z.string(),
+  createdAt: z.string(),
+});
 
-type PendingItem = {
-  id: string;
-  kind: "price-report" | "promo";
-  product: string;
-  store: string;
-  reporter?: string;
-  submitter?: string;
-  price?: number;
-  promoPrice?: number | null;
-  discountPct?: number | null;
-  normalizedUnitPrice?: number;
-  status: string;
-  createdAt: string;
-};
+const pendingListSchema = z.object({ items: z.array(pendingItemSchema).default([]) });
+
+type PendingItem = z.infer<typeof pendingItemSchema>;
 
 export default function AdminPage() {
   const t = useTranslations("admin");
@@ -31,21 +35,11 @@ export default function AdminPage() {
 
   const loadItems = useCallback(async () => {
     try {
-      const response = await fetch(`${backendBaseUrl}/admin/pending`, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        setError(t("accessRequired"));
-        setItems([]);
-        return;
-      }
-
-      const payload = (await response.json()) as { items?: PendingItem[] };
-      setItems(payload.items ?? []);
+      const payload = await apiFetch("/admin/pending", { schema: pendingListSchema });
+      setItems(payload.items);
       setError(null);
     } catch {
-      setError(t("loadFailure"));
+      setError(t("accessRequired"));
       setItems([]);
     } finally {
       setLoading(false);
@@ -61,19 +55,16 @@ export default function AdminPage() {
   const handleDecision = async (item: PendingItem, status: "APPROVED" | "REJECTED") => {
     const endpoint = item.kind === "price-report" ? `price-reports/${item.id}/status` : `promos/${item.id}/status`;
 
-    const response = await fetch(`${backendBaseUrl}/admin/${endpoint}`, {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-
-    if (!response.ok) {
+    try {
+      await apiFetch(`/admin/${endpoint}`, {
+        method: "PATCH",
+        body: { status },
+        schema: z.union([z.object({ ok: z.boolean() }), z.null()]),
+      });
+      await loadItems();
+    } catch {
       setError(t("statusFailure"));
-      return;
     }
-
-    await loadItems();
   };
 
   return (

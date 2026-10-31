@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { z } from "zod";
 
+import { ApiError, apiFetch } from "../lib/api-client";
 import { fetchStores, getStores, getTopCheapestStores } from "../lib/data/repository";
 
 test("repository cache reflects backend data after fetch", async () => {
@@ -82,6 +84,47 @@ test("repository maps backend priceReports into visible product prices", async (
     const stores = getStores();
     assert.equal(stores[0]?.products[0]?.name, "Beras premium");
     assert.equal(stores[0]?.products[0]?.normalizedUnitPrice, 14500);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("apiFetch validates a typed response and throws ApiError on bad payloads", async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () =>
+    new Response(JSON.stringify({ name: "Emma" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
+  try {
+    const payload = await apiFetch("/auth/me", {
+      schema: z.object({ name: z.string() }),
+    });
+
+    assert.equal(payload.name, "Emma");
+  } finally {
+    global.fetch = originalFetch;
+  }
+
+  global.fetch = async () =>
+    new Response(JSON.stringify({ message: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+
+  try {
+    await assert.rejects(
+      () =>
+        apiFetch("/auth/me", {
+          schema: z.object({ name: z.string() }),
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof ApiError);
+        assert.equal(error.status, 401);
+        return true;
+      },
+    );
   } finally {
     global.fetch = originalFetch;
   }

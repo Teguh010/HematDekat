@@ -26,10 +26,17 @@
     "logout": "Keluar",
     "admin": "Admin",
     "greeting": "Halo, {name}",
-    "report": "Laporkan"
+    "report": "Laporkan",
+    "menu": "Menu",
+    "closeMenu": "Tutup"
   },
   "footer": {
-    "copyright": "© HematDekat"
+    "copyright": "© HematDekat",
+    "navigation": "Navigasi footer",
+    "about": "Tentang",
+    "privacy": "Privasi",
+    "terms": "Syarat",
+    "feedback": "Feedback"
   },
   "home": {
     "selectedProduct": "Produk terpilih",
