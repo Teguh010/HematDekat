@@ -1,0 +1,33 @@
+{
+  "common": {
+    "appName": "HematDekat",
+    "tagline": "Cari sembako termurah di dekatmu"
+  },
+  "header": {
+    "home": "Beranda",
+    "cities": "Kota",
+    "reportPrice": "Laporkan harga"
+  },
+  "footer": {
+    "copyright": "© HematDekat"
+  },
+  "home": {},
+  "filters": {},
+  "map": {},
+  "store": {},
+  "city": {},
+  "product": {},
+  "report": {},
+  "auth": {},
+  "admin": {},
+  "errors": {},
+  "freshness": {},
+  "storeType": {},
+  "units": {
+    "kg": "kg",
+    "liter": "liter",
+    "pcs": "butir",
+    "pack": "bungkus",
+    "tray": "tray"
+  }
+}
