@@ -55,6 +55,7 @@
     "showMap": "Tampilkan peta",
     "showList": "Tampilkan daftar",
     "emptyStores": "Belum ada harga untuk produk ini di area ini.",
+    "noPrice": "Belum ada harga",
     "productNames": {
       "berasPremium": "Beras premium",
       "minyakGorengCurah": "Minyak goreng curah",
@@ -147,7 +148,12 @@
     "recent": "Diverifikasi {days} hari lalu",
     "stale": "Perlu dicek ulang"
   },
-  "storeType": {},
+  "storeType": {
+    "supermarket": "Supermarket",
+    "minimarket": "Minimarket",
+    "market": "Pasar",
+    "grocery-stall": "Toko kelontong"
+  },
   "units": {
     "kg": "kg",
     "liter": "liter",
