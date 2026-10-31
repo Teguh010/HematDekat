@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+
+import { activePromoWhere } from '../common/dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type ProductListQuery = {
@@ -12,7 +14,13 @@ export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
   list(query: ProductListQuery) {
-    const where: Record<string, unknown> = {};
+    const now = new Date();
+    const where: Record<string, unknown> = {
+      OR: [
+        { priceReports: { some: { status: 'APPROVED' } } },
+        { promos: { some: activePromoWhere(now) } },
+      ],
+    };
 
     if (query.category) {
       where.category = query.category.toUpperCase();

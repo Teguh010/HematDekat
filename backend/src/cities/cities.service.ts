@@ -1,25 +1,27 @@
 import { Injectable } from '@nestjs/common';
+
+import { type CityDto, publicStoreWhere, toCityDto } from '../common/dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class CitiesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list() {
-    return this.prisma.city.findMany({
+  async list(): Promise<CityDto[]> {
+    const cities = await this.prisma.city.findMany({
       orderBy: { name: 'asc' },
+      include: { _count: { select: { stores: { where: publicStoreWhere(new Date()) } } } },
     });
+
+    return cities.map(toCityDto);
   }
 
-  findBySlug(slug: string) {
-    return this.prisma.city.findUnique({
+  async findBySlug(slug: string): Promise<CityDto | null> {
+    const city = await this.prisma.city.findUnique({
       where: { slug },
-      include: {
-        stores: {
-          orderBy: { name: 'asc' },
-          take: 20,
-        },
-      },
+      include: { _count: { select: { stores: { where: publicStoreWhere(new Date()) } } } },
     });
+
+    return city ? toCityDto(city) : null;
   }
 }

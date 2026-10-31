@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+
+import { activePromoWhere, currentPriceOrderBy, publicStoreWhere, toStoreDetail, toStoreSummary } from '../common/dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type StoreListQuery = {
@@ -12,58 +14,66 @@ export type StoreListQuery = {
 export class StoresService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list(query: StoreListQuery) {
-    const where: Record<string, unknown> = {};
+  async list(query: StoreListQuery) {
+    const now = new Date();
 
-    if (query.city) {
-      where.city = { slug: query.city };
-    }
-
-    if (query.search) {
-      where.name = {
-        contains: query.search,
-        mode: 'insensitive',
-      };
-    }
-
-    if (query.product) {
-      where.priceReports = {
-        some: {
-          product: {
-            slug: query.product,
-          },
-        },
-      };
-    }
-
-    return this.prisma.store.findMany({
-      where,
+    const stores = await this.prisma.store.findMany({
+      where: {
+        AND: [
+          publicStoreWhere(now),
+          query.city ? { city: { slug: query.city } } : {},
+          query.search ? { name: { contains: query.search, mode: 'insensitive' } } : {},
+          query.product
+            ? {
+                priceReports: {
+                  some: {
+                    status: 'APPROVED',
+                    product: { slug: query.product },
+                  },
+                },
+              }
+            : {},
+        ],
+      },
       include: {
         city: true,
         priceReports: {
-          take: 5,
-          orderBy: { createdAt: 'desc' },
+          where: { status: 'APPROVED' },
+          orderBy: currentPriceOrderBy,
+          take: 10,
           include: { product: true },
+        },
+        promos: {
+          where: activePromoWhere(now),
+          orderBy: { validFrom: 'desc' },
         },
       },
       orderBy: { name: 'asc' },
       take: query.limit,
     });
+
+    return stores.map(toStoreSummary);
   }
 
-  findBySlug(slug: string) {
-    return this.prisma.store.findUnique({
+  async findBySlug(slug: string) {
+    const now = new Date();
+    const store = await this.prisma.store.findUnique({
       where: { slug },
       include: {
         city: true,
         priceReports: {
-          orderBy: { createdAt: 'desc' },
+          where: { status: 'APPROVED' },
+          orderBy: currentPriceOrderBy,
+          take: 20,
           include: { product: true },
         },
         promos: {
-          orderBy: { createdAt: 'desc' },
+          where: activePromoWhere(now),
+          orderBy: { validFrom: 'desc' },
         },
       },
     });
+
+    return store ? toStoreDetail(store) : null;
   }
 }
