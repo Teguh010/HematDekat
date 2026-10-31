@@ -1,56 +1,149 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { z } from 'zod';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { districtFromAddressComponents, storeTypeFromPlace } from '../common/store-type-from-place.js';
 
 export type AutocompleteQuery = {
   input: string;
-  language: string;
+  sessionToken: string;
+  lat?: number;
+  lng?: number;
+  language?: string;
 };
 
-export type PlaceDetailsQuery = {
-  place_id: string;
-  language: string;
+export type PlaceLookupQuery = {
+  placeId: string;
+  sessionToken: string;
+  language?: string;
 };
+
+const googlePlaceSuggestionSchema = z.object({
+  placePrediction: z.object({
+    placeId: z.string().min(1),
+    structuredFormat: z.object({
+      mainText: z.object({ text: z.string().min(1) }),
+      secondaryText: z.object({ text: z.string() }).optional(),
+    }),
+  }),
+});
+
+const googlePlaceDetailsSchema = z.object({
+  id: z.string().min(1),
+  displayName: z.object({ text: z.string().min(1) }).optional(),
+  formattedAddress: z.string().nullable().optional(),
+  location: z.object({ latitude: z.number(), longitude: z.number() }).optional(),
+  types: z.array(z.string()).optional(),
+  primaryType: z.string().optional(),
+  addressComponents: z
+    .array(
+      z.object({
+        longText: z.string().optional(),
+        shortText: z.string().optional(),
+        types: z.array(z.string()),
+      }),
+    )
+    .optional(),
+});
 
 @Injectable()
 export class PlacesService {
-  async autocomplete(query: AutocompleteQuery) {
-    const apiKey = process.env.GOOGLE_PLACES_SERVER_KEY;
+  constructor(private readonly prisma: PrismaService) {}
+
+  private getApiKey(): string {
+    const apiKey = process.env.GOOGLE_PLACES_SERVER_KEY?.trim();
 
     if (!apiKey) {
-      return {
-        status: 'not-configured',
-        predictions: [],
-        message: 'Google Places server key is not configured.',
-      };
+      throw new HttpException({ message: 'Places is not configured' }, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    const url = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json');
-    url.searchParams.set('input', query.input);
-    url.searchParams.set('language', query.language);
-    url.searchParams.set('components', 'country:id');
-    url.searchParams.set('key', apiKey);
-
-    const response = await fetch(url);
-    return response.json();
+    return apiKey;
   }
 
-  async details(query: PlaceDetailsQuery) {
-    const apiKey = process.env.GOOGLE_PLACES_SERVER_KEY;
+  async autocomplete(query: AutocompleteQuery) {
+    try {
+      const apiKey = this.getApiKey();
+      const response = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat',
+        },
+        body: JSON.stringify({
+          input: query.input,
+          sessionToken: query.sessionToken,
+          languageCode: query.language ?? 'id',
+          regionCode: 'id',
+          includedRegionCodes: ['id'],
+          ...(query.lat !== undefined && query.lng !== undefined
+            ? { locationBias: { circle: { center: { latitude: query.lat, longitude: query.lng }, radius: 20000 } } }
+            : {}),
+        }),
+      });
 
-    if (!apiKey) {
-      return {
-        status: 'not-configured',
-        result: null,
-        message: 'Google Places server key is not configured.',
-      };
+      if (!response.ok) {
+        return [];
+      }
+
+      const payload = await response.json();
+      const suggestions = z
+        .object({ suggestions: z.array(googlePlaceSuggestionSchema).optional() })
+        .parse(payload)
+        .suggestions?.slice(0, 5) ?? [];
+
+      return suggestions.map((suggestion) => ({
+        placeId: suggestion.placePrediction.placeId,
+        mainText: suggestion.placePrediction.structuredFormat.mainText.text,
+        secondaryText: suggestion.placePrediction.structuredFormat.secondaryText?.text ?? null,
+      }));
+    } catch {
+      return [];
     }
+  }
 
-    const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
-    url.searchParams.set('place_id', query.place_id);
-    url.searchParams.set('language', query.language);
-    url.searchParams.set('fields', 'place_id,name,formatted_address,geometry,types');
-    url.searchParams.set('key', apiKey);
+  async lookup(query: PlaceLookupQuery) {
+    try {
+      const apiKey = this.getApiKey();
+      const url = new URL(`https://places.googleapis.com/v1/places/${encodeURIComponent(query.placeId)}`);
+      url.searchParams.set('languageCode', query.language ?? 'id');
+      url.searchParams.set('regionCode', 'id');
+      url.searchParams.set('sessionToken', query.sessionToken);
 
-    const response = await fetch(url);
-    return response.json();
+      const response = await fetch(url, {
+        headers: {
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'id,displayName,formattedAddress,location,types,primaryType,addressComponents',
+        },
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const payload = await response.json();
+      const details = googlePlaceDetailsSchema.parse(payload);
+      const placeId = details.id;
+      const existingStore = await this.prisma.store.findUnique({
+        where: { placeId },
+        select: { slug: true },
+      });
+
+      return {
+        placeId,
+        name: details.displayName?.text ?? 'Unknown place',
+        lat: details.location?.latitude ?? 0,
+        lng: details.location?.longitude ?? 0,
+        formattedAddress: details.formattedAddress ?? null,
+        district: districtFromAddressComponents(details.addressComponents),
+        suggestedType: storeTypeFromPlace({
+          types: details.types,
+          primaryType: details.primaryType,
+          displayName: details.displayName,
+        }),
+        existingStoreSlug: existingStore?.slug ?? null,
+      };
+    } catch {
+      return null;
+    }
   }
 }
