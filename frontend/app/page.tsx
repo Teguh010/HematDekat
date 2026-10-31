@@ -1,103 +1,32 @@
-"use client";
+import { Suspense } from "react";
 
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { HomeExplorer } from "@/components/home/home-explorer";
+import { listCities, listProducts, listStores } from "@/lib/data/repository";
 
-import { ProductSelector } from "@/components/product-selector";
-import { StoreCard } from "@/components/store-card";
-import { StoreMap } from "@/components/store-map";
-import { listStores } from "@/lib/data/repository";
-import type { StoreSummary } from "@/lib/data/types";
-import { formatRupiah } from "@/lib/format";
+type HomePageParams = Record<string, string | string[] | undefined>;
 
-export default function Home() {
-  const t = useTranslations("home");
-  const productNames = [
-    t("productNames.berasPremium"),
-    t("productNames.minyakGorengCurah"),
-    t("productNames.gulaPasir"),
-    t("productNames.telurAyam"),
-  ];
-  const [stores, setStores] = useState<StoreSummary[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState(productNames[0]);
+async function HomePageContent({ searchParams }: { searchParams: Promise<HomePageParams> }) {
+  const params = await searchParams;
 
-  useEffect(() => {
-    const loadStores = async () => {
-      const data = await listStores({ limit: 20 });
-      setStores(data.items);
-      const availableProducts = Array.from(new Set(data.items.flatMap((store) => (store.price ? [store.price.productName] : []))));
-      if (availableProducts.length > 0) {
-        setSelectedProduct((current) => (availableProducts.includes(current) ? current : availableProducts[0]));
-      }
-    };
+  const [products, cities, initialPage] = await Promise.all([
+    listProducts(),
+    listCities(),
+    listStores({ limit: 20, product: Array.isArray(params.product) ? params.product[0] : params.product }),
+  ]);
 
-    void loadStores();
-  }, []);
+  return <HomeExplorer products={products} cities={cities} initialPage={initialPage} params={params} />;
+}
 
-  const cheapestStore = [...stores]
-    .filter((store) => store.price && store.price.productName === selectedProduct)
-    .sort((a, b) => (a.price?.normalizedUnitPrice ?? 0) - (b.price?.normalizedUnitPrice ?? 0))[0];
-
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-
+export default function Page({
+  searchParams,
+}: {
+  searchParams: Promise<HomePageParams>;
+}) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50">
-      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        <section className="grid gap-4 md:grid-cols-[1.4fr_0.6fr]">
-          <div className="rounded-3xl border border-white/10 bg-slate-900 p-4 shadow-2xl shadow-emerald-950/30">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-sm font-medium text-emerald-300">{t("selectedProduct")}</p>
-                <h2 className="mt-1 text-2xl font-semibold text-white">{selectedProduct}</h2>
-              </div>
-              <ProductSelector items={productNames} value={selectedProduct} onChange={setSelectedProduct} />
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-emerald-400/25 bg-gradient-to-br from-emerald-500/15 to-slate-900 p-4">
-            <p className="text-sm text-emerald-200">{t("cheapestNow")}</p>
-            <div className="mt-3 space-y-2">
-              <p className="text-2xl font-bold text-white">{cheapestStore?.name ?? "-"}</p>
-              <p className="text-sm text-slate-300">{cheapestStore?.district ?? "-"}</p>
-              <p className="text-3xl font-black text-emerald-300">{formatRupiah(cheapestStore?.price?.normalizedUnitPrice ?? 0)}</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-[28px] border border-white/10 bg-slate-900 p-3 shadow-xl shadow-slate-950/30">
-            <div className="flex items-center justify-between border-b border-white/10 px-3 pb-3 pt-1">
-              <div>
-                <p className="text-sm text-slate-400">{t("mapDistribution")}</p>
-                <h2 className="text-lg font-semibold text-white">{t("storeLocations")}</h2>
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-300">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                {t("locationsCount", { count: stores.length })}
-              </div>
-            </div>
-
-            <div className="mt-4 h-[420px] overflow-hidden rounded-2xl border border-white/10">
-              <StoreMap stores={stores} apiKey={apiKey} />
-            </div>
-          </div>
-
-          <aside className="space-y-4 rounded-[28px] border border-white/10 bg-slate-900 p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">{t("nearestStores")}</h2>
-              <button type="button" className="text-sm text-emerald-300">
-                {t("seeAll")}
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {stores.map((store) => (
-                <StoreCard key={store.id} store={store} />
-              ))}
-            </div>
-          </aside>
-        </section>
-      </main>
-    </div>
+    <Suspense
+      fallback={<div className="flex min-h-[50vh] items-center justify-center text-slate-300">Memuat halaman...</div>}
+    >
+      <HomePageContent searchParams={searchParams} />
+    </Suspense>
   );
 }

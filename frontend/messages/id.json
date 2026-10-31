@@ -48,6 +48,13 @@
     "locationsCount": "{count} lokasi",
     "promo": "Promo",
     "standard": "Standar",
+    "searchPlaceholder": "Cari toko atau kecamatan",
+    "cityLabel": "Kota",
+    "locateMe": "Cari di sekitar saya",
+    "filter": "Filter",
+    "showMap": "Tampilkan peta",
+    "showList": "Tampilkan daftar",
+    "emptyStores": "Belum ada harga untuk produk ini di area ini.",
     "productNames": {
       "berasPremium": "Beras premium",
       "minyakGorengCurah": "Minyak goreng curah",
