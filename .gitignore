@@ -8,6 +8,7 @@ plan.md
 .env.local
 .env.*
 !.env.example
+!backend/.env.test.example
 
 # OS / editor files
 .DS_Store

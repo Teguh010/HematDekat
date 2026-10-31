@@ -1,6 +1,7 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -33,8 +34,8 @@ export class AuthService {
   private readonly loginAttempts = new Map<string, number[]>();
 
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
