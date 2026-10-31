@@ -129,8 +129,15 @@
     "submitter": "Submitter",
     "backToMap": "Ke peta"
   },
-  "errors": {},
-  "freshness": {},
+  "errors": {
+    "generic": "Terjadi masalah saat memuat data.",
+    "retry": "Coba lagi"
+  },
+  "freshness": {
+    "fresh": "Baru diverifikasi",
+    "recent": "Diverifikasi {days} hari lalu",
+    "stale": "Perlu dicek ulang"
+  },
   "storeType": {},
   "units": {
     "kg": "kg",
