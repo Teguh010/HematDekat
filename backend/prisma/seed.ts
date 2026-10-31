@@ -2,6 +2,8 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, ProductCategory, ProductUnit, Role, StoreType } from '@prisma/client';
 import { hash } from 'argon2';
 
+import { slugify } from '../src/common/slugify.js';
+
 export type ProductSeed = {
   name: string;
   category: ProductCategory;
@@ -24,18 +26,6 @@ export type CitySeed = {
   centerLng: number;
   stores: StoreSeed[];
 };
-
-export function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
 
 export const productCatalog: ProductSeed[] = [
   { name: 'Beras premium', category: ProductCategory.RICE, defaultUnit: ProductUnit.KG },
@@ -172,6 +162,7 @@ async function seedPriceReports(prisma: PrismaClient): Promise<void> {
   const stores = await prisma.store.findMany();
   const products = await prisma.product.findMany();
   const productMap = new Map(products.map((product) => [product.name, product]));
+  const now = Date.now();
 
   const basePrices = {
     'Beras premium': 14500,
@@ -198,7 +189,10 @@ async function seedPriceReports(prisma: PrismaClient): Promise<void> {
     normalizedUnitPrice: number;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     confirmationCount: number;
+    verifiedAt: Date;
   }> = [];
+
+  let index = 0;
 
   for (const store of stores) {
     for (const [productName, defaultPrice] of Object.entries(basePrices)) {
@@ -219,7 +213,10 @@ async function seedPriceReports(prisma: PrismaClient): Promise<void> {
         normalizedUnitPrice: price,
         status: 'APPROVED',
         confirmationCount: 2,
+        verifiedAt: new Date(now - (index % 21) * 86_400_000),
       });
+
+      index += 1;
     }
   }
 
@@ -229,6 +226,48 @@ async function seedPriceReports(prisma: PrismaClient): Promise<void> {
 
   await prisma.priceReport.createMany({
     data: priceEntries,
+  });
+}
+
+async function seedPromos(prisma: PrismaClient, adminEmail: string): Promise<void> {
+  await prisma.promo.deleteMany({});
+
+  const admin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const stores = await prisma.store.findMany({ orderBy: { name: 'asc' }, take: 2 });
+  const products = await prisma.product.findMany({ orderBy: { name: 'asc' }, take: 2 });
+
+  if (!admin || stores.length < 2 || products.length < 2) {
+    return;
+  }
+
+  const validFrom = new Date(Date.now() - 86_400_000);
+  const validTo = new Date(Date.now() + 14 * 86_400_000);
+
+  await prisma.promo.createMany({
+    data: [
+      {
+        storeId: stores[0].id,
+        productId: products[0].id,
+        submitterId: admin.id,
+        promoPrice: 13000,
+        discountPct: null,
+        conditions: 'Diskon hari ini untuk pembelian cash.',
+        validFrom,
+        validTo,
+        status: 'APPROVED',
+      },
+      {
+        storeId: stores[1].id,
+        productId: products[1].id,
+        submitterId: admin.id,
+        promoPrice: null,
+        discountPct: 10,
+        conditions: 'Promo berlaku hingga stok habis.',
+        validFrom,
+        validTo,
+        status: 'APPROVED',
+      },
+    ],
   });
 }
 
@@ -283,13 +322,18 @@ export function createPrismaClient(): PrismaClient {
 
 export async function seedDatabase(prisma = createPrismaClient()): Promise<void> {
   const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@example.com';
-  const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
+  const adminPassword = process.env.ADMIN_PASSWORD ?? (process.env.NODE_ENV !== 'production' ? 'admin123' : undefined);
+
+  if (!adminPassword) {
+    throw new Error('ADMIN_PASSWORD must be set when NODE_ENV=production.');
+  }
 
   await ensureSeedAdmin(prisma, adminEmail, adminPassword);
   await seedProducts(prisma);
   await seedCities(prisma);
   await seedStores(prisma);
   await seedPriceReports(prisma);
+  await seedPromos(prisma, adminEmail);
 
   console.log(`Seeded ${productCatalog.length} products, ${citySeeds.length} cities, ${citySeeds.reduce((count, city) => count + city.stores.length, 0)} stores, and sample price reports.`);
 }

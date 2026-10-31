@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { citySeeds, productCatalog, slugify } from './seed';
+import { slugify } from '../src/common/slugify.js';
+import { citySeeds, productCatalog } from './seed';
 
 describe('database seed catalog', () => {
   it('creates stable slugs for city and product names', () => {
