@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 
+import { RequireUser } from "@/components/auth/require-user";
 import { apiFetch } from "@/lib/api-client";
 import { formatRupiah } from "@/lib/format";
 
@@ -75,61 +76,63 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{t("title")}</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">{t("title")}</h1>
+    <RequireUser role="admin">
+      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{t("title")}</p>
+            <h1 className="mt-2 text-3xl font-bold text-white">{t("title")}</h1>
+          </div>
+          <Link href="/" className="rounded-full border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:border-emerald-400">
+            {t("backToMap")}
+          </Link>
         </div>
-        <Link href="/" className="rounded-full border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:border-emerald-400">
-          {t("backToMap")}
-        </Link>
-      </div>
 
-      {error ? (
-        <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>
-      ) : null}
+        {error ? (
+          <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>
+        ) : null}
 
-      {loading ? (
-        <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-slate-300">{t("loading")}</div>
-      ) : items.length === 0 ? (
-        <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-slate-300">{t("noItems")}</div>
-      ) : (
-        <div className="space-y-4">
-          {items.map((item) => {
-            const amount = item.price ?? item.promoPrice;
-            const formattedPrice = amount === null ? "-" : formatRupiah(amount);
+        {loading ? (
+          <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-slate-300">{t("loading")}</div>
+        ) : items.length === 0 ? (
+          <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-slate-300">{t("noItems")}</div>
+        ) : (
+          <div className="space-y-4">
+            {items.map((item) => {
+              const amount = item.price ?? item.promoPrice;
+              const formattedPrice = amount === null ? "-" : formatRupiah(amount);
 
-            return (
-              <div key={`${item.kind}-${item.id}`} className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-slate-900 p-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-lg font-semibold text-white">{item.store.name}</p>
-                  <p className="text-sm text-slate-400">
-                    {item.product.name} • {formattedPrice} • {item.submittedBy}
-                  </p>
+              return (
+                <div key={`${item.kind}-${item.id}`} className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-slate-900 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-lg font-semibold text-white">{item.store.name}</p>
+                    <p className="text-sm text-slate-400">
+                      {item.product.name} • {formattedPrice} • {item.submittedBy}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-300">{t("pending")}</span>
+                    <button
+                      type="button"
+                      onClick={() => void handleDecision(item, "approved")}
+                      className="rounded-full bg-emerald-500 px-3 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
+                    >
+                      {t("approve")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleDecision(item, "rejected")}
+                      className="rounded-full border border-white/10 bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:border-slate-500"
+                    >
+                      {t("reject")}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-300">{t("pending")}</span>
-                  <button
-                    type="button"
-                    onClick={() => void handleDecision(item, "approved")}
-                    className="rounded-full bg-emerald-500 px-3 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
-                  >
-                    {t("approve")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleDecision(item, "rejected")}
-                    className="rounded-full border border-white/10 bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:border-slate-500"
-                  >
-                    {t("reject")}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </main>
+              );
+            })}
+          </div>
+        )}
+      </main>
+    </RequireUser>
   );
 }
