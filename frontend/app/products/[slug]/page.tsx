@@ -6,8 +6,12 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { getProduct, listProducts } from "@/lib/data/repository";
+import { getProduct } from "@/lib/data/repository";
 import { formatRupiah } from "@/lib/format";
+
+function firstParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -22,20 +26,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-async function ProductPageContent({ params }: ProductPageProps) {
+async function ProductPageContent({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;
+  const query = await searchParams;
+  const selectedCity = firstParam(query.city);
   const t = await getTranslations("product");
   const commonT = await getTranslations("common");
-  const product = await getProduct(slug).catch(() => null);
+  const product = await getProduct(slug, selectedCity).catch(() => null);
 
   if (!product) {
     notFound();
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{commonT("product")}</p>
@@ -47,6 +54,51 @@ async function ProductPageContent({ params }: ProductPageProps) {
           </Link>
         </div>
       </div>
+
+      <section className="mb-8 rounded-3xl border border-white/10 bg-slate-900 p-5">
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Link
+            href={`/products/${slug}`}
+            className={`rounded-full px-3 py-1.5 text-sm ${!selectedCity ? "bg-emerald-500 text-slate-950" : "border border-white/10 bg-slate-800 text-slate-200"}`}
+          >
+            Semua kota
+          </Link>
+          {product.cityAverages.map((city) => (
+            <Link
+              key={city.citySlug}
+              href={`/products/${slug}?city=${encodeURIComponent(city.citySlug)}`}
+              className={`rounded-full px-3 py-1.5 text-sm ${selectedCity === city.citySlug ? "bg-emerald-500 text-slate-950" : "border border-white/10 bg-slate-800 text-slate-200"}`}
+            >
+              {city.cityName}
+            </Link>
+          ))}
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-white/10">
+          <table className="min-w-full text-left text-sm text-slate-200">
+            <thead className="bg-slate-800 text-slate-300">
+              <tr>
+                <th className="px-4 py-3 font-medium">Kota</th>
+                <th className="px-4 py-3 font-medium">Rata-rata</th>
+                <th className="px-4 py-3 font-medium">Laporan</th>
+              </tr>
+            </thead>
+            <tbody>
+              {product.cityAverages.map((city) => (
+                <tr key={city.citySlug} className="border-t border-white/10 bg-slate-900/60">
+                  <td className="px-4 py-3">
+                    <Link href={`/products/${slug}?city=${encodeURIComponent(city.citySlug)}`} className="font-medium text-white hover:text-emerald-300">
+                      {city.cityName}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-emerald-300">{formatRupiah(city.averageUnitPrice)}</td>
+                  <td className="px-4 py-3 text-slate-400">{city.reportCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {product.cheapest.map((store) => (
