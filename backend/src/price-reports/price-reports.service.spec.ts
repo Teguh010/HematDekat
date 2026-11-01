@@ -1,0 +1,148 @@
+import { describe, expect, it } from 'vitest';
+
+import { PriceReportsService } from './price-reports.service.js';
+
+describe('PriceReportsService', () => {
+  it('uses an existing store when the report is submitted for a known place', async () => {
+    const prisma = {
+      product: {
+        findUnique: async () => ({
+          id: 'product-1',
+          slug: 'beras-premium',
+          name: 'Beras premium',
+          defaultUnit: 'KG',
+        }),
+      },
+      store: {
+        findUnique: async () => ({
+          id: 'store-1',
+          slug: 'pasar-sukajadi',
+          name: 'Pasar Sukajadi',
+          placeId: 'place-1',
+          cityId: 'city-1',
+          city: { slug: 'bandung', name: 'Bandung' },
+          district: 'Sukajadi',
+          lat: -6.9,
+          lng: 107.6,
+          type: 'MARKET',
+          fetchedAt: new Date(),
+        }),
+      },
+      priceReport: {
+        create: async ({ data }) => ({
+          id: 'report-1',
+          ...data,
+        }),
+      },
+      activity: {
+        create: async () => ({ id: 'activity-1' }),
+      },
+      $transaction: async (callback: (tx: typeof prisma) => Promise<unknown>) => callback(prisma),
+    } as any;
+
+    const service = new PriceReportsService(prisma, {
+      lookup: async () => null,
+    } as any);
+
+    const result = await service.create({
+      userId: 'user-1',
+      storeSlug: 'pasar-sukajadi',
+      productSlug: 'beras-premium',
+      price: 14000,
+      quantity: 1,
+      unit: 'kg',
+    });
+
+    expect(result).toMatchObject({ id: 'report-1', status: 'pending' });
+  });
+
+  it('rejects a bad unit before creating a report', async () => {
+    const prisma = {
+      product: {
+        findUnique: async () => ({
+          id: 'product-1',
+          slug: 'beras-premium',
+          name: 'Beras premium',
+          defaultUnit: 'KG',
+        }),
+      },
+      store: {
+        findUnique: async () => ({
+          id: 'store-1',
+          slug: 'pasar-sukajadi',
+          name: 'Pasar Sukajadi',
+          placeId: 'place-1',
+          cityId: 'city-1',
+          city: { slug: 'bandung', name: 'Bandung' },
+          district: 'Sukajadi',
+          lat: -6.9,
+          lng: 107.6,
+          type: 'MARKET',
+          fetchedAt: new Date(),
+        }),
+      },
+    } as any;
+
+    const service = new PriceReportsService(prisma, {
+      lookup: async () => null,
+    } as any);
+
+    await expect(
+      service.create({
+        userId: 'user-1',
+        storeSlug: 'pasar-sukajadi',
+        productSlug: 'beras-premium',
+        price: 14000,
+        quantity: 1,
+        unit: 'liter',
+      }),
+    ).rejects.toMatchObject({ response: { statusCode: 422, message: 'Unit must be kg' } });
+  });
+
+  it('rejects a place outside supported cities', async () => {
+    const prisma = {
+      city: {
+        findMany: async () => [
+          { id: 'city-1', slug: 'bandung', centerLat: -6.9, centerLng: 107.6 },
+          { id: 'city-2', slug: 'jakarta', centerLat: -6.2, centerLng: 106.8 },
+        ],
+      },
+      product: {
+        findUnique: async () => ({
+          id: 'product-1',
+          slug: 'beras-premium',
+          name: 'Beras premium',
+          defaultUnit: 'KG',
+        }),
+      },
+      store: {
+        findUnique: async () => null,
+      },
+    } as any;
+
+    const service = new PriceReportsService(prisma, {
+      lookup: async () => ({
+        placeId: 'new-place',
+        name: 'Remote store',
+        lat: 1,
+        lng: 100,
+        formattedAddress: 'Unknown',
+        district: 'Remote',
+        suggestedType: 'market',
+        existingStoreSlug: null,
+      }),
+    } as any);
+
+    await expect(
+      service.create({
+        userId: 'user-1',
+        placeId: 'new-place',
+        storeType: 'market',
+        productSlug: 'beras-premium',
+        price: 14000,
+        quantity: 1,
+        unit: 'kg',
+      }),
+    ).rejects.toMatchObject({ response: { statusCode: 422, message: 'Store is outside supported cities' } });
+  });
+});

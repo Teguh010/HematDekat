@@ -7,6 +7,7 @@ import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CitiesModule } from './cities/cities.module.js';
 import { PlacesModule } from './places/places.module.js';
+import { PriceReportsModule } from './price-reports/price-reports.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { StoresModule } from './stores/stores.module.js';
 
@@ -19,6 +20,7 @@ import { StoresModule } from './stores/stores.module.js';
     ProductsModule,
     StoresModule,
     PlacesModule,
+    PriceReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
