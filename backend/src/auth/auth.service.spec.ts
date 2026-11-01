@@ -24,6 +24,19 @@ function createService(users: Map<string, StoredUser>) {
 
         return [...users.values()].find((user) => user.id === where.id) ?? null;
       },
+      create: async ({ data }: { data: Partial<StoredUser> & { email: string; role?: 'USER' | 'ADMIN'; name?: string | null; passwordHash?: string | null; googleId?: string | null } }) => {
+        const user: StoredUser = {
+          id: data.id ?? `user-${users.size + 1}`,
+          email: data.email,
+          name: data.name ?? null,
+          role: data.role ?? 'USER',
+          passwordHash: data.passwordHash ?? null,
+          googleId: data.googleId ?? null,
+        };
+
+        users.set(data.email, user);
+        return user;
+      },
     },
   } as unknown as PrismaService;
 
@@ -121,6 +134,53 @@ describe('AuthService', () => {
       email: 'rina@example.com',
       name: 'Rina',
       role: 'user',
+    });
+  });
+
+  it('registers a new local user with a hashed password', async () => {
+    const users = new Map<string, StoredUser>();
+    const service = createService(users);
+    const user = await service.register({
+      email: 'sari@example.com',
+      password: 'sembako123',
+      name: 'Sari',
+    });
+
+    const storedUser = users.get('sari@example.com');
+
+    expect(user).toEqual({
+      id: 'user-1',
+      email: 'sari@example.com',
+      name: 'Sari',
+      role: 'user',
+    });
+    expect(storedUser?.passwordHash).toBeTruthy();
+    expect(storedUser?.passwordHash).not.toBe('sembako123');
+  });
+
+  it('rejects duplicate registration emails', async () => {
+    const users = new Map<string, StoredUser>([
+      [
+        'sari@example.com',
+        {
+          id: 'user-7',
+          email: 'sari@example.com',
+          name: 'Sari',
+          role: 'USER',
+          passwordHash: 'existing-hash',
+          googleId: null,
+        },
+      ],
+    ]);
+
+    await expect(
+      createService(users).register({
+        email: 'sari@example.com',
+        password: 'sembako123',
+        name: 'Sari Baru',
+      }),
+    ).rejects.toMatchObject({
+      response: { statusCode: 409 },
     });
   });
 });

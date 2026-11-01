@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   HttpException,
   HttpStatus,
   Inject,
@@ -44,6 +45,35 @@ export class AuthService {
 
   async verifyPassword(password: string, hash: string): Promise<boolean> {
     return argon2.verify(hash, password);
+  }
+
+  async register(input: { email: string; password: string; name: string }): Promise<CurrentUserDto> {
+    const email = input.email.trim().toLowerCase();
+    const name = input.name.trim();
+    const password = input.password;
+
+    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+
+    if (existingUser) {
+      throw new ConflictException('Email already registered');
+    }
+
+    const passwordHash = await this.hashPassword(password);
+    const createdUser = await this.prisma.user.create({
+      data: {
+        email,
+        name,
+        passwordHash,
+        role: 'USER',
+      },
+    });
+
+    return this.toCurrentUser({
+      id: createdUser.id,
+      email: createdUser.email,
+      name: createdUser.name,
+      role: createdUser.role,
+    });
   }
 
   async validateLocalUser(email: string, password: string): Promise<AuthUser> {

@@ -18,8 +18,14 @@ import { AuthService, type AuthUser } from './auth.service.js';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().trim().email().transform((value) => value.toLowerCase()),
+  password: z.string().min(8).max(72),
+});
+
+const registerSchema = z.object({
+  email: z.string().trim().email().transform((value) => value.toLowerCase()),
+  password: z.string().min(8).max(72),
+  name: z.string().trim().min(2).max(50),
 });
 
 @Controller('auth')
@@ -46,6 +52,24 @@ export class AuthController {
     res.cookie(cookie.name, cookie.value, cookie.options);
 
     return this.authService.toCurrentUser(user);
+  }
+
+  @Post('register')
+  @HttpCode(201)
+  async register(
+    @Body(new ZodValidationPipe(registerSchema)) body: z.infer<typeof registerSchema>,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.authService.register(body);
+    const token = this.authService.issueToken({
+      id: user.id,
+      email: user.email,
+      role: user.role === 'admin' ? 'ADMIN' : 'USER',
+    });
+    const cookie = this.authService.buildJwtCookie(token);
+
+    res.cookie(cookie.name, cookie.value, cookie.options);
+    return user;
   }
 
   @Get('google')
