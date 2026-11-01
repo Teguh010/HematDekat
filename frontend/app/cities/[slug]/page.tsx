@@ -51,7 +51,13 @@ async function CityPageContent({ params }: CityPageProps) {
         <p className="mt-3 max-w-3xl text-base text-slate-300">{introText}</p>
       </div>
 
-      <HomeExplorer products={products} cities={cities} initialPage={initialPage} params={{ city: slug }} lockedCity={slug} />
+      <HomeExplorer
+        products={products}
+        cities={cities}
+        initialPage={initialPage}
+        lockedCity={slug}
+        fillViewport={false}
+      />
     </main>
   );
 }

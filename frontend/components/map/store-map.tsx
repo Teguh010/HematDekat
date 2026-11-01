@@ -21,6 +21,8 @@ type StoreMapProps = {
   onHoverStore?: (storeId: string | null) => void;
 };
 
+const INDONESIA_CENTER = { lat: -2.5, lng: 118 };
+
 function MapView({
   stores,
   defaultCenter,
@@ -36,6 +38,7 @@ function MapView({
   const searchParams = useSearchParams();
   const parsedParams = useMemo(() => parseSearchParams(Object.fromEntries(searchParams.entries())), [searchParams]);
   const programmaticUpdateRef = useRef(false);
+  const appliedCityCameraRef = useRef<string | null>(null);
   const [showAreaSearch, setShowAreaSearch] = useState(false);
   const selectedStore = useMemo(
     () => stores.find((store) => store.id === selectedStoreId) ?? null,
@@ -65,20 +68,38 @@ function MapView({
     };
   }, [map]);
 
+  // Pan only when a store is selected. Clearing selection must not reset the camera.
   useEffect(() => {
-    if (!map) return;
-
-    programmaticUpdateRef.current = true;
-
-    if (selectedStore) {
-      map.panTo({ lat: selectedStore.lat, lng: selectedStore.lng });
-      map.setZoom(Math.max(map.getZoom() || defaultZoom || 12, 12));
+    if (!map || !selectedStore) {
       return;
     }
 
-    map.setCenter(defaultCenter ?? { lat: -2.5, lng: 118 });
-    map.setZoom(defaultZoom ?? 5);
-  }, [defaultCenter, defaultZoom, map, selectedStore]);
+    programmaticUpdateRef.current = true;
+    map.panTo({ lat: selectedStore.lat, lng: selectedStore.lng });
+    map.setZoom(Math.max(map.getZoom() || defaultZoom || 12, 12));
+  }, [defaultZoom, map, selectedStore]);
+
+  // Apply city / Indonesia camera only when the intended center or zoom changes
+  // (for example city filter), not on every product change or selection clear.
+  useEffect(() => {
+    if (!map || selectedStore) {
+      return;
+    }
+
+    const lat = defaultCenter?.lat ?? INDONESIA_CENTER.lat;
+    const lng = defaultCenter?.lng ?? INDONESIA_CENTER.lng;
+    const zoom = defaultZoom ?? 5;
+    const key = `${lat.toFixed(5)},${lng.toFixed(5)},${zoom}`;
+
+    if (appliedCityCameraRef.current === key) {
+      return;
+    }
+
+    appliedCityCameraRef.current = key;
+    programmaticUpdateRef.current = true;
+    map.setCenter({ lat, lng });
+    map.setZoom(zoom);
+  }, [defaultCenter?.lat, defaultCenter?.lng, defaultZoom, map, selectedStore]);
 
   const shouldShowAreaSearch = showAreaSearch && parsedParams.bbox === undefined;
 
@@ -146,7 +167,7 @@ function MapView({
 export function StoreMap({
   stores,
   apiKey,
-  defaultCenter = { lat: -2.5, lng: 118 },
+  defaultCenter = INDONESIA_CENTER,
   defaultZoom = 5,
   hoveredStoreId = null,
   selectedStoreId = null,

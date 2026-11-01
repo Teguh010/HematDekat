@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -9,6 +9,7 @@ import { FilterPanel } from "@/components/filters/filter-panel";
 import { LocateMeButton } from "@/components/filters/locate-me-button";
 import { SearchBar } from "@/components/filters/search-bar";
 import { StoreMap } from "@/components/map/store-map";
+import { listStores } from "@/lib/data/repository";
 import { daysSince } from "@/lib/format";
 import { buildSearchParams, parseSearchParams } from "@/lib/search-params";
 import type { City, Page, Product, StoreSummary } from "@/lib/data/types";
@@ -20,11 +21,18 @@ type HomeExplorerProps = {
   products: Product[];
   cities: City[];
   initialPage: Page<StoreSummary>;
-  params: Record<string, string | string[] | undefined>;
   lockedCity?: string;
+  /** When true, fill the parent height (home). When false, use a fixed panel height (city page). */
+  fillViewport?: boolean;
 };
 
-export function HomeExplorer({ products, cities, initialPage, params, lockedCity }: HomeExplorerProps) {
+export function HomeExplorer({
+  products,
+  cities,
+  initialPage,
+  lockedCity,
+  fillViewport = true,
+}: HomeExplorerProps) {
   const t = useTranslations("home");
   const router = useRouter();
   const pathname = usePathname();
@@ -33,6 +41,10 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
   const [mobileView, setMobileView] = useState<"map" | "list">("map");
   const [hoveredStoreId, setHoveredStoreId] = useState<string | null>(null);
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [storesPage, setStoresPage] = useState(initialPage);
+  const loadedProductRef = useRef(
+    initialPage.items.find((store) => store.price)?.price?.productSlug ?? "beras-premium",
+  );
 
   const updateProduct = (nextSlug: string) => {
     setHoveredStoreId(null);
@@ -42,7 +54,6 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
   };
 
   const activeProduct = useMemo(() => {
-    // parsedParams.product always has a value (defaults to beras-premium).
     if (parsedParams.product && products.some((product) => product.slug === parsedParams.product)) {
       return parsedParams.product;
     }
@@ -54,16 +65,45 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
       return lockedCity;
     }
 
-    const cityParam = Array.isArray(params.city) ? params.city[0] : params.city;
-    if (cityParam && cities.some((city) => city.slug === cityParam)) {
-      return cityParam;
+    if (parsedParams.city && cities.some((city) => city.slug === parsedParams.city)) {
+      return parsedParams.city;
     }
-    return parsedParams.city ?? "all";
-  }, [cities, lockedCity, params.city, parsedParams.city]);
+
+    return "all";
+  }, [cities, lockedCity, parsedParams.city]);
+
+  useEffect(() => {
+    if (!activeProduct || activeProduct === loadedProductRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+    const product = activeProduct;
+
+    listStores({
+      limit: 50,
+      product,
+      city: lockedCity,
+    })
+      .then((page) => {
+        if (cancelled) {
+          return;
+        }
+        loadedProductRef.current = product;
+        setStoresPage(page);
+      })
+      .catch(() => {
+        // Keep the previous page visible; the list/map stay usable.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeProduct, lockedCity]);
 
   const filteredStores = useMemo(() => {
     const q = (parsedParams.q ?? "").trim().toLowerCase();
-    const stores = initialPage.items.filter((store) => {
+    const stores = storesPage.items.filter((store) => {
       if (activeCity !== "all" && store.city.slug !== activeCity) {
         return false;
       }
@@ -123,7 +163,7 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
         }
       }
     });
-  }, [activeCity, activeProduct, initialPage.items, parsedParams]);
+  }, [activeCity, activeProduct, parsedParams, storesPage.items]);
 
   const selectedCityCenter = useMemo(() => {
     if (activeCity === "all") {
@@ -152,9 +192,13 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
   return (
-    <div className="flex min-h-[calc(100dvh-64px)] flex-col bg-slate-950 text-slate-50">
-      <div className="border-b border-white/10 bg-slate-950/95 px-4 py-4 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3">
+    <div
+      className={`flex min-h-0 flex-col overflow-hidden bg-slate-950 text-slate-50 ${
+        fillViewport ? "h-full flex-1" : "h-[70dvh] min-h-[28rem]"
+      }`}
+    >
+      <div className="shrink-0 border-b border-white/10 bg-slate-950/95 px-4 py-3 backdrop-blur-sm">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <SearchBar />
 
@@ -171,12 +215,12 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
 
       <MobileViewToggle value={mobileView} onChange={setMobileView} />
 
-      <div className="hidden flex-1 min-h-0 lg:flex lg:gap-3 lg:p-4">
-        <aside className="w-[400px] shrink-0 overflow-y-auto rounded-[28px] border border-white/10 bg-slate-900 p-4">
-          <div className="mb-4 flex items-center justify-between">
+      <div className="hidden min-h-0 flex-1 gap-3 overflow-hidden p-4 lg:flex">
+        <aside className="flex w-[400px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-slate-900">
+          <div className="shrink-0 border-b border-white/10 px-4 py-3">
             <h2 className="text-lg font-semibold text-white">{t("nearestStores")}</h2>
           </div>
-          <div className="space-y-3">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
             {filteredStores.map((store) => (
               <StoreCard
                 key={store.id}
@@ -190,7 +234,7 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
           </div>
         </aside>
 
-        <div className="min-h-0 flex-1 overflow-hidden rounded-[28px] border border-white/10 bg-slate-900">
+        <div className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-[28px] border border-white/10 bg-slate-900">
           <StoreMap
             stores={filteredStores}
             apiKey={apiKey}
@@ -204,9 +248,9 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
         </div>
       </div>
 
-      <div className="flex flex-1 min-h-0 lg:hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
         {mobileView === "map" ? (
-          <div className="h-[calc(100dvh-64px-64px)] w-full overflow-hidden bg-slate-900">
+          <div className="min-h-0 w-full flex-1 overflow-hidden bg-slate-900">
             <StoreMap
               stores={filteredStores}
               apiKey={apiKey}
@@ -219,7 +263,7 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
             />
           </div>
         ) : (
-          <div className="w-full overflow-y-auto p-4">
+          <div className="min-h-0 w-full flex-1 overflow-y-auto p-4">
             <div className="space-y-3">
               {filteredStores.map((store) => (
                 <StoreCard

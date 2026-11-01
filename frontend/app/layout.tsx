@@ -36,11 +36,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-slate-950 text-slate-100">
+      <body className="flex h-dvh flex-col overflow-hidden bg-slate-950 text-slate-100">
         <NextIntlClientProvider>
           <CurrentUserProvider>
             <AppHeader />
-            <main id="content" className="flex flex-1 flex-col">
+            <main id="content" className="flex min-h-0 flex-1 flex-col overflow-y-auto">
               {children}
             </main>
             <AppFooter />
