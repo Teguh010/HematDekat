@@ -1,5 +1,6 @@
 import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { z } from 'zod';
+import { PlacesService } from '../places/places.service.js';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import { StoresService } from './stores.service.js';
 
@@ -33,7 +34,27 @@ const storeQuerySchema = z.object({
 
 @Controller('stores')
 export class StoresController {
-  constructor(private readonly stores: StoresService) {}
+  constructor(
+    private readonly stores: StoresService,
+    private readonly places: PlacesService,
+  ) {}
+
+  @Get(':slug/place-details')
+  async getPlaceDetails(@Param('slug') slug: string) {
+    const store = await this.stores.findBySlug(slug);
+
+    if (!store) {
+      throw new NotFoundException(`Store with slug "${slug}" not found`);
+    }
+
+    const details = await this.places.getStorePageDetails(store.placeId);
+
+    if (!details) {
+      return { available: false };
+    }
+
+    return details;
+  }
 
   @Get()
   list(@Query(new ZodValidationPipe(storeQuerySchema)) query: z.infer<typeof storeQuerySchema>) {

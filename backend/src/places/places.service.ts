@@ -146,4 +146,89 @@ export class PlacesService {
       return null;
     }
   }
+
+  async getStorePageDetails(placeId: string) {
+    try {
+      const apiKey = this.getApiKey();
+      const url = new URL(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`);
+      url.searchParams.set('languageCode', 'id');
+      url.searchParams.set('regionCode', 'id');
+
+      const response = await fetch(url, {
+        headers: {
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'id,displayName,rating,userRatingCount,formattedAddress,photos',
+        },
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const payload = await response.json();
+      const details = z
+        .object({
+          displayName: z.object({ text: z.string().min(1) }).optional(),
+          rating: z.number().nullable().optional(),
+          userRatingCount: z.number().nullable().optional(),
+          formattedAddress: z.string().nullable().optional(),
+          photos: z
+            .array(
+              z.object({
+                name: z.string().optional(),
+                authorAttributions: z
+                  .array(
+                    z.object({
+                      displayName: z.string().optional(),
+                      uri: z.string().nullable().optional(),
+                    }),
+                  )
+                  .optional(),
+              }),
+            )
+            .optional(),
+        })
+        .parse(payload);
+
+      const photo = details.photos?.[0];
+      let resolvedPhoto: { uri: string; attributions: { displayName: string; uri: string | null }[] } | null = null;
+
+      if (photo?.name) {
+        const photoResponse = await fetch(
+          `https://places.googleapis.com/v1/${encodeURIComponent(photo.name)}/media?maxWidthPx=800&skipHttpRedirect=true`,
+          {
+            headers: {
+              'X-Goog-Api-Key': apiKey,
+            },
+          },
+        );
+
+        if (photoResponse.ok) {
+          const photoPayload = await photoResponse.json();
+          const uri = typeof photoPayload.photoUri === 'string' ? photoPayload.photoUri : null;
+          if (uri) {
+            resolvedPhoto = {
+              uri,
+              attributions:
+                photo.authorAttributions?.map((author) => ({
+                  displayName: author.displayName ?? 'Google',
+                  uri: author.uri ?? null,
+                })) ?? [],
+            };
+          }
+        }
+      }
+
+      return {
+        available: true,
+        name: details.displayName?.text ?? 'Unknown place',
+        rating: details.rating ?? null,
+        userRatingCount: details.userRatingCount ?? null,
+        formattedAddress: details.formattedAddress ?? null,
+        photo: resolvedPhoto,
+      };
+    } catch {
+      return null;
+    }
+  }
 }

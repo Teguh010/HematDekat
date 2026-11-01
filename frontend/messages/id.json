@@ -107,6 +107,9 @@
     "lastUpdated": "Terakhir update {date}",
     "promoActive": "Promo aktif",
     "loading": "Memuat toko...",
+    "openInGoogleMaps": "Buka di Google Maps",
+    "reportThisPrice": "Laporkan harga di toko ini",
+    "placesData": "Data dari Google Maps",
     "storePageTitle": "{name} | HematDekat",
     "storePageDescription": "Lihat harga sembako dan promo terbaru di {name}."
   },
