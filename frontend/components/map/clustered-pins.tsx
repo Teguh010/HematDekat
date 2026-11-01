@@ -2,7 +2,7 @@
 
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useRef } from "react";
 
 import type { StoreSummary } from "@/lib/data/types";
 import { PricePin } from "./price-pin";
@@ -15,41 +15,121 @@ type ClusteredPinsProps = {
   onHover: (storeId: string | null) => void;
 };
 
-export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelect, onHover }: ClusteredPinsProps) {
-  const map = useMap();
-  const [markers, setMarkers] = useState<Record<string, google.maps.marker.AdvancedMarkerElement>>({});
+type PinProps = {
+  store: StoreSummary;
+  hovered: boolean;
+  selected: boolean;
+  onSelect: (storeId: string) => void;
+  onHover: (storeId: string | null) => void;
+  setMarkerRef: (marker: google.maps.marker.AdvancedMarkerElement | null, id: string) => void;
+};
 
-  const clusterer = useMemo(() => (map ? new MarkerClusterer({ map }) : null), [map]);
+const ClusteredPin = memo(function ClusteredPin({
+  store,
+  hovered,
+  selected,
+  onSelect,
+  onHover,
+  setMarkerRef,
+}: PinProps) {
+  // Keep the ref callback identity stable for this store so React does not
+  // call the previous ref with null on every parent re-render (hover/select).
+  const ref = useCallback(
+    (marker: google.maps.marker.AdvancedMarkerElement | null) => {
+      setMarkerRef(marker, store.id);
+    },
+    [setMarkerRef, store.id],
+  );
 
-  useEffect(() => {
-    if (!clusterer) return;
-    clusterer.clearMarkers();
-    clusterer.addMarkers(Object.values(markers));
-  }, [clusterer, markers]);
-
-  useEffect(() => () => clusterer?.setMap(null), [clusterer]);
-
-  const setMarkerRef = useCallback((marker: google.maps.marker.AdvancedMarkerElement | null, id: string) => {
-    setMarkers((previous) => {
-      if ((marker && previous[id]) || (!marker && !previous[id])) return previous;
-      if (marker) return { ...previous, [id]: marker };
-      const next = { ...previous };
-      delete next[id];
-      return next;
-    });
-  }, []);
-
-  return stores.map((store) => (
+  return (
     <AdvancedMarker
-      key={store.id}
       position={{ lat: store.lat, lng: store.lng }}
-      ref={(marker) => setMarkerRef(marker, store.id)}
+      ref={ref}
       onMouseEnter={() => onHover(store.id)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect(store.id)}
-      zIndex={store.id === selectedStoreId ? 10 : undefined}
+      zIndex={selected ? 10 : undefined}
     >
-      <PricePin store={store} hovered={store.id === hoveredStoreId} selected={store.id === selectedStoreId} />
+      <PricePin store={store} hovered={hovered} selected={selected} />
     </AdvancedMarker>
+  );
+});
+
+export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelect, onHover }: ClusteredPinsProps) {
+  const map = useMap();
+  const clustererRef = useRef<MarkerClusterer | null>(null);
+  const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
+
+    const clusterer = new MarkerClusterer({ map });
+    clustererRef.current = clusterer;
+
+    return () => {
+      clusterer.setMap(null);
+      clustererRef.current = null;
+    };
+  }, [map]);
+
+  const syncClusterer = useCallback(() => {
+    const clusterer = clustererRef.current;
+    if (!clusterer) {
+      return;
+    }
+
+    clusterer.clearMarkers();
+    clusterer.addMarkers([...markersRef.current.values()]);
+  }, []);
+
+  // Drop markers for stores that left the list (for example after a product change).
+  useEffect(() => {
+    const validIds = new Set(stores.map((store) => store.id));
+    let removed = false;
+
+    for (const id of markersRef.current.keys()) {
+      if (!validIds.has(id)) {
+        markersRef.current.delete(id);
+        removed = true;
+      }
+    }
+
+    if (removed) {
+      syncClusterer();
+    }
+  }, [stores, syncClusterer]);
+
+  const setMarkerRef = useCallback(
+    (marker: google.maps.marker.AdvancedMarkerElement | null, id: string) => {
+      const markers = markersRef.current;
+
+      if (marker) {
+        if (markers.get(id) === marker) {
+          return;
+        }
+        markers.set(id, marker);
+      } else if (markers.has(id)) {
+        markers.delete(id);
+      } else {
+        return;
+      }
+
+      syncClusterer();
+    },
+    [syncClusterer],
+  );
+
+  return stores.map((store) => (
+    <ClusteredPin
+      key={store.id}
+      store={store}
+      hovered={store.id === hoveredStoreId}
+      selected={store.id === selectedStoreId}
+      onSelect={onSelect}
+      onHover={onHover}
+      setMarkerRef={setMarkerRef}
+    />
   ));
 }

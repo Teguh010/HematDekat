@@ -75,7 +75,14 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions<T>): Pr
 
   const parsed = schema.safeParse(payload);
   if (!parsed.success) {
-    throw new ApiError(response.status, `Unexpected response shape from ${path}`);
+    const details = parsed.error.issues
+      .map((issue) => {
+        const path = issue.path.length > 0 ? issue.path.join(".") : "root";
+        return `${path}: ${issue.message}`;
+      })
+      .join("; ");
+
+    throw new ApiError(response.status, `Unexpected response shape from ${path}: ${details}`);
   }
 
   return parsed.data;

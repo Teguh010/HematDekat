@@ -5,14 +5,21 @@ import { listCities, listProducts, listStores } from "@/lib/data/repository";
 
 type HomePageParams = Record<string, string | string[] | undefined>;
 
+function firstParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 async function HomePageContent({ searchParams }: { searchParams: Promise<HomePageParams> }) {
   const params = await searchParams;
+  const [products, cities] = await Promise.all([listProducts(), listCities()]);
 
-  const [products, cities, initialPage] = await Promise.all([
-    listProducts(),
-    listCities(),
-    listStores({ limit: 20, product: Array.isArray(params.product) ? params.product[0] : params.product }),
-  ]);
+  const requestedProduct = firstParam(params.product);
+  const product =
+    requestedProduct && products.some((item) => item.slug === requestedProduct)
+      ? requestedProduct
+      : (products[0]?.slug ?? "beras-premium");
+
+  const initialPage = await listStores({ limit: 50, product });
 
   return <HomeExplorer products={products} cities={cities} initialPage={initialPage} params={params} />;
 }

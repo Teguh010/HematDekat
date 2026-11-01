@@ -29,8 +29,13 @@ export function HomeExplorer({ products, cities, initialPage, params }: HomeExpl
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const parsedParams = useMemo(() => parseSearchParams(Object.fromEntries(searchParams.entries())), [searchParams]);
+  const [mobileView, setMobileView] = useState<"map" | "list">("map");
+  const [hoveredStoreId, setHoveredStoreId] = useState<string | null>(null);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
   const updateProduct = (nextSlug: string) => {
+    setHoveredStoreId(null);
+    setSelectedStoreId(null);
     const nextQuery = buildSearchParams({ ...parsedParams, product: nextSlug });
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
   };
@@ -49,10 +54,6 @@ export function HomeExplorer({ products, cities, initialPage, params }: HomeExpl
     }
     return parsedParams.city ?? "all";
   }, [cities, params.city, parsedParams.city]);
-
-  const [mobileView, setMobileView] = useState<"map" | "list">("map");
-  const [hoveredStoreId, setHoveredStoreId] = useState<string | null>(null);
-  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
   const filteredStores = useMemo(() => {
     const q = (parsedParams.q ?? "").trim().toLowerCase();

@@ -53,7 +53,7 @@ function MapView({
         stores={stores}
         hoveredStoreId={hoveredStoreId}
         selectedStoreId={selectedStoreId}
-        onHover={onHoverStore ?? (() => undefined)}
+        onHover={(storeId) => onHoverStore?.(storeId)}
         onSelect={(storeId) => {
           onSelectStore?.(storeId);
           onHoverStore?.(storeId);

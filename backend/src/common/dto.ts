@@ -30,22 +30,55 @@ export type ProductDto = {
   defaultUnit: ReturnType<typeof toApiUnit>;
 };
 
-export type StoreSummaryDto = {
-  slug: string;
-  name: string;
-  city: string;
-  district: string | null;
-  type: ReturnType<typeof toApiStoreType>;
-  lat: number;
-  lng: number;
-  hasActivePromo: boolean;
-  priceSummary: PriceSummaryDto | null;
+export type PromoSummaryDto = {
+  id: string;
+  productSlug: string;
+  productName: string;
+  promoPrice: number | null;
+  discountPct: number | null;
+  conditions: string | null;
+  validFrom: string;
+  validTo: string;
+  confirmationCount: number;
 };
 
-export type StoreDetailDto = StoreSummaryDto & {
-  googleMapsUrl: string;
+export type StoreSummaryDto = {
+  id: string;
+  slug: string;
+  name: string;
+  type: ReturnType<typeof toApiStoreType>;
+  city: { slug: string; name: string };
+  district: string | null;
+  lat: number;
+  lng: number;
+  distanceKm: number | null;
+  price: PriceSummaryDto | null;
+  hasActivePromo: boolean;
+};
+
+export type StoreDetailDto = Omit<StoreSummaryDto, 'price' | 'distanceKm'> & {
+  placeId: string;
   prices: PriceSummaryDto[];
-  promos: Array<{ productSlug: string; promoPrice: number | null; discountPct: number | null; conditions: string | null; validFrom: string; validTo: string }>;
+  promos: PromoSummaryDto[];
+  googleMapsUrl: string;
+};
+
+export type PageDto<T> = {
+  items: T[];
+  total: number;
+  offset: number;
+  limit: number;
+};
+
+type StoreWithRelations = Store & {
+  city: Pick<City, 'slug' | 'name'>;
+  priceReports: Array<PriceReport & { product: Product }>;
+  promos: Array<
+    Promo & {
+      product?: Product;
+      _count?: { votes: number };
+    }
+  >;
 };
 
 export function activePromoWhere(now: Date): Prisma.PromoWhereInput {
@@ -106,49 +139,70 @@ export function toPriceSummary(report: PriceReport & { product: Product }): Pric
   };
 }
 
-export function toStoreSummary(
-  store: Store & {
-    city: Pick<City, 'slug' | 'name' | 'province' | 'centerLat' | 'centerLng'>;
-    priceReports: Array<PriceReport & { product: Product }>;
-    promos: Promo[];
-  },
-): StoreSummaryDto {
-  const current = store.priceReports[0] ?? null;
-
+export function toPromoSummary(
+  promo: Promo & { product: Product; _count?: { votes: number } },
+): PromoSummaryDto {
   return {
-    slug: store.slug,
-    name: store.name,
-    city: store.city.name,
-    district: store.district ?? null,
-    type: toApiStoreType(store.type),
-    lat: store.lat,
-    lng: store.lng,
-    hasActivePromo: store.promos.length > 0,
-    priceSummary: current ? toPriceSummary(current) : null,
+    id: promo.id,
+    productSlug: promo.product.slug,
+    productName: promo.product.name,
+    promoPrice: promo.promoPrice,
+    discountPct: promo.discountPct,
+    conditions: promo.conditions,
+    validFrom: promo.validFrom.toISOString(),
+    validTo: promo.validTo.toISOString(),
+    confirmationCount: promo._count?.votes ?? 0,
   };
 }
 
-export function toStoreDetail(
-  store: Store & {
-    city: Pick<City, 'slug' | 'name' | 'province' | 'centerLat' | 'centerLng'>;
-    priceReports: Array<PriceReport & { product: Product }>;
-    promos: Promo[];
-  },
-): StoreDetailDto {
-  const priceSummary = store.priceReports[0] ? toPriceSummary(store.priceReports[0]) : null;
+/** Keep the newest approved report per product (reports must already be ordered). */
+export function currentPricesByProduct(
+  reports: Array<PriceReport & { product: Product }>,
+): PriceSummaryDto[] {
+  const seen = new Set<string>();
+  const prices: PriceSummaryDto[] = [];
+
+  for (const report of reports) {
+    if (seen.has(report.productId)) {
+      continue;
+    }
+
+    seen.add(report.productId);
+    prices.push(toPriceSummary(report));
+  }
+
+  return prices.sort((a, b) => a.productName.localeCompare(b.productName));
+}
+
+export function toStoreSummary(store: StoreWithRelations): StoreSummaryDto {
+  const current = store.priceReports[0] ?? null;
 
   return {
-    ...toStoreSummary(store),
-    googleMapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.name} ${store.city.name}`)}`,
-    prices: store.priceReports.map((report) => toPriceSummary(report)),
-    promos: store.promos.map((promo) => ({
-      productSlug: promo.productId,
-      promoPrice: promo.promoPrice,
-      discountPct: promo.discountPct,
-      conditions: promo.conditions,
-      validFrom: promo.validFrom.toISOString(),
-      validTo: promo.validTo.toISOString(),
-    })),
-    priceSummary,
+    id: store.id,
+    slug: store.slug,
+    name: store.name,
+    type: toApiStoreType(store.type),
+    city: { slug: store.city.slug, name: store.city.name },
+    district: store.district ?? null,
+    lat: store.lat,
+    lng: store.lng,
+    distanceKm: null,
+    price: current ? toPriceSummary(current) : null,
+    hasActivePromo: store.promos.length > 0,
+  };
+}
+
+export function toStoreDetail(store: StoreWithRelations): StoreDetailDto {
+  const { price: _price, distanceKm: _distanceKm, ...summary } = toStoreSummary(store);
+
+  return {
+    ...summary,
+    placeId: store.placeId,
+    prices: currentPricesByProduct(store.priceReports),
+    promos: store.promos
+      .filter((promo): promo is Promo & { product: Product; _count?: { votes: number } } => Boolean(promo.product))
+      .map(toPromoSummary)
+      .sort((a, b) => a.validTo.localeCompare(b.validTo)),
+    googleMapsUrl: `https://www.google.com/maps/search/?api=1&query=${store.lat},${store.lng}&query_place_id=${encodeURIComponent(store.placeId)}`,
   };
 }

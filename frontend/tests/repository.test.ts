@@ -35,6 +35,8 @@ test("invalid repository payloads reject with ApiError/zod validation", async ()
   try {
     await assert.rejects(() => listStores(), (error: unknown) => {
       assert.ok(error instanceof ApiError);
+      assert.match(error.message, /Unexpected response shape from \/stores/);
+      assert.match(error.message, /items/);
       return true;
     });
   } finally {
