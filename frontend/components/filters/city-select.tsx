@@ -15,7 +15,13 @@ export function CitySelect({ cities }: { cities: City[] }) {
   const selectedCity = parsed.city ?? "all";
 
   const handleChange = (nextCity: string) => {
-    const nextQuery = buildSearchParams({ ...parsed, city: nextCity === "all" ? undefined : nextCity });
+    const nextQuery = buildSearchParams({
+      ...parsed,
+      city: nextCity === "all" ? undefined : nextCity,
+      bbox: undefined,
+      lat: undefined,
+      lng: undefined,
+    });
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
   };
 
