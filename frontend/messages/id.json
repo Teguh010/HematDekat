@@ -51,6 +51,8 @@
     "searchPlaceholder": "Cari toko atau kecamatan",
     "cityLabel": "Kota",
     "locateMe": "Cari di sekitar saya",
+    "locationDenied": "Izin lokasi ditolak",
+    "clearSearch": "Hapus pencarian",
     "filter": "Filter",
     "showMap": "Tampilkan peta",
     "showList": "Tampilkan daftar",
@@ -63,7 +65,34 @@
       "telurAyam": "Telur ayam"
     }
   },
-  "filters": {},
+  "filters": {
+    "title": "Filter",
+    "close": "Tutup",
+    "storeType": "Tipe toko",
+    "maxPrice": "Harga maksimal",
+    "promoOnly": "Promo saja",
+    "freshness": "Kebaruan",
+    "freshnessOptions": {
+      "all": "Semua",
+      "3": "3 hari",
+      "14": "14 hari",
+      "30": "30 hari"
+    },
+    "sort": "Urutkan",
+    "sortOptions": {
+      "cheapest": "Termurah",
+      "nearest": "Terdekat",
+      "recent": "Terbaru"
+    },
+    "types": {
+      "supermarket": "Supermarket",
+      "minimarket": "Minimarket",
+      "market": "Pasar",
+      "groceryStall": "Toko kelontong"
+    },
+    "apply": "Terapkan",
+    "reset": "Reset"
+  },
   "map": {
     "apiKeyMissing": "Google Maps API key belum tersedia. Isi variabel NEXT_PUBLIC_GOOGLE_MAPS_API_KEY di .env.local."
   },
