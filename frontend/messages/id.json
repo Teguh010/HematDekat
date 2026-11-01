@@ -124,11 +124,13 @@
     "cityLabel": "Kota",
     "allCities": "Semua kota",
     "introFallback": "Bandingkan harga sembako dan promo di kota ini.",
-    "intro.jakarta": "Jakarta punya banyak pilihan pasar, minimarket, dan supermarket. Bandingkan harga kebutuhan pokok di berbagai lokasi agar belanja tetap hemat.",
-    "intro.bandung": "Bandung menawarkan kombinasi pasar tradisional dan gerai modern. Cari harga sembako paling kompetitif di kota ini sebelum berbelanja.",
-    "intro.yogyakarta": "Yogyakarta dikenal dengan pasar tradisional yang ramai dan harga yang sering berubah. Lihat perbandingan harga di berbagai wilayah agar tetap mendapat penawaran terbaik.",
-    "intro.surabaya": "Surabaya punya banyak pusat kebutuhan pokok dengan variasi harga. Gunakan peta untuk membandingkan toko terdekat dan harga termurah di wilayahmu.",
-    "intro.medan": "Medan punya jaringan toko dan pasar yang luas untuk kebutuhan pokok sehari-hari. Bandingkan harga di beberapa lokasi untuk menemukan pilihan paling irit.",
+    "intro": {
+      "jakarta": "Jakarta punya banyak pilihan pasar, minimarket, dan supermarket. Bandingkan harga kebutuhan pokok di berbagai lokasi agar belanja tetap hemat.",
+      "bandung": "Bandung menawarkan kombinasi pasar tradisional dan gerai modern. Cari harga sembako paling kompetitif di kota ini sebelum berbelanja.",
+      "yogyakarta": "Yogyakarta dikenal dengan pasar tradisional yang ramai dan harga yang sering berubah. Lihat perbandingan harga di berbagai wilayah agar tetap mendapat penawaran terbaik.",
+      "surabaya": "Surabaya punya banyak pusat kebutuhan pokok dengan variasi harga. Gunakan peta untuk membandingkan toko terdekat dan harga termurah di wilayahmu.",
+      "medan": "Medan punya jaringan toko dan pasar yang luas untuk kebutuhan pokok sehari-hari. Bandingkan harga di beberapa lokasi untuk menemukan pilihan paling irit."
+    },
     "cityPageTitle": "{name} | HematDekat",
     "cityPageDescription": "Bandingkan harga sembako dan promo di {name}."
   },
