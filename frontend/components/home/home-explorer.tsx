@@ -21,9 +21,10 @@ type HomeExplorerProps = {
   cities: City[];
   initialPage: Page<StoreSummary>;
   params: Record<string, string | string[] | undefined>;
+  lockedCity?: string;
 };
 
-export function HomeExplorer({ products, cities, initialPage, params }: HomeExplorerProps) {
+export function HomeExplorer({ products, cities, initialPage, params, lockedCity }: HomeExplorerProps) {
   const t = useTranslations("home");
   const router = useRouter();
   const pathname = usePathname();
@@ -48,12 +49,16 @@ export function HomeExplorer({ products, cities, initialPage, params }: HomeExpl
   }, [params.product, parsedParams.product, products]);
 
   const activeCity = useMemo(() => {
+    if (lockedCity) {
+      return lockedCity;
+    }
+
     const cityParam = Array.isArray(params.city) ? params.city[0] : params.city;
     if (cityParam && cities.some((city) => city.slug === cityParam)) {
       return cityParam;
     }
     return parsedParams.city ?? "all";
-  }, [cities, params.city, parsedParams.city]);
+  }, [cities, lockedCity, params.city, parsedParams.city]);
 
   const filteredStores = useMemo(() => {
     const q = (parsedParams.q ?? "").trim().toLowerCase();
@@ -153,7 +158,7 @@ export function HomeExplorer({ products, cities, initialPage, params }: HomeExpl
             <SearchBar />
 
             <div className="flex flex-wrap items-center gap-2">
-              <CitySelect cities={cities} />
+              {!lockedCity ? <CitySelect cities={cities} /> : null}
               <LocateMeButton />
               <FilterPanel />
             </div>
