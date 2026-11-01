@@ -42,11 +42,12 @@ export function HomeExplorer({ products, cities, initialPage, params, lockedCity
   };
 
   const activeProduct = useMemo(() => {
-    if (params.product && products.some((product) => product.slug === params.product)) {
-      return Array.isArray(params.product) ? params.product[0] : params.product;
+    // parsedParams.product always has a value (defaults to beras-premium).
+    if (parsedParams.product && products.some((product) => product.slug === parsedParams.product)) {
+      return parsedParams.product;
     }
-    return parsedParams.product ?? products[0]?.slug ?? "";
-  }, [params.product, parsedParams.product, products]);
+    return products.find((product) => product.slug === "beras-premium")?.slug ?? products[0]?.slug ?? "";
+  }, [parsedParams.product, products]);
 
   const activeCity = useMemo(() => {
     if (lockedCity) {

@@ -2,22 +2,21 @@ import { Suspense } from "react";
 
 import { HomeExplorer } from "@/components/home/home-explorer";
 import { listCities, listProducts, listStores } from "@/lib/data/repository";
+import { parseSearchParams } from "@/lib/search-params";
 
 type HomePageParams = Record<string, string | string[] | undefined>;
-
-function firstParam(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
 
 async function HomePageContent({ searchParams }: { searchParams: Promise<HomePageParams> }) {
   const params = await searchParams;
   const [products, cities] = await Promise.all([listProducts(), listCities()]);
+  const parsed = parseSearchParams(params);
 
-  const requestedProduct = firstParam(params.product);
+  // Must match home-explorer's activeProduct (parseSearchParams defaults to beras-premium).
+  // Using products[0] here previously fetched ayam-broiler while the UI filtered for beras-premium.
   const product =
-    requestedProduct && products.some((item) => item.slug === requestedProduct)
-      ? requestedProduct
-      : (products[0]?.slug ?? "beras-premium");
+    parsed.product && products.some((item) => item.slug === parsed.product)
+      ? parsed.product
+      : (products.find((item) => item.slug === "beras-premium")?.slug ?? products[0]?.slug ?? "beras-premium");
 
   const initialPage = await listStores({ limit: 50, product });
 
