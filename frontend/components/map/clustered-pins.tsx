@@ -91,7 +91,7 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
           svg.setAttribute("height", String(size));
           svg.setAttribute("aria-hidden", "true");
 
-          for (const [radius, opacity] of [["92", "0.28"]] as const) {
+          for (const [radius, opacity] of [["92", "0.78"]] as const) {
             const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             circle.setAttribute("cx", "120");
             circle.setAttribute("cy", "120");
@@ -99,6 +99,16 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
             circle.setAttribute("fill", "var(--color-brand-600)");
             circle.setAttribute("opacity", opacity);
             svg.append(circle);
+
+            // Stroke sits on its own shape so the white ring stays solid while the fill stays translucent.
+            const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            ring.setAttribute("cx", "120");
+            ring.setAttribute("cy", "120");
+            ring.setAttribute("r", radius);
+            ring.setAttribute("fill", "none");
+            ring.setAttribute("stroke", "var(--color-surface)");
+            ring.setAttribute("stroke-width", "10");
+            svg.append(ring);
           }
 
           const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -106,7 +116,7 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
           label.setAttribute("y", "120");
           label.setAttribute("text-anchor", "middle");
           label.setAttribute("dominant-baseline", "central");
-          label.setAttribute("fill", "var(--color-brand-800)");
+          label.setAttribute("fill", "var(--color-on-brand)");
           label.setAttribute("font-size", "72");
           label.setAttribute("font-weight", "700");
           label.textContent = String(count);
