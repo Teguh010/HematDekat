@@ -801,7 +801,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - C11. Anti-abuse
   - [x] C11.1 Rate limits
   - [x] C11.2 Outlier flags
-  - [ ] C11.3 Admin page upgrade
+  - [x] C11.3 Admin page upgrade
 - C12. Static pages, SEO, polish
   - [ ] C12.1 Static pages
   - [ ] C12.2 SEO files

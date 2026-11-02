@@ -174,7 +174,6 @@
     "genericError": "Terjadi masalah. Silakan coba lagi.",
     "noData": "Belum ada data",
     "currencySymbol": "Rp",
-    "quantityPlaceholder": "1",
     "loading": "Memuat halaman masuk..."
   },
   "auth": {
@@ -218,12 +217,18 @@
     "statusFailure": "Gagal mengubah status moderasi.",
     "loading": "Memuat item moderasi...",
     "noItems": "Tidak ada item moderasi yang tertunda.",
+    "noFlaggedItems": "Tidak ada item mencurigakan yang tertunda.",
     "pending": "Pending",
     "approve": "Approve",
     "reject": "Reject",
     "reporter": "Reporter",
     "submitter": "Submitter",
-    "backToMap": "Ke peta"
+    "backToMap": "Ke peta",
+    "flagged": "Mencurigakan",
+    "onlyFlagged": "Hanya yang mencurigakan",
+    "discount": "{pct}% diskon",
+    "validRange": "{from} – {to}",
+    "submittedAt": "Dilaporkan {date}"
   },
   "vote": {
     "confirm": "Harga masih sama",
