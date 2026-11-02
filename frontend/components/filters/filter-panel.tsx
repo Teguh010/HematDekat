@@ -241,7 +241,7 @@ export function FilterPanel() {
               <button
                 type="button"
                 onClick={applyFilters}
-                className="h-9 flex-1 rounded-lg bg-brand-600 px-4 text-sm font-medium text-on-brand hover:bg-brand-700 focus-ring"
+                className="h-9 flex-1 rounded-full bg-brand-600 px-4 text-sm font-medium text-on-brand hover:bg-brand-700 focus-ring"
               >
                 {t("apply")}
               </button>

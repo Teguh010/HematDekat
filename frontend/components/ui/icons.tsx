@@ -80,3 +80,23 @@ export function ListIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Small rice-sack mark. Face cutouts use the light brand tint so they read on the sack. */
+export function BrandMark(props: IconProps) {
+  return (
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
+      <path
+        fill="currentColor"
+        d="M11.2 12.2c0-1.5 1-2.6 2.2-3.3C12.4 7.4 13.6 6 16 6s3.6 1.4 2.6 2.9c1.2.7 2.2 1.8 2.2 3.3 2 .6 3.7 2.3 3.7 4.8 0 4.6-3.2 8.2-8.5 8.2s-8.5-3.6-8.5-8.2c0-2.5 1.7-4.2 3.7-4.8Z"
+      />
+      <circle cx="13.4" cy="17.6" r="1.15" fill="var(--color-brand-50)" />
+      <circle cx="18.6" cy="17.6" r="1.15" fill="var(--color-brand-50)" />
+      <path
+        d="M13 20.4c.9 1.1 1.8 1.6 3 1.6s2.1-.5 3-1.6"
+        stroke="var(--color-brand-50)"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}

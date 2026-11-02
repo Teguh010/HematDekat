@@ -1,13 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="HematDekat logo">
-  <defs>
-    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#0f766e"/>
-    </linearGradient>
-  </defs>
-  <rect width="128" height="128" rx="28" fill="#020617"/>
-  <rect x="12" y="12" width="104" height="104" rx="22" fill="url(#bg)"/>
-  <path d="M36 46c0-7.7 6.3-14 14-14h28c7.7 0 14 6.3 14 14v33c0 7.7-6.3 14-14 14H50c-7.7 0-14-6.3-14-14V46Zm10 0v33h28V46H46Zm7 15h14v7H53v-7Zm20 0h14v7H73v-7Z" fill="#f8fafc"/>
-  <circle cx="92" cy="40" r="13" fill="#f8fafc"/>
-  <path d="M92 31v18M83 40h18" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="HematDekat">
+  <rect width="128" height="128" rx="32" fill="#FFF6EE"/>
+  <circle cx="64" cy="64" r="46" fill="#C2412D"/>
+  <g transform="translate(32 28) scale(2)">
+    <path fill="#FFF6EE" d="M11.2 12.2c0-1.5 1-2.6 2.2-3.3C12.4 7.4 13.6 6 16 6s3.6 1.4 2.6 2.9c1.2.7 2.2 1.8 2.2 3.3 2 .6 3.7 2.3 3.7 4.8 0 4.6-3.2 8.2-8.5 8.2s-8.5-3.6-8.5-8.2c0-2.5 1.7-4.2 3.7-4.8Z"/>
+    <circle cx="13.4" cy="17.6" r="1.15" fill="#C2412D"/>
+    <circle cx="18.6" cy="17.6" r="1.15" fill="#C2412D"/>
+    <path d="M13 20.4c.9 1.1 1.8 1.6 3 1.6s2.1-.5 3-1.6" fill="none" stroke="#C2412D" stroke-width="1.4" stroke-linecap="round"/>
+  </g>
 </svg>

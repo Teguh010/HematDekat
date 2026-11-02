@@ -18,8 +18,8 @@ export default function Image() {
           width: "100%",
           height: "100%",
           padding: 80,
-          background: "#f8fafc",
-          color: "#0f172a",
+          background: "#fff6ee",
+          color: "#2c211e",
           fontFamily: "sans-serif",
         }}
       >
@@ -31,7 +31,7 @@ export default function Image() {
             width: "100%",
             height: "100%",
             padding: 48,
-            border: "2px solid #e2e8f0",
+            border: "2px solid #eadfd6",
             borderRadius: 24,
             background: "#ffffff",
           }}
@@ -45,7 +45,7 @@ export default function Image() {
                 width: 72,
                 height: 72,
                 borderRadius: 20,
-                background: "#059669",
+                background: "#c2412d",
                 color: "#ffffff",
                 fontSize: 28,
                 fontWeight: 800,
@@ -54,7 +54,7 @@ export default function Image() {
               H
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: 32, fontWeight: 700, color: "#047857" }}>HematDekat</span>
+              <span style={{ fontSize: 32, fontWeight: 700, color: "#c2412d" }}>HematDekat</span>
             </div>
           </div>
 
@@ -62,12 +62,12 @@ export default function Image() {
             <div style={{ fontSize: 78, fontWeight: 800, lineHeight: 1.05 }}>
               Cari sembako termurah
             </div>
-            <div style={{ fontSize: 34, color: "#475569", lineHeight: 1.3 }}>
+            <div style={{ fontSize: 34, color: "#6f5b55", lineHeight: 1.3 }}>
               di dekatmu, dengan data dari pasar, toko, dan komunitas.
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 28, color: "#334155" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 28, color: "#5c4a44" }}>
             <span>Bandingkan harga</span>
             <span>Konfirmasi harga</span>
           </div>

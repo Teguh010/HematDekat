@@ -53,7 +53,7 @@ export function StoreCard({
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <h3 className="truncate text-sm font-medium text-ink-900">{store.name}</h3>
-          {store.hasActivePromo ? <Badge variant="success">{t("promo")}</Badge> : null}
+          {store.hasActivePromo ? <Badge variant="warning">{t("promo")}</Badge> : null}
         </div>
         {unitPrice !== null ? (
           <span className="shrink-0 text-sm font-semibold text-brand-700">{formatUnitPrice(unitPrice, unitLabel)}</span>

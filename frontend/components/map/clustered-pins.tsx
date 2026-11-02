@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 
 import type { StoreSummary } from "@/lib/data/types";
 import { formatRupiah } from "@/lib/format";
+import { toneForProduct } from "@/lib/product-tones";
 
 type ClusteredPinsProps = {
   stores: StoreSummary[];
@@ -36,10 +37,19 @@ function paintPin(content: HTMLElement, store: StoreSummary, state: { hovered: b
       state.selected ? "bg-ink-900" : "bg-ink-400"
     }`;
   } else {
-    face.textContent = formatRupiah(price);
-    const tone = state.selected ? "bg-ink-900" : state.hovered ? "bg-brand-700" : "bg-brand-600";
-    const ring = state.selected ? "ring-2 shadow-md" : "ring-1 shadow-sm";
-    face.className = `whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold leading-4 text-on-brand ring-surface ${ring} ${tone}`;
+    const shell = state.selected
+      ? "bg-brand-600 text-on-brand ring-2 ring-surface"
+      : state.hovered
+        ? "bg-brand-50 text-brand-800 ring-1 ring-brand-200"
+        : "bg-surface text-brand-700 ring-1 ring-ink-200";
+    face.className = `inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold leading-4 shadow-warm ${shell}`;
+
+    const dot = document.createElement("span");
+    dot.setAttribute("aria-hidden", "true");
+    dot.className = `inline-block h-2 w-2 shrink-0 rounded-full ${
+      state.selected ? "bg-surface" : toneForProduct(store.price?.productSlug).dot
+    }`;
+    face.append(dot, document.createTextNode(formatRupiah(price)));
   }
 
   button.appendChild(face);
@@ -76,7 +86,7 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
           const element = document.createElement("div");
           element.textContent = String(count);
           element.className =
-            "flex items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-on-brand shadow-md ring-2 ring-surface";
+            "flex items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-on-brand shadow-warm ring-2 ring-surface";
           element.style.width = `${size}px`;
           element.style.height = `${size}px`;
 

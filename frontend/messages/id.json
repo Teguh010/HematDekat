@@ -59,6 +59,9 @@
     "showList": "Tampilkan daftar",
     "emptyStores": "Belum ada harga untuk produk ini di area ini.",
     "noPrice": "Belum ada harga",
+    "helloTitle": "Sembako murah, di dekat rumah.",
+    "helloBody": "Bandingkan harga pasar, bukan tebakan.",
+    "helloClose": "Tutup tips",
     "productNames": {
       "berasPremium": "Beras premium",
       "minyakGorengCurah": "Minyak goreng curah",

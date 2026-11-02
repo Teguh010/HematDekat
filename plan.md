@@ -38,7 +38,7 @@ HematDekat is a Next.js web app for finding where staple groceries (sembako) are
 - Staple products (seeded; slug in brackets): Beras premium (`beras-premium`, kg), Minyak goreng curah (`minyak-goreng-curah`, liter), Gula pasir (`gula-pasir`, kg), Telur ayam (`telur-ayam`, pcs), Tepung terigu (`tepung-terigu`, kg), Garam (`garam`, kg), Mie instan (`mie-instan`, pack), Cabai merah (`cabai-merah`, kg), Bawang merah (`bawang-merah`, kg), Bawang putih (`bawang-putih`, kg), Ayam broiler (`ayam-broiler`, kg), Daging sapi (`daging-sapi`, kg), Ikan bandeng (`ikan-bandeng`, kg).
 - Ratings and photos: never on list cards or map pins. Only the store detail page fetches rating and one photo fresh from Places through the backend.
 - Activity feed UI: not part of the MVP. The backend keeps writing `Activity` rows (used later by Phase D).
-- Design: light, clean, compact, with an emerald accent (decided 2026-11-02, see Phase U). The tokens are in "Design system" (pointing to "Target design tokens" in Phase U).
+- Design: light, compact, warm "pasar pagi" (user request 2026-11-02, after Phase UT). Cream canvas, warm brown text, coral for prices and actions, mint for fresh/success, pastel product chips. Tokens live in `frontend/app/globals.css`. Phase U's emerald table is the previous theme.
 
 ## Implementation rules
 
@@ -159,7 +159,7 @@ Repository files:
 
 ## Design system
 
-The design tokens (light, compact theme) are the table "Target design tokens (light, compact)" in Phase U below. Use only those classes; do not invent new colors, radii, or font sizes. Base components in `components/ui/` encode them (C2.6, restyled in U1; `ui/card.tsx` and `ui/icons.tsx` added in U1).
+Current theme is "pasar pagi": tokens in `frontend/app/globals.css` (`brand` coral, `ink` warm cream/brown, `good` mint, `warn` butter, plus `peach`, `blush`, `lilac`, `mist`, `berry` for product chips). Product chip mapping is `frontend/lib/product-tones.ts`. The Phase U table below is the previous emerald theme. Base components in `components/ui/` encode the shared pieces (C2.6, restyled in U1; `ui/card.tsx` and `ui/icons.tsx` added in U1).
 
 ## Target UX
 
@@ -1022,3 +1022,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - [x] UT4. Shared layout components
 - [x] UT5. Guard test
 - [x] UT6. Document
+
+### Phase V: Pasar pagi theme (user request 2026-11-02)
+
+- [x] V1. Warm tokens, pastel product chips, price pills, hello card

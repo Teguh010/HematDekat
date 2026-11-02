@@ -6,32 +6,33 @@
  * components only use the token names (brand-*, ink-*, danger-*, warn-*, surface, on-brand).
  */
 @theme static {
-  /* Brand (accent) */
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
+  /* Brand: terracotta coral. Prices, primary buttons, selected pins.
+     600 is dark enough for white text (about 5:1). 700 is price text on white. */
+  --color-brand-50: #fff1ee;
+  --color-brand-100: #ffe0d9;
+  --color-brand-200: #ffc7bc;
+  --color-brand-300: #ffa894;
+  --color-brand-400: #f08470;
+  --color-brand-500: #e25b48;
+  --color-brand-600: #c2412d;
+  --color-brand-700: #9f3222;
+  --color-brand-800: #7f291c;
+  --color-brand-900: #5c1c14;
 
-  /* Ink (neutrals: text, borders, page background) */
-  --color-ink-50: #f8fafc;
-  --color-ink-100: #f1f5f9;
-  --color-ink-200: #e2e8f0;
-  --color-ink-300: #cbd5e1;
-  --color-ink-400: #94a3b8;
-  --color-ink-500: #64748b;
-  --color-ink-600: #475569;
-  --color-ink-700: #334155;
-  --color-ink-800: #1e293b;
-  --color-ink-900: #0f172a;
-  --color-ink-950: #020617;
+  /* Ink: warm cream canvas and brown text. 500 is meta text (about 6:1 on white). */
+  --color-ink-50: #fff6ee;
+  --color-ink-100: #f6ebe3;
+  --color-ink-200: #eadfd6;
+  --color-ink-300: #d9c9be;
+  --color-ink-400: #8f7a72;
+  --color-ink-500: #6f5b55;
+  --color-ink-600: #5c4a44;
+  --color-ink-700: #4a3b36;
+  --color-ink-800: #3d2c29;
+  --color-ink-900: #2c211e;
+  --color-ink-950: #1a1412;
 
-  /* Danger (errors) */
+  /* Danger (errors). Kept as red so it stays distinct from the coral brand. */
   --color-danger-50: #fef2f2;
   --color-danger-100: #fee2e2;
   --color-danger-200: #fecaca;
@@ -43,17 +44,60 @@
   --color-danger-800: #991b1b;
   --color-danger-900: #7f1d1d;
 
-  /* Warn (warnings, recent prices) */
-  --color-warn-50: #fffbeb;
-  --color-warn-100: #fef3c7;
-  --color-warn-200: #fde68a;
-  --color-warn-300: #fcd34d;
-  --color-warn-400: #fbbf24;
-  --color-warn-500: #f59e0b;
-  --color-warn-600: #d97706;
-  --color-warn-700: #b45309;
-  --color-warn-800: #92400e;
-  --color-warn-900: #78350f;
+  /* Warn: butter. Promo badges, recent prices, rice chips. */
+  --color-warn-50: #fff8e6;
+  --color-warn-100: #fff3c4;
+  --color-warn-200: #fde7a0;
+  --color-warn-300: #f5d56a;
+  --color-warn-400: #e8c04a;
+  --color-warn-500: #d4a017;
+  --color-warn-600: #b8860b;
+  --color-warn-700: #8a5a00;
+  --color-warn-800: #6b4500;
+  --color-warn-900: #4a3000;
+
+  /* Good: mint. Fresh prices and success states. */
+  --color-good-50: #e7f6ee;
+  --color-good-100: #d3efe0;
+  --color-good-200: #b7e4c7;
+  --color-good-300: #8fd4ae;
+  --color-good-400: #5ebe8e;
+  --color-good-500: #2f9e6b;
+  --color-good-600: #1f7a4d;
+  --color-good-700: #146b3a;
+  --color-good-800: #0f5430;
+  --color-good-900: #0b3d23;
+
+  /* Soft product-chip families. Names avoid Tailwind palette words. */
+  --color-peach-50: #fff0e6;
+  --color-peach-100: #ffe0d0;
+  --color-peach-200: #ffc9b0;
+  --color-peach-400: #e08a62;
+  --color-peach-800: #9a4030;
+
+  --color-blush-50: #fff0f5;
+  --color-blush-100: #ffe0ea;
+  --color-blush-200: #ffc4d6;
+  --color-blush-400: #e08aa3;
+  --color-blush-800: #8e3a58;
+
+  --color-lilac-50: #f4eeff;
+  --color-lilac-100: #e6dcff;
+  --color-lilac-200: #d2c2f5;
+  --color-lilac-400: #9b84d4;
+  --color-lilac-800: #53408a;
+
+  --color-mist-50: #eaf5ff;
+  --color-mist-100: #d6ecff;
+  --color-mist-200: #b9dbf7;
+  --color-mist-400: #6aa4d4;
+  --color-mist-800: #1e5680;
+
+  --color-berry-50: #fff0f0;
+  --color-berry-100: #ffdcdc;
+  --color-berry-200: #ffc4c4;
+  --color-berry-400: #e08a8a;
+  --color-berry-800: #8e3030;
 
   /* Surfaces */
   --color-surface: #ffffff;
@@ -61,8 +105,13 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-plus-jakarta);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Soft warm lift for floating panels and map pins. */
+@utility shadow-warm {
+  box-shadow: 0 10px 28px rgb(61 44 41 / 0.12);
 }
 
 /* Keyboard focus ring shared by every interactive element. */
@@ -80,7 +129,7 @@ html {
 body {
   background: var(--color-ink-50);
   color: var(--color-ink-900);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-plus-jakarta), system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;

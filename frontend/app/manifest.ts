@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Cari sembako termurah di dekatmu",
     start_url: "/",
     display: "standalone",
-    theme_color: "#ffffff",
-    background_color: "#f8fafc",
+    theme_color: "#fff6ee",
+    background_color: "#fff6ee",
     icons: [
       {
         src: "/icon.svg",

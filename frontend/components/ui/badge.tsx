@@ -8,7 +8,7 @@ type BadgeProps = {
 
 const variantClasses: Record<BadgeVariant, string> = {
   default: "bg-ink-100 text-ink-700",
-  success: "bg-brand-50 text-brand-700",
+  success: "bg-good-50 text-good-700",
   warning: "bg-warn-50 text-warn-700",
   danger: "bg-danger-50 text-danger-700",
   muted: "bg-ink-100 text-ink-600",

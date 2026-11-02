@@ -151,7 +151,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </h1>
 
         {searchParams.get("auth") === "google-success" ? (
-          <div role="status" className="mt-3 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-800">
+          <div role="status" className="mt-3 rounded-lg border border-good-200 bg-good-50 px-3 py-2 text-sm text-good-800">
             {t("googleSuccess")}
           </div>
         ) : null}

@@ -718,9 +718,11 @@ To mock the backend in repository tests, replace `global.fetch` and restore it i
 
 ### Theming
 
-Colors live only in `frontend/app/globals.css` as tokens: `brand-*` (accent), `ink-*` (neutral), `danger-*`, `warn-*`, `surface`, `on-brand`. Components use the token names (`bg-brand-600`, `text-ink-700`, `bg-surface`, `text-on-brand`), never raw palette classes (`emerald-600`, `slate-700`) or hex values. `tests/design-tokens.test.ts` fails when one slips in.
+Colors live only in `frontend/app/globals.css` as tokens: `brand-*` (coral: prices and primary actions), `ink-*` (warm cream and brown), `danger-*`, `warn-*` (butter), `good-*` (mint, for fresh and success), `peach-*`, `blush-*`, `lilac-*`, `mist-*`, `berry-*` (product chips), `surface`, `on-brand`. Floating panels and pins use the `shadow-warm` utility from the same file. Components use those token names (`bg-brand-600`, `text-ink-700`, `bg-surface`, `text-on-brand`), never raw palette classes (`emerald-600`, `slate-700`) or hex values. `tests/design-tokens.test.ts` fails when one slips in.
 
-Change the brand color: edit the `--color-brand-*` values in `globals.css`. Nothing else changes.
+Product chip colors are chosen in `frontend/lib/product-tones.ts`. Add a staple there instead of hardcoding a color in the chip.
+
+Change the brand color: edit the `--color-brand-*` values in `globals.css`. Buttons, prices, and pins follow. Chip pastels stay on their own scales.
 
 ```css
 /* app/globals.css */

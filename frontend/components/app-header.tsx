@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { UserMenu } from "@/components/user-menu";
-import { CloseIcon, FilterIcon } from "@/components/ui/icons";
+import { BrandMark, CloseIcon, FilterIcon } from "@/components/ui/icons";
 
 const navLinkClasses =
   "text-sm text-ink-600 transition-colors hover:text-ink-900 focus-ring";
@@ -31,11 +31,11 @@ export function AppHeader() {
 
   return (
     <header className="relative z-40 shrink-0 border-b border-ink-200 bg-surface">
-      <div className="mx-auto flex h-10 max-w-7xl items-center justify-between gap-4 px-4">
-        <Link
-          href="/"
-          className="text-base font-semibold text-ink-900 focus-ring"
-        >
+      <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-4 px-4">
+        <Link href="/" className="inline-flex items-center gap-2 text-base font-semibold text-ink-900 focus-ring">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+            <BrandMark className="h-7 w-7" />
+          </span>
           {t("brand")}
         </Link>
 

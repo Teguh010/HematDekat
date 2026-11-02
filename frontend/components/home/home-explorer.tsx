@@ -13,6 +13,7 @@ import { listStores } from "@/lib/data/repository";
 import { daysSince } from "@/lib/format";
 import { buildSearchParams, parseSearchParams } from "@/lib/search-params";
 import type { City, Page, Product, StoreSummary } from "@/lib/data/types";
+import { MapHello } from "./map-hello";
 import { ProductSelector } from "./product-selector";
 import { StoreCard } from "./store-card";
 import { MobileViewToggle } from "./mobile-view-toggle";
@@ -210,8 +211,8 @@ export function HomeExplorer({
         </div>
       </div>
 
-      <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
-        <aside className="flex w-[360px] shrink-0 flex-col overflow-hidden border-r border-ink-200 bg-surface">
+      <div className="hidden min-h-0 flex-1 gap-3 overflow-hidden p-3 lg:flex">
+        <aside className="flex w-[360px] shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-200 bg-surface shadow-warm">
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-ink-200 px-3 py-2">
             <h2 className="text-sm font-semibold text-ink-900">{t("nearestStores")}</h2>
             <span aria-live="polite" className="text-xs text-ink-500">{t("resultCount", { count: filteredStores.length })}</span>
@@ -230,7 +231,7 @@ export function HomeExplorer({
           </div>
         </aside>
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-ink-100">
+        <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl shadow-warm">
           <StoreMap
             stores={filteredStores}
             apiKey={apiKey}
@@ -241,12 +242,13 @@ export function HomeExplorer({
             onSelectStore={setSelectedStoreId}
             onHoverStore={setHoveredStoreId}
           />
+          <MapHello />
         </div>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
         {mobileView === "map" ? (
-          <div className="min-h-0 w-full flex-1 overflow-hidden bg-ink-100">
+          <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-ink-100">
             <StoreMap
               stores={filteredStores}
               apiKey={apiKey}
@@ -257,6 +259,7 @@ export function HomeExplorer({
               onSelectStore={setSelectedStoreId}
               onHoverStore={setHoveredStoreId}
             />
+            <MapHello placement="mobile" />
           </div>
         ) : (
           <div className="min-h-0 w-full flex-1 overflow-y-auto bg-surface pb-14">

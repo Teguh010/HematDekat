@@ -16,7 +16,7 @@ export function MobileViewToggle({ value, onChange }: MobileViewToggleProps) {
   const t = useTranslations("home");
 
   return (
-    <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-ink-200 bg-surface p-0.5 shadow-sm lg:hidden">
+    <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-ink-200 bg-surface p-0.5 shadow-warm lg:hidden">
       <button
         type="button"
         aria-pressed={value === "map"}

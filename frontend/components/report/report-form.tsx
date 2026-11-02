@@ -238,8 +238,8 @@ export function ReportForm() {
   if (submitted) {
     return (
       <PageContainer size="sm">
-        <div className="rounded-xl border border-brand-200 bg-brand-50 p-5 text-center">
-          <p className="text-sm font-medium text-brand-700">{t("thanks")}</p>
+        <div className="rounded-xl border border-good-200 bg-good-50 p-5 text-center">
+          <p className="text-sm font-medium text-good-800">{t("thanks")}</p>
           <h1 className="mt-1 text-xl font-semibold text-ink-900">{t("submissionPending")}</h1>
           <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
             <Button onClick={resetForm}>{t("reportAgain")}</Button>

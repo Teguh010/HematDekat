@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 const baseClasses = [
-  "inline-flex items-center justify-center rounded-lg font-medium transition-colors",
+  "inline-flex items-center justify-center rounded-full font-medium transition-colors",
   "focus-ring",
   "disabled:pointer-events-none disabled:opacity-50",
 ].join(" ");
