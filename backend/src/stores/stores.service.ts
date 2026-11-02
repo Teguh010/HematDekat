@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 
 import {
@@ -12,7 +12,9 @@ import {
 } from '../common/dto.js';
 import { toApiStoreType, toDbStoreType } from '../common/enums.js';
 import { haversineKm } from '../common/geo.js';
+import { PlacesService } from '../places/places.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { slugify } from '../common/slugify.js';
 
 export type StoreListQuery = {
   city?: string;
@@ -121,7 +123,10 @@ export function filterAndSortStores(
 
 @Injectable()
 export class StoresService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly places: PlacesService,
+  ) {}
 
   async list(query: StoreListQuery): Promise<PageDto<StoreSummaryDto>> {
     const now = new Date();
@@ -230,5 +235,89 @@ export class StoresService {
     }
 
     return toStoreDetail(store);
+  }
+
+  async resolveForSubmission(input: {
+    storeSlug?: string;
+    placeId?: string;
+    storeType?: 'supermarket' | 'minimarket' | 'market' | 'grocery-stall';
+  }) {
+    if (input.storeSlug) {
+      const store = await this.prisma.store.findUnique({
+        where: { slug: input.storeSlug },
+        include: { city: true },
+      });
+
+      if (!store) {
+        throw new NotFoundException(`Store with slug "${input.storeSlug}" not found`);
+      }
+
+      return store;
+    }
+
+    if (!input.placeId) {
+      throw new NotFoundException('Either storeSlug or placeId is required');
+    }
+
+    const existingStore = await this.prisma.store.findUnique({
+      where: { placeId: input.placeId },
+      include: { city: true },
+    });
+
+    if (existingStore) {
+      return existingStore;
+    }
+
+    const place = await this.places.lookup({
+      placeId: input.placeId,
+      sessionToken: crypto.randomUUID(),
+    });
+
+    if (!place) {
+      throw new NotFoundException(`Place with id "${input.placeId}" not found`);
+    }
+
+    const cities = await this.prisma.city.findMany({
+      select: { id: true, slug: true, name: true, centerLat: true, centerLng: true },
+    });
+
+    let nearestCity: (typeof cities)[number] | null = null;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+
+    for (const city of cities) {
+      const distance = haversineKm(place.lat, place.lng, city.centerLat, city.centerLng);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestCity = city;
+      }
+    }
+
+    if (!nearestCity || nearestDistance > 50) {
+      throw new UnprocessableEntityException('Store is outside supported cities');
+    }
+
+    const baseSlug = slugify(`${place.name} ${place.district ?? nearestCity.name}`) || 'new-store';
+    let slug = baseSlug;
+    let index = 2;
+
+    while (await this.prisma.store.findUnique({ where: { slug }, select: { id: true } })) {
+      slug = `${baseSlug}-${index}`;
+      index += 1;
+    }
+
+    return this.prisma.store.create({
+      data: {
+        slug,
+        name: place.name,
+        placeId: place.placeId,
+        type: toDbStoreType(input.storeType ?? 'grocery-stall'),
+        cityId: nearestCity.id,
+        district: place.district ?? null,
+        lat: place.lat,
+        lng: place.lng,
+        fetchedAt: new Date(),
+      },
+      include: { city: true },
+    });
   }
 }
