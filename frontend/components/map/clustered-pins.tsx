@@ -1,6 +1,6 @@
 "use client";
 
-import { MarkerClusterer, SuperClusterAlgorithm } from "@googlemaps/markerclusterer";
+import { MarkerClusterer, SuperClusterAlgorithm, type Cluster } from "@googlemaps/markerclusterer";
 import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { useEffect, useRef } from "react";
 
@@ -15,52 +15,72 @@ type ClusteredPinsProps = {
   onHover: (storeId: string | null) => void;
 };
 
-function paintPin(content: HTMLElement, store: StoreSummary, active: boolean) {
-  const price = store.price?.normalizedUnitPrice ?? 0;
-  const priceLabel = `${store.name}, ${formatRupiah(price)}`;
+// Pins are DOM elements with inline styles, so these hex values mirror the
+// Tailwind tokens in plan.md "Target design tokens".
+const PIN_COLORS = {
+  emerald600: "#059669",
+  emerald700: "#047857",
+  slate900: "#0f172a",
+  slate400: "#94a3b8",
+  white: "#ffffff",
+};
 
-  content.style.cssText =
-    `display:flex;align-items:center;justify-content:center;transform:translateY(-12px);cursor:pointer;z-index:${active ? 10 : "auto"};`;
-  content.innerHTML = `
-    <button
-      type="button"
-      tabindex="0"
-      aria-label="${priceLabel}"
-      style="
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:4px;
-        border:none;
-        border-radius:9999px;
-        background:transparent;
-        padding:0;
-        cursor:pointer;
-        font:inherit;
-      "
-    >
-      <span style="
-        border-radius:9999px;
-        border:1px solid ${active ? "#a7f3d0" : "#6ee7b7"};
-        background:${active ? "#10b981" : "rgba(16,185,129,0.9)"};
-        color:#fff;
-        font-size:10px;
-        font-weight:700;
-        padding:4px 8px;
-        box-shadow:0 10px 15px -3px rgba(16,185,129,0.35);
-        white-space:nowrap;
-      ">${formatRupiah(price)}</span>
-      <span style="
-        display:inline-block;
-        width:16px;
-        height:16px;
-        border-radius:9999px;
-        border:2px solid #fff;
-        background:${active ? "#34d399" : "#6ee7b7"};
-        box-shadow:0 4px 6px rgba(16,185,129,0.4);
-      "></span>
-    </button>
-  `;
+function paintPin(content: HTMLElement, store: StoreSummary, state: { hovered: boolean; selected: boolean }) {
+  const price = store.price?.normalizedUnitPrice ?? null;
+
+  content.style.cssText = `display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:${
+    state.selected ? 10 : "auto"
+  };`;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.tabIndex = 0;
+  button.setAttribute("aria-label", price === null ? store.name : `${store.name}, ${formatRupiah(price)}`);
+  Object.assign(button.style, {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "0",
+    background: "transparent",
+    padding: "0",
+    cursor: "pointer",
+    font: "inherit",
+  });
+
+  const face = document.createElement("span");
+
+  if (price === null) {
+    Object.assign(face.style, {
+      display: "inline-block",
+      width: "12px",
+      height: "12px",
+      borderRadius: "9999px",
+      background: state.selected ? PIN_COLORS.slate900 : PIN_COLORS.slate400,
+      boxShadow: `0 0 0 2px ${PIN_COLORS.white}`,
+    });
+  } else {
+    face.textContent = formatRupiah(price);
+    Object.assign(face.style, {
+      borderRadius: "9999px",
+      background: state.selected
+        ? PIN_COLORS.slate900
+        : state.hovered
+          ? PIN_COLORS.emerald700
+          : PIN_COLORS.emerald600,
+      color: PIN_COLORS.white,
+      fontSize: "12px",
+      fontWeight: "600",
+      lineHeight: "16px",
+      padding: "2px 8px",
+      whiteSpace: "nowrap",
+      boxShadow: state.selected
+        ? `0 0 0 2px ${PIN_COLORS.white}, 0 1px 3px rgba(15,23,42,0.35)`
+        : `0 0 0 1px ${PIN_COLORS.white}, 0 1px 2px rgba(15,23,42,0.25)`,
+    });
+  }
+
+  button.appendChild(face);
+  content.replaceChildren(button);
 }
 
 export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelect, onHover }: ClusteredPinsProps) {
@@ -87,6 +107,28 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
     const clusterer = new MarkerClusterer({
       map,
       algorithm: new SuperClusterAlgorithm({ radius: 100, maxZoom: 14 }),
+      renderer: {
+        render: ({ count, position }: Cluster) => {
+          const size = count < 10 ? 32 : count < 50 ? 38 : 44;
+          const element = document.createElement("div");
+          element.textContent = String(count);
+          Object.assign(element.style, {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: `${size}px`,
+            height: `${size}px`,
+            borderRadius: "9999px",
+            background: PIN_COLORS.emerald600,
+            color: PIN_COLORS.white,
+            fontSize: "12px",
+            fontWeight: "600",
+            boxShadow: `0 0 0 2px ${PIN_COLORS.white}, 0 1px 3px rgba(15,23,42,0.35)`,
+          });
+
+          return new markerLibrary.AdvancedMarkerElement({ position, content: element });
+        },
+      },
     });
     clustererRef.current = clusterer;
 
@@ -106,7 +148,10 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
 
       if (!marker) {
         const content = document.createElement("div");
-        paintPin(content, store, store.id === hoveredStoreId || store.id === selectedStoreId);
+        paintPin(content, store, {
+          hovered: store.id === hoveredStoreId,
+          selected: store.id === selectedStoreId,
+        });
 
         marker = new markerLibrary.AdvancedMarkerElement({
           position,
@@ -162,8 +207,7 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
         continue;
       }
 
-      const active = id === hoveredStoreId || id === selectedStoreId;
-      paintPin(content, store, active);
+      paintPin(content, store, { hovered: id === hoveredStoreId, selected: id === selectedStoreId });
     }
   }, [hoveredStoreId, selectedStoreId, stores]);
 

@@ -38,7 +38,7 @@ HematDekat is a Next.js web app for finding where staple groceries (sembako) are
 - Staple products (seeded; slug in brackets): Beras premium (`beras-premium`, kg), Minyak goreng curah (`minyak-goreng-curah`, liter), Gula pasir (`gula-pasir`, kg), Telur ayam (`telur-ayam`, pcs), Tepung terigu (`tepung-terigu`, kg), Garam (`garam`, kg), Mie instan (`mie-instan`, pack), Cabai merah (`cabai-merah`, kg), Bawang merah (`bawang-merah`, kg), Bawang putih (`bawang-putih`, kg), Ayam broiler (`ayam-broiler`, kg), Daging sapi (`daging-sapi`, kg), Ikan bandeng (`ikan-bandeng`, kg).
 - Ratings and photos: never on list cards or map pins. Only the store detail page fetches rating and one photo fresh from Places through the backend.
 - Activity feed UI: not part of the MVP. The backend keeps writing `Activity` rows (used later by Phase D).
-- Design: dark slate with emerald accents. Exact tokens are in "Design system".
+- Design: light, clean, compact, with an emerald accent (decided 2026-11-02, see Phase U). The tokens are in "Design system" (pointing to "Target design tokens" in Phase U).
 
 ## Implementation rules
 
@@ -159,24 +159,7 @@ Repository files:
 
 ## Design system
 
-Use these Tailwind classes; do not invent new colors or radii. Base components in `components/ui/` encode them (C2.6).
-
-| Token | Classes |
-| --- | --- |
-| Page background | `bg-slate-950 text-slate-100` (set on `<body>`) |
-| Surface (cards, panels) | `bg-slate-900 border border-white/10` |
-| Raised (inputs, chips, nested cards) | `bg-slate-800 border border-white/10` |
-| Text | primary `text-white`, body `text-slate-200`, muted `text-slate-400` |
-| Accent | `text-emerald-300`, `bg-emerald-500`, `border-emerald-400` |
-| Danger / warning | `text-red-200 bg-red-500/10 border-red-500/30` / `text-amber-200 bg-amber-500/10 border-amber-500/30` |
-| Radius | panels `rounded-3xl`, cards `rounded-2xl`, inputs `rounded-xl`, buttons/chips/badges `rounded-full` |
-| Page container (not home) | `mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8` |
-| Headings | page `text-2xl font-bold text-white sm:text-3xl`; section `text-lg font-semibold text-white`; eyebrow `text-xs uppercase tracking-[0.2em] text-emerald-400` |
-| Buttons | primary `bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-semibold`; secondary `bg-slate-800 border border-white/10 text-slate-200 hover:border-emerald-400`; ghost `text-slate-300 hover:text-white`. Sizes: `sm` = `px-3 py-1.5 text-sm`, `md` = `px-4 py-2 text-sm` |
-| Focus (all interactive elements) | `focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400` |
-| Freshness badge | fresh `bg-emerald-500/10 text-emerald-300`; recent `bg-amber-500/10 text-amber-200`; stale `bg-slate-700 text-slate-300` |
-| Map pin | default `rounded-full bg-emerald-500 px-2 py-1 text-xs font-bold text-white shadow`; hovered `bg-emerald-400`; selected `bg-white text-slate-950 ring-2 ring-emerald-400 scale-110 z-10`; no price `h-3 w-3 rounded-full bg-slate-500 ring-2 ring-white` |
-| Font | keep Geist from `next/font/google` |
+The design tokens (light, compact theme) are the table "Target design tokens (light, compact)" in Phase U below. Use only those classes; do not invent new colors, radii, or font sizes. Base components in `components/ui/` encode them (C2.6, restyled in U1; `ui/card.tsx` and `ui/icons.tsx` added in U1).
 
 ## Target UX
 
@@ -714,6 +697,170 @@ Depends on: C2 to C12.
 - Do: `GET /me/profile` → `{ user: CurrentUser, rank: number | null, badges: { key, earnedAt }[], savedStores: StoreSummary[], reports: { id, kind, store, product, status, createdAt }[] }` (last 50 reports). Badges are derived: `first-report` (1 approved report), `price-hunter` (10 approved reports), `price-guardian` (50 votes given), `market-expert` (10 approved reports at `market` stores). `/profile` page (inside `RequireUser`) with sections for points and rank, badges, saved stores, and "Laporan saya" with status badges; link in the user menu.
 - Verify: a new user sees zero states; after an approval the report shows "Disetujui" and points increase.
 
+### Phase U: UI revamp (light, clean, compact)
+
+User request (2026-11-02): the current UI looks bad; it should be **clean, simple, fresh, and compact**. Decisions the user made: light theme with an emerald accent; compact density (14px body text, 40px header).
+
+When to do it: Phase U is independent of Phase D. Do it **before C13.3** so the manual verification runs on the final UI. It does not depend on C13.1 or C13.2.
+
+How to delegate: give an agent [AGENTS.md](AGENTS.md), this file, and one step ID (for example `U3`). U1 must be done first. After U1, steps U2 to U7 touch disjoint files and can run in parallel. U8 runs last.
+
+#### Problems found in the current UI (why it looks bad)
+
+| Problem | Where |
+| --- | --- |
+| Heavy dark theme with a green radial glow and many low-contrast `border-white/10` boxes | `app/globals.css`, nearly every component |
+| Oversized radii (`rounded-3xl`, `rounded-[28px]`) and padding (`p-5`, `p-6`, `py-10`) waste space | pages, home panels, report form |
+| Uppercase, widely tracked eyebrow labels (`tracking-[0.2em]`) above every title | pages, header, forms |
+| Header is about 80px tall, shows the subtitle as an `<h1>` on every page, and uses bordered pill links | `components/app-header.tsx` |
+| Store cards are about 150px tall (name, type chip, distance, promo text, nested price box, pack price) so only 3 or 4 fit on screen | `components/home/store-card.tsx` |
+| `body` forces `Arial` and overrides the Geist font that is loaded | `app/globals.css` |
+| Nested `<main>` (layout has one, pages add another) | `app/layout.tsx`, `app/**/page.tsx` |
+| Pin colors are hardcoded hex values in `innerHTML` strings | `components/map/clustered-pins.tsx` |
+| Duplicate and unused components (old root `store-card`, `store-map`, `product-selector`, `home/store-list`, `map/price-pin`) | `components/` |
+| Not-found pages are 4 copies of the same markup | `app/**/not-found.tsx` |
+
+#### Rules for every Phase U step
+
+1. **Visual changes only.** No change to data fetching, API calls, URL state, routing, auth, validation, or props that carry data. Component props may change only for styling (for example a `compact` flag), and only inside the listed files.
+2. **Use only the tokens in "Target design tokens" below.** After U1, the "Design system" section holds the same tokens. No new colors, radii, shadows, or font sizes.
+3. **No new dependencies.** Icons are inline SVG from `components/ui/icons.tsx` (created in U1).
+4. **Keep all accessibility work from C12.3**: skip link, `aria-live` result count, pin `<button aria-label>`, labels on inputs, focus rings, `role="alert"` on errors.
+5. **Keep all strings in `messages/id.json`.** Changing a string is allowed only when the step says so. Remove a message key only if `git grep` shows it is unused. Do not move existing hardcoded strings into messages in this phase (that is a separate cleanup).
+6. **Page roots are `<div>`, not `<main>`.** The layout owns the single `<main id="content">`. Fix this in every page file the step touches.
+7. **One `<h1>` per page**, and it is the page title. The header brand is a link, not a heading.
+8. **Do not delete files** in U2 to U7. U8 lists deletions and needs the user's approval first.
+9. Every step ends with: `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` in `frontend/`, plus the step's visual checks at 375px, 768px, and 1280px widths. Report the real output.
+
+#### Target design tokens (light, compact)
+
+U1 copies this table into the "Design system" section, replacing the dark one.
+
+| Token | Classes |
+| --- | --- |
+| Page background | `bg-slate-50 text-slate-900` on `<body>`; no gradients |
+| Base text size | `text-sm` (14px) for body; `text-xs` (12px) for meta; nothing smaller than `text-xs` |
+| Surface (cards, panels, header, inputs) | `bg-white border border-slate-200` |
+| Subtle fill (chips, hover rows, skeleton) | `bg-slate-100` (hover `hover:bg-slate-50`) |
+| Text | primary `text-slate-900`, body `text-slate-700`, muted `text-slate-500` |
+| Accent | text `text-emerald-700`; solid `bg-emerald-600 text-white hover:bg-emerald-700`; tint `bg-emerald-50 text-emerald-800 border-emerald-200`; selected border `border-emerald-500` |
+| Danger / warning | `bg-red-50 text-red-800 border-red-200` / `bg-amber-50 text-amber-800 border-amber-200` |
+| Radius | cards and panels `rounded-xl`; inputs and buttons `rounded-lg`; chips, badges, pins `rounded-full`. Nothing larger than `rounded-xl` |
+| Shadow | none by default; `shadow-sm` only on floating elements (map button, info window, bottom sheet, dropdown) |
+| Spacing | card padding `p-3`; panel padding `p-4`; gaps `gap-2` or `gap-3`; list gap `space-y-2`; section gap `space-y-4` |
+| Page container (not home) | `mx-auto w-full max-w-5xl px-4 py-5 sm:px-6` |
+| Headings | page title `text-xl font-semibold text-slate-900`; section `text-base font-semibold text-slate-900`; **no uppercase eyebrow labels** (use `text-xs font-medium text-emerald-700` only when a label is really needed) |
+| Header | `h-10` (40px) bar, `bg-white border-b border-slate-200`, no blur; brand `text-base font-semibold text-slate-900`; nav links `text-sm text-slate-600 hover:text-slate-900` (no pill borders); active link `text-slate-900` |
+| Footer | `border-t border-slate-200 bg-white px-4 py-2 text-xs text-slate-500` |
+| Controls | height `h-8` (small) or `h-9` (default); inputs `bg-white border border-slate-300 rounded-lg px-3 text-sm placeholder:text-slate-400 focus-visible:border-emerald-500` |
+| Buttons | primary `bg-emerald-600 text-white hover:bg-emerald-700 font-medium`; secondary `bg-white border border-slate-300 text-slate-700 hover:bg-slate-50`; ghost `text-slate-600 hover:bg-slate-100 hover:text-slate-900`. Sizes: `sm` = `h-8 px-3 text-sm`, `md` = `h-9 px-4 text-sm`. All `rounded-lg` |
+| Chips (product, filter) | idle `bg-white border border-slate-200 text-slate-700 hover:bg-slate-50`; selected `bg-emerald-50 border-emerald-500 text-emerald-800`; `h-8 px-3 text-sm rounded-full` |
+| Focus (all interactive elements) | `focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600` |
+| Freshness badge | fresh `bg-emerald-50 text-emerald-700`; recent `bg-amber-50 text-amber-700`; stale `bg-slate-100 text-slate-600`; all `rounded-full px-2 py-0.5 text-xs` |
+| Map pin | default `bg-emerald-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ring-white shadow-sm`; hovered `bg-emerald-700`; selected `bg-slate-900 text-white ring-2 ring-white z-10`; no price: `h-3 w-3 rounded-full bg-slate-400 ring-2 ring-white`. Because pins are built with inline styles, use these exact hex values: emerald-600 `#059669`, emerald-700 `#047857`, slate-900 `#0f172a`, slate-400 `#94a3b8`, white `#ffffff` |
+| Font | Geist from `next/font/google` through `var(--font-geist-sans)`; remove the `Arial` override |
+| Contrast | body text on white must be at least 4.5:1 (that is why accent text is `emerald-700`, not `emerald-600`) |
+
+#### Visual acceptance targets
+
+- Header is 40px tall. The home toolbar (search, city, locate, filter, product chips) is at most 96px tall on desktop.
+- A store card is at most 64px tall. At 1280×720 the home list shows at least 7 cards without scrolling.
+- No gradients, no blur, no uppercase tracked labels, no `border-white/10`, no `bg-slate-800/900/950` anywhere in `app/` or `components/` (U8 checks this with `git grep`).
+
+**U1 Tokens, base styles, and UI kit**
+- Depends on: nothing. Must be done first.
+- Do:
+  1. Replace the "Design system" section above with the "Target design tokens" table. Update the "Design" line in "Decisions" so it no longer says the Design system is old.
+  2. `app/globals.css`: remove the radial gradient and the `Arial` font override; set `body` to the page background, text color, and `font-size: 14px` with `line-height: 1.5`; use `var(--font-geist-sans)`. Add `-webkit-font-smoothing: antialiased`.
+  3. `app/layout.tsx`: change only the `<body>` classes to the new tokens. Keep the skip link, providers, and structure. Style the skip link with the new accent.
+  4. Restyle `components/ui/button.tsx`, `badge.tsx`, `freshness-badge.tsx`, `empty-state.tsx`, `error-state.tsx`, `skeleton.tsx`, `text-field.tsx` to the tokens. Keep every prop and export.
+  5. Create `components/ui/card.tsx`: `<Card as?="div"|"section"|"article" padding?="sm"|"md">` rendering `rounded-xl border border-slate-200 bg-white` with `p-3` (sm) or `p-4` (md). Create `components/ui/icons.tsx` with named inline-SVG exports (16px, `stroke="currentColor"`, `aria-hidden`): `SearchIcon`, `LocateIcon`, `FilterIcon`, `CloseIcon`, `ChevronDownIcon`, `MapIcon`, `ListIcon`.
+- Do not: restyle any other component or page; add dependencies; change translation keys.
+- Files: `plan.md`, `app/globals.css`, `app/layout.tsx`, `components/ui/*`.
+- Verify: standard checks; `/about` (not yet restyled) still renders and is readable (white background, dark text) even though its cards are not final; `git grep -n "Arial" frontend/app` returns nothing.
+
+**U2 App shell: header, user menu, footer**
+- Depends on: U1.
+- Do:
+  1. `components/app-header.tsx`: one 40px row inside `max-w-7xl px-4`: brand link (`header.brand`, `text-base font-semibold`, with a small emerald dot or the existing text only; no subtitle, no `<h1>`), then text nav links (`header.cities`, `header.report`) and `<UserMenu />` on the right. Mobile (< `md`): brand left, a single icon-sized menu button right (`header.menu` as `aria-label`); the menu opens a compact dropdown panel under the header (`bg-white border-b border-slate-200 shadow-sm`, links `h-10` rows), closes on link click and Escape.
+  2. `components/user-menu.tsx`: signed-out shows a `sm` primary "Masuk" button; signed-in shows greeting as `text-sm text-slate-600` (truncate at 12ch on mobile), Admin link when admin, and a ghost "Keluar" button. Loading shows a small `Skeleton`.
+  3. `components/app-footer.tsx`: one line, tokens above; copyright left, links right; wraps on mobile.
+  4. Remove the now-unused `header.subtitle` key if `git grep` confirms nothing else uses it.
+- Do not: change auth logic, link targets, or nav items.
+- Files: `components/app-header.tsx`, `components/user-menu.tsx`, `components/app-footer.tsx`, `messages/id.json`.
+- Verify: standard checks; header measures 40px (browser devtools) on desktop; mobile menu opens and closes with click and Escape; Tab order reaches the skip link first; signed-in and signed-out states both look right.
+
+**U3 Home: toolbar, list, cards**
+- Depends on: U1.
+- Do:
+  1. `components/home/home-explorer.tsx`: restyle the shell. Toolbar is one compact block `bg-white border-b border-slate-200 px-3 py-2`: row 1 search input (flex-1) + city select + locate icon-button + filter icon-button (each with a visible text label only at `sm+`; always an `aria-label`); row 2 product chips (horizontal scroll, `h-8`). Desktop split: list `w-[360px]` (`bg-white border-r border-slate-200`, header row with "Toko terdekat" `text-sm font-semibold` and the `aria-live` count), map fills the rest edge to edge with no rounded outer frame and no gaps. Remove `rounded-[28px]` wrappers and `p-4` padding around the panels. Mobile: same toolbar; map or list fills the rest; the toggle is a small floating pill at bottom center (`MapIcon`/`ListIcon` + label, `shadow-sm`).
+  2. `components/home/store-card.tsx`: compact two-row card, at most 64px tall, `bg-white`, divider style instead of boxed cards (`border-b border-slate-100`, hover `bg-slate-50`, highlighted `bg-emerald-50`). Row 1: store name (`text-sm font-medium`, truncate) on the left, unit price `Rp14.700/kg` (`text-sm font-semibold text-emerald-700`) on the right; a small "Promo" badge after the name when `hasActivePromo`. Row 2 (`text-xs text-slate-500`): `<type> · <district>, <city> · <distance km>` on the left (skip empty parts), `FreshnessBadge` on the right. No nested boxes, no pack price (the store page keeps showing it), no standard/promo text. Stores without a price show `home.noPrice` in muted text instead of the price.
+  5. `components/home/product-selector.tsx`: chips per the Chips token.
+  6. `components/home/mobile-view-toggle.tsx`, `components/filters/search-bar.tsx`, `city-select.tsx`, `locate-me-button.tsx`, `filter-panel.tsx`: restyle to the Controls and Buttons tokens. The filter panel keeps its behavior (desktop popover, mobile bottom sheet with backdrop and Escape); restyle to `bg-white`, `rounded-t-xl` sheet, `shadow-sm`, compact `gap-3` sections, chip-style options, and a sticky footer with "Terapkan" and "Reset".
+  7. `app/page.tsx`: restyle the Suspense fallback; use a list skeleton of compact rows instead of plain text only if a skeleton already exists in `ui/`; keep `home.loading` style text otherwise.
+- Do not: touch `components/map/*`, URL/search-param logic, filtering, sorting, or the data effect in `home-explorer.tsx`.
+- Files: `components/home/*` (except `store-list.tsx`), `components/filters/*`, `app/page.tsx`.
+- Verify: standard checks; at 1280×720 the list shows at least 7 cards; card height is at most 64px; hover on a card still highlights its pin; filter panel opens, applies, resets, and closes with Escape on desktop and mobile; keyboard-only: toolbar, chips, cards are reachable and show a focus ring.
+
+**U4 Map: pins, clusters, info window**
+- Depends on: U1.
+- Do:
+  1. `components/map/clustered-pins.tsx`: update `paintPin` to the Map pin token using the hex values from the tokens table. Keep the `<button aria-label>` structure, keyboard handlers, and the hover and selected repainting. Pins with no price use the small grey dot (the current code always prints a price, even `Rp0`; fix that: no price means the dot, and the label is the store name only).
+  2. Add a custom cluster renderer in the same file: a `rounded-full` emerald-600 circle with white count text, size growing slightly with count, `ring-2 ring-white`. Use the `renderer` option of `MarkerClusterer`; build the element with the DOM, not `innerHTML` with data.
+  3. `components/map/store-info-window.tsx`: compact card (`p-0`, name `text-sm font-semibold`, price `text-sm font-semibold text-emerald-700`, freshness badge, a small primary "Lihat toko" link button). Remove any dark colors.
+  4. `components/map/store-map.tsx`: restyle the "API key missing" state (`bg-slate-100 text-slate-600 text-sm`) and the "Cari di area ini" button (white, `border-slate-300`, `shadow-sm`, `rounded-full`, emerald text, `h-8 px-3 text-sm`).
+- Do not: change clustering algorithm, camera logic, event wiring, or `StoreMap` props. Do not touch `app/stores/[slug]/page.tsx` (U5 switches that page to this component).
+- Files: `components/map/clustered-pins.tsx`, `components/map/store-info-window.tsx`, `components/map/store-map.tsx`.
+- Verify: standard checks; with a valid Maps key: pins and clusters use the new colors, selected pin is dark, hover changes pin color, pins stay keyboard-focusable with the correct aria-label, a store without a price shows the grey dot; without a key the placeholder looks right. Report which of these you could not check.
+
+**U5 Store, city, product, and cities pages**
+- Depends on: U1.
+- Do:
+  1. `app/stores/[slug]/page.tsx`: page root `<div>` with the page container; title row (`h1 text-xl font-semibold`, type and city as muted meta text, actions as `sm` buttons: secondary "Buka di Google Maps", primary "Laporkan harga"). Two columns on `lg` (info and price list left, map right at `h-64`); stacked on mobile. Info block as a compact `<dl>` with `text-sm` rows. Price list as divider rows (name, `qty unit · unit price` meta, unit price right, `FreshnessBadge`, `VoteButton`). Promo section the same style. Switch the map import from `@/components/store-map` to `@/components/map/store-map` (same props). Keep the JSON-LD script, rating, photo, and attributions; render the photo at `h-40 rounded-xl object-cover`.
+  2. `app/not-found.tsx`, `app/stores/[slug]/not-found.tsx`, `app/cities/[slug]/not-found.tsx`, `app/products/[slug]/not-found.tsx`: use `Card` with centered compact content and a primary button (no uppercase eyebrow, no `rounded-3xl`).
+  3. `app/cities/page.tsx`, `app/cities/[slug]/page.tsx`: page container; city list as a responsive grid of `Card` (`sm:grid-cols-2 lg:grid-cols-3`), each with city name, province muted, store count badge, and one cheapest-price line. City page header compact with intro text `text-sm text-slate-600`, then the existing explorer.
+  4. `app/products/[slug]/page.tsx`: page container; cheapest stores as divider rows (not big cards); city averages as a compact table or list.
+- Do not: change fetching, `notFound()` logic, metadata, or JSON-LD content.
+- Files: `app/stores/[slug]/page.tsx`, `app/cities/page.tsx`, `app/cities/[slug]/page.tsx`, `app/products/[slug]/page.tsx`, `app/not-found.tsx`, `app/stores/[slug]/not-found.tsx`, `app/cities/[slug]/not-found.tsx`, `app/products/[slug]/not-found.tsx`.
+- Verify: standard checks; each page at 375px and 1280px has no horizontal scroll; exactly one `<h1>` and no nested `<main>` (inspect in devtools); a store with no prices and one with promos both look right; a bad slug shows the new not-found page.
+
+**U6 Report form, auth, and vote button**
+- Depends on: U1.
+- Do:
+  1. `components/report/*` (`report-form.tsx`, `store-picker.tsx`, `price-input.tsx`, `quantity-input.tsx`, `product-select.tsx`): single `Card` with `p-4`, two-column field grid on `sm+` (product and store full width; price, quantity, and unit in one row), `gap-3`, labels `text-xs font-medium text-slate-700` above `h-9` inputs, tabs for Harga/Promo as a compact segmented control (`bg-slate-100 rounded-lg p-0.5`, selected `bg-white shadow-sm`), live preview as a small `bg-emerald-50 border-emerald-200` row, autocomplete dropdown `bg-white border shadow-sm rounded-lg`, success state as a compact emerald-tint card. Remove uppercase eyebrow labels.
+  2. `app/report/page.tsx`, `app/login/page.tsx`, `app/register/page.tsx`: page containers; auth pages are a centered `max-w-sm` `Card`.
+  3. `components/auth/auth-form.tsx`, `components/auth/require-user.tsx`: compact form per tokens; Google button is secondary style with the same height as the primary button; the "atau" divider is a thin line with muted text.
+  4. `components/vote-button.tsx`: small secondary/ghost button (`h-7 px-2 text-xs`), confirmed state in emerald tint.
+- Do not: change validation, submit handlers, API calls, or the unit-price preview calculation.
+- Files: `components/report/*`, `components/auth/*`, `components/vote-button.tsx`, `app/report/page.tsx`, `app/login/page.tsx`, `app/register/page.tsx`.
+- Verify: standard checks; submit a price report and a promo end to end (needs the backend); sign in and register forms show field errors in the new danger style; tab order is logical; no layout shift when errors appear.
+
+**U7 Admin and static pages**
+- Depends on: U1.
+- Do:
+  1. `app/admin/page.tsx`, `components/admin/pending-item-card.tsx`, `components/admin/moderation-filter-toggle.tsx`: queue as divider rows in one `Card` (store link, product, prices, submitter, time on two compact lines; flagged badge in danger style; approve/reject as `sm` primary and secondary buttons); toggle as a small checkbox-style control with a visible label.
+  2. `app/about/page.tsx`, `app/privacy/page.tsx`, `app/terms/page.tsx`, `app/feedback/page.tsx`: one shared look: page container `max-w-2xl`, `h1 text-xl font-semibold`, body `text-sm leading-6 text-slate-700`, paragraphs `space-y-3`, no outer boxed card, no uppercase eyebrow, and a ghost "Kembali ke beranda" link at the bottom. Feedback shows the email as a primary button link (`mailto:`).
+  3. `app/loading.tsx`, `app/error.tsx`: compact centered states using the tokens.
+- Do not: change page text, the contact email, or admin behavior.
+- Files: `app/admin/page.tsx`, `components/admin/*`, `app/about/page.tsx`, `app/privacy/page.tsx`, `app/terms/page.tsx`, `app/feedback/page.tsx`, `app/loading.tsx`, `app/error.tsx`.
+- Verify: standard checks; admin page works with a flagged and an unflagged item; static pages read well at 375px and 1280px; one `<h1>`, no nested `<main>`.
+
+**U8 Cleanup, social assets, and final QA**
+- Depends on: U2 to U7 done.
+- Do:
+  1. List dead code with proof (`git grep` for each import) and **ask the user before deleting**: `components/store-card.tsx`, `components/home/store-list.tsx`, `components/store-map.tsx`, `components/product-selector.tsx`, `components/map/price-pin.tsx`. Delete only the approved ones.
+  2. Update `app/manifest.ts` (`theme_color` `#ffffff`, `background_color` `#f8fafc`), `app/opengraph-image.tsx` (light background, emerald accent, same text), and `app/icon.svg` / `app/apple-icon.png` only if they clash with the light theme (the current dark rounded tile is acceptable; do not redraw unless it looks wrong).
+  3. Run the leftover-token check (below) and fix any hit in a file you are allowed to touch; report hits in other files.
+  4. Full QA pass at 375px, 768px, and 1280px on `/`, `/cities`, `/cities/<slug>`, `/products/<slug>`, `/stores/<slug>`, `/report`, `/login`, `/register`, `/admin`, `/about`, `/feedback`, and a 404 page.
+- Do not: add features or restyle beyond the tokens.
+- Files: the deletions above (after approval), `app/manifest.ts`, `app/opengraph-image.tsx`, `app/icon.svg`, `app/apple-icon.png`, and fixes for leftover-token hits.
+- Verify:
+  - `git grep -nE "slate-(800|900|950)|white/10|rounded-3xl|rounded-2xl|rounded-\[|tracking-\[|backdrop-blur|gradient" -- frontend/app frontend/components` returns nothing (the Open Graph image may keep its own gradient; list it as the only exception).
+  - `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` pass; `npm run build` also passes with the backend stopped.
+  - Lighthouse accessibility is at least 90 on `/` and one store page; no contrast failures.
+  - `git grep AIza` returns nothing.
+  - The user reviews the result in the browser and approves.
+
 ## Verification
 
 1. `npm run lint`, `npm run typecheck` (frontend), `npm run test`, `npm run build` pass in both apps; `npm run test:e2e` passes in `backend/`.
@@ -727,7 +874,7 @@ Depends on: C2 to C12.
 ## Scope
 
 - Included: Phase C (MVP) and, after approval, Phase D.
-- Excluded: activity feed UI, comments, community pages or forums, native apps, payments, password reset by email, moderator role, online ordering or delivery, price history charts, English locale, coordinate refresh job (documented as a follow-up).
+- Excluded: activity feed UI, comments, community pages or forums, native apps, payments, password reset by email, moderator role, online ordering or delivery, price history charts, English locale, dark mode (a possible follow-up after Phase U), moving the remaining hardcoded UI strings into `messages/id.json`, coordinate refresh job (documented as a follow-up).
 - Cost: Google Maps and Places are billable beyond the free quota.
 - Data quality: freshness, moderation, and outlier flags are core features.
 
@@ -819,3 +966,14 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - [ ] D2. Leaderboard
 - [ ] D3. Saved stores
 - [ ] D4. Profile page
+
+### Phase U: UI revamp (user request 2026-11-02; do before C13.3)
+
+- [x] U1. Tokens, base styles, and UI kit (first)
+- [x] U2. App shell: header, user menu, footer
+- [x] U3. Home: toolbar, list, cards
+- [x] U4. Map: pins, clusters, info window
+- [x] U5. Store, city, product, and cities pages
+- [x] U6. Report form, auth, and vote button
+- [x] U7. Admin and static pages
+- [x] U8. Cleanup, social assets, and final QA (last; needs approval before deleting files)

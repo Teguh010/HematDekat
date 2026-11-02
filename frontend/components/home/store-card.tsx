@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
+import { Badge } from "@/components/ui/badge";
 import { FreshnessBadge } from "@/components/ui/freshness-badge";
 import type { StoreSummary } from "@/lib/data/types";
-import { formatRupiah, formatUnitPrice } from "@/lib/format";
+import { formatUnitPrice } from "@/lib/format";
 
 type StoreCardProps = {
   store: StoreSummary;
@@ -26,18 +27,22 @@ export function StoreCard({
   const storeTypeT = useTranslations("storeType");
 
   const displayProduct = selectedProduct ? store.price?.productSlug === selectedProduct ? store.price : null : store.price;
-  const productName = displayProduct?.productName ?? "-";
   const unitPrice = displayProduct?.normalizedUnitPrice ?? null;
-  const packPrice = displayProduct?.price ?? null;
-  const quantity = displayProduct?.quantity ?? null;
   const unitLabel = displayProduct?.unit ?? "kg";
+  const meta = [
+    storeTypeT(store.type),
+    [store.district, store.city.name].filter(Boolean).join(", "),
+    store.distanceKm !== null ? `${store.distanceKm.toFixed(1)} km` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Link
       href={`/stores/${store.slug}`}
       data-store-id={store.id}
-      className={`block rounded-2xl border p-3 transition ${
-        isHighlighted ? "border-emerald-400 bg-emerald-500/5" : "border-white/10 bg-slate-800"
+      className={`block border-b border-slate-100 px-3 py-2 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-600 ${
+        isHighlighted ? "bg-emerald-50" : "bg-white"
       }`}
       onMouseEnter={() => onHoverChange?.(store.id)}
       onMouseLeave={() => onHoverChange?.(null)}
@@ -45,43 +50,21 @@ export function StoreCard({
       onBlur={() => onHoverChange?.(null)}
       onClick={() => onSelect?.(store.id)}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate font-semibold text-white">{store.name}</h3>
-          <p className="mt-1 text-sm text-slate-400">
-            {store.district ?? "-"}, {store.city.name}
-          </p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <h3 className="truncate text-sm font-medium text-slate-900">{store.name}</h3>
+          {store.hasActivePromo ? <Badge variant="success">{t("promo")}</Badge> : null}
         </div>
-        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-emerald-300">
-          {storeTypeT(store.type)}
-        </span>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between gap-3 text-sm text-slate-300">
-        <span>{store.distanceKm !== null ? `${store.distanceKm.toFixed(1)} km` : "-"}</span>
-        {store.hasActivePromo ? <span className="text-emerald-300">{t("promo")}</span> : <span>{t("standard")}</span>}
-      </div>
-
-      <div className="mt-3 rounded-xl border border-white/10 bg-slate-900/80 p-2">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-xs uppercase tracking-[0.2em] text-slate-400">{productName}</span>
-          {displayProduct ? <FreshnessBadge updatedAt={displayProduct.verifiedAt} className="text-[8px]" /> : null}
-        </div>
-
         {unitPrice !== null ? (
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div>
-              <p className="text-base font-bold text-emerald-300">{formatUnitPrice(unitPrice, unitLabel)}</p>
-              {packPrice !== null && quantity !== null ? (
-                <p className="text-xs text-slate-400">
-                  {formatRupiah(packPrice)} / {quantity} {unitLabel}
-                </p>
-              ) : null}
-            </div>
-          </div>
+          <span className="shrink-0 text-sm font-semibold text-emerald-700">{formatUnitPrice(unitPrice, unitLabel)}</span>
         ) : (
-          <p className="mt-2 text-sm text-slate-400">{t("noPrice")}</p>
+          <span className="shrink-0 text-xs text-slate-500">{t("noPrice")}</span>
         )}
+      </div>
+
+      <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-slate-500">
+        <span className="truncate">{meta}</span>
+        {displayProduct ? <FreshnessBadge updatedAt={displayProduct.verifiedAt} className="shrink-0" /> : null}
       </div>
     </Link>
   );

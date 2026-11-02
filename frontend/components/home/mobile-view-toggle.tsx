@@ -2,38 +2,39 @@
 
 import { useTranslations } from "next-intl";
 
+import { ListIcon, MapIcon } from "@/components/ui/icons";
+
 type MobileViewToggleProps = {
   value: "map" | "list";
   onChange: (nextValue: "map" | "list") => void;
 };
 
+const baseClasses =
+  "flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600";
+
 export function MobileViewToggle({ value, onChange }: MobileViewToggleProps) {
   const t = useTranslations("home");
 
   return (
-    <div className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/90 px-4 py-3 backdrop-blur lg:hidden">
-      <div className="mx-auto flex w-full max-w-sm items-center rounded-full border border-white/10 bg-slate-900 p-1">
-        <button
-          type="button"
-          aria-pressed={value === "map"}
-          onClick={() => onChange("map")}
-          className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${
-            value === "map" ? "bg-emerald-500 text-slate-950" : "text-slate-300"
-          }`}
-        >
-          {t("showMap")}
-        </button>
-        <button
-          type="button"
-          aria-pressed={value === "list"}
-          onClick={() => onChange("list")}
-          className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${
-            value === "list" ? "bg-emerald-500 text-slate-950" : "text-slate-300"
-          }`}
-        >
-          {t("showList")}
-        </button>
-      </div>
+    <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-slate-200 bg-white p-0.5 shadow-sm lg:hidden">
+      <button
+        type="button"
+        aria-pressed={value === "map"}
+        onClick={() => onChange("map")}
+        className={`${baseClasses} ${value === "map" ? "bg-emerald-600 text-white" : "text-slate-600"}`}
+      >
+        <MapIcon />
+        {t("showMap")}
+      </button>
+      <button
+        type="button"
+        aria-pressed={value === "list"}
+        onClick={() => onChange("list")}
+        className={`${baseClasses} ${value === "list" ? "bg-emerald-600 text-white" : "text-slate-600"}`}
+      >
+        <ListIcon />
+        {t("showList")}
+      </button>
     </div>
   );
 }

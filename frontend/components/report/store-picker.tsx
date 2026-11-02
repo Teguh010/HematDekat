@@ -64,9 +64,10 @@ export function StorePicker({ value, onChange, error }: StorePickerProps) {
   };
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-slate-200">{t("store")}</label>
+    <div className="space-y-1">
+      <label htmlFor="report-store-input" className="block text-xs font-medium text-slate-700">{t("store")}</label>
       <input
+        id="report-store-input"
         value={query}
         onFocus={startSearch}
         onChange={(event) => {
@@ -100,8 +101,8 @@ export function StorePicker({ value, onChange, error }: StorePickerProps) {
           }, 300);
         }}
         aria-invalid={Boolean(error || searchError)}
-        className={`w-full rounded-xl border bg-slate-800 px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 ${
-          error || searchError ? "border-red-500/30 bg-red-500/5" : "border-white/10"
+        className={`h-9 w-full rounded-lg border bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${
+          error || searchError ? "border-red-300 bg-red-50" : "border-slate-300"
         }`}
         placeholder={t("storePlaceholder")}
         role="combobox"
@@ -110,30 +111,30 @@ export function StorePicker({ value, onChange, error }: StorePickerProps) {
         aria-autocomplete="list"
       />
       {value?.storeSlug ? (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm text-emerald-800">
           <span>{value.name}</span>
-          <button type="button" onClick={() => onChange(null)} className="text-emerald-200 hover:text-white">
+          <button type="button" onClick={() => onChange(null)} className="font-medium text-emerald-700 hover:text-emerald-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
             {t("changeStore")}
           </button>
         </div>
       ) : null}
       {suggestions.length > 0 ? (
-        <ul id="store-suggestions" className="rounded-xl border border-white/10 bg-slate-900 p-1 shadow-lg shadow-slate-950/40">
+        <ul id="store-suggestions" className="rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
           {suggestions.map((suggestion) => (
             <li key={suggestion.placeId}>
               <button
                 type="button"
                 onClick={() => void handleSelect(suggestion)}
-                className="flex w-full flex-col items-start rounded-lg px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+                className="flex w-full flex-col items-start rounded-md px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600"
               >
-                <span className="font-medium">{suggestion.mainText}</span>
-                {suggestion.secondaryText ? <span className="text-xs text-slate-400">{suggestion.secondaryText}</span> : null}
+                <span className="font-medium text-slate-900">{suggestion.mainText}</span>
+                {suggestion.secondaryText ? <span className="text-xs text-slate-500">{suggestion.secondaryText}</span> : null}
               </button>
             </li>
           ))}
         </ul>
       ) : null}
-      {error || searchError ? <p className="text-sm text-red-200">{error ?? searchError}</p> : null}
+      {error || searchError ? <p className="text-xs text-red-700">{error ?? searchError}</p> : null}
     </div>
   );
 }

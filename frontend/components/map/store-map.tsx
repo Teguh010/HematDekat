@@ -135,12 +135,12 @@ function MapView({
 
   return (
     <>
-      <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center">
+      <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center">
         {shouldShowAreaSearch ? (
           <button
             type="button"
             onClick={handleSearchThisArea}
-            className="pointer-events-auto rounded-full border border-emerald-400 bg-slate-900/90 px-3 py-2 text-sm font-medium text-emerald-200 shadow-lg"
+            className="pointer-events-auto h-8 rounded-full border border-slate-300 bg-white px-3 text-sm font-medium text-emerald-700 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
           >
             {t("searchThisArea")}
           </button>
@@ -178,7 +178,7 @@ export function StoreMap({
 
   if (!apiKey) {
     return (
-      <div className="flex h-full items-center justify-center bg-slate-800 text-sm text-slate-300">
+      <div className="flex h-full items-center justify-center bg-slate-100 text-sm text-slate-600">
         {t("apiKeyMissing")}
       </div>
     );

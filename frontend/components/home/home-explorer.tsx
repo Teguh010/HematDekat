@@ -193,37 +193,30 @@ export function HomeExplorer({
 
   return (
     <div
-      className={`flex min-h-0 flex-col overflow-hidden bg-slate-950 text-slate-50 ${
+      className={`relative flex min-h-0 flex-col overflow-hidden bg-slate-50 text-slate-900 ${
         fillViewport ? "h-full flex-1" : "h-[70dvh] min-h-[28rem]"
       }`}
     >
-      <div className="shrink-0 border-b border-white/10 bg-slate-950/95 px-4 py-3 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div className="shrink-0 border-b border-slate-200 bg-white px-3 py-2">
+        <div className="flex w-full flex-col gap-2">
+          <div className="flex items-center gap-2">
             <SearchBar />
-
-            <div className="flex flex-wrap items-center gap-2">
-              {!lockedCity ? <CitySelect cities={cities} /> : null}
-              <LocateMeButton />
-              <FilterPanel />
-            </div>
+            {!lockedCity ? <CitySelect cities={cities} /> : null}
+            <LocateMeButton />
+            <FilterPanel />
           </div>
 
           <ProductSelector products={products} value={activeProduct} onChange={updateProduct} />
         </div>
       </div>
 
-      <MobileViewToggle value={mobileView} onChange={setMobileView} />
-
-      <div className="hidden min-h-0 flex-1 gap-3 overflow-hidden p-4 lg:flex">
-        <aside className="flex w-[400px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-slate-900">
-          <div className="shrink-0 border-b border-white/10 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-white">{t("nearestStores")}</h2>
-              <span aria-live="polite" className="text-sm text-slate-300">{t("resultCount", { count: filteredStores.length })}</span>
-            </div>
+      <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
+        <aside className="flex w-[360px] shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
+            <h2 className="text-sm font-semibold text-slate-900">{t("nearestStores")}</h2>
+            <span aria-live="polite" className="text-xs text-slate-500">{t("resultCount", { count: filteredStores.length })}</span>
           </div>
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             {filteredStores.map((store) => (
               <StoreCard
                 key={store.id}
@@ -237,7 +230,7 @@ export function HomeExplorer({
           </div>
         </aside>
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-[28px] border border-white/10 bg-slate-900">
+        <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-slate-100">
           <StoreMap
             stores={filteredStores}
             apiKey={apiKey}
@@ -253,7 +246,7 @@ export function HomeExplorer({
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
         {mobileView === "map" ? (
-          <div className="min-h-0 w-full flex-1 overflow-hidden bg-slate-900">
+          <div className="min-h-0 w-full flex-1 overflow-hidden bg-slate-100">
             <StoreMap
               stores={filteredStores}
               apiKey={apiKey}
@@ -266,22 +259,25 @@ export function HomeExplorer({
             />
           </div>
         ) : (
-          <div className="min-h-0 w-full flex-1 overflow-y-auto p-4">
-            <div className="space-y-3">
-              {filteredStores.map((store) => (
-                <StoreCard
-                  key={store.id}
-                  store={store}
-                  selectedProduct={activeProduct}
-                  isHighlighted={store.id === hoveredStoreId || store.id === selectedStoreId}
-                  onHoverChange={setHoveredStoreId}
-                  onSelect={setSelectedStoreId}
-                />
-              ))}
-            </div>
+          <div className="min-h-0 w-full flex-1 overflow-y-auto bg-white pb-14">
+            <p aria-live="polite" className="border-b border-slate-100 px-3 py-2 text-xs text-slate-500">
+              {t("resultCount", { count: filteredStores.length })}
+            </p>
+            {filteredStores.map((store) => (
+              <StoreCard
+                key={store.id}
+                store={store}
+                selectedProduct={activeProduct}
+                isHighlighted={store.id === hoveredStoreId || store.id === selectedStoreId}
+                onHoverChange={setHoveredStoreId}
+                onSelect={setSelectedStoreId}
+              />
+            ))}
           </div>
         )}
       </div>
+
+      <MobileViewToggle value={mobileView} onChange={setMobileView} />
     </div>
   );
 }

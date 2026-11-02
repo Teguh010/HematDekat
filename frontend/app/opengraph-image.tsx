@@ -18,8 +18,8 @@ export default function Image() {
           width: "100%",
           height: "100%",
           padding: 80,
-          background: "linear-gradient(135deg, #020617 0%, #0f172a 100%)",
-          color: "white",
+          background: "#f8fafc",
+          color: "#0f172a",
           fontFamily: "sans-serif",
         }}
       >
@@ -31,9 +31,9 @@ export default function Image() {
             width: "100%",
             height: "100%",
             padding: 48,
-            border: "1px solid rgba(255,255,255,0.12)",
-            borderRadius: 32,
-            background: "rgba(15,23,42,0.72)",
+            border: "2px solid #e2e8f0",
+            borderRadius: 24,
+            background: "#ffffff",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -45,8 +45,8 @@ export default function Image() {
                 width: 72,
                 height: 72,
                 borderRadius: 20,
-                background: "linear-gradient(135deg, #34d399 0%, #0f766e 100%)",
-                color: "#020617",
+                background: "#059669",
+                color: "#ffffff",
                 fontSize: 28,
                 fontWeight: 800,
               }}
@@ -54,9 +54,7 @@ export default function Image() {
               H
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: 24, letterSpacing: 8, color: "#a7f3d0", textTransform: "uppercase" }}>
-                HematDekat
-              </span>
+              <span style={{ fontSize: 32, fontWeight: 700, color: "#047857" }}>HematDekat</span>
             </div>
           </div>
 
@@ -64,12 +62,12 @@ export default function Image() {
             <div style={{ fontSize: 78, fontWeight: 800, lineHeight: 1.05 }}>
               Cari sembako termurah
             </div>
-            <div style={{ fontSize: 34, color: "#cbd5e1", lineHeight: 1.3 }}>
+            <div style={{ fontSize: 34, color: "#475569", lineHeight: 1.3 }}>
               di dekatmu, dengan data dari pasar, toko, dan komunitas.
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 28, color: "#e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 28, color: "#334155" }}>
             <span>Bandingkan harga</span>
             <span>Konfirmasi harga</span>
           </div>

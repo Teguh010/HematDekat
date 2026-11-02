@@ -15,9 +15,9 @@ export function ErrorState({ title, onRetry }: ErrorStateProps) {
   const t = useTranslations("errors");
 
   return (
-    <div role="alert" className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6 text-red-200">
-      <p className="font-semibold">{title ?? t("generic")}</p>
-      <Button variant="secondary" size="sm" className="mt-4" onClick={onRetry ?? (() => router.refresh())}>
+    <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+      <p className="font-medium">{title ?? t("generic")}</p>
+      <Button variant="secondary" size="sm" className="mt-3" onClick={onRetry ?? (() => router.refresh())}>
         {t("retry")}
       </Button>
     </div>

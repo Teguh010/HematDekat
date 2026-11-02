@@ -15,12 +15,12 @@ export function UserMenu() {
   const { status, user, refresh } = useCurrentUser();
 
   if (status === "loading") {
-    return <Skeleton className="h-10 w-24" aria-label={t("login")} />;
+    return <Skeleton className="h-8 w-16" aria-label={t("login")} />;
   }
 
   if (status === "signed-out") {
     return (
-      <Button href="/login" variant="secondary" size="sm">
+      <Button href="/login" variant="primary" size="sm">
         {t("login")}
       </Button>
     );
@@ -39,13 +39,13 @@ export function UserMenu() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden text-sm text-slate-200 sm:inline">{t("greeting", { name: displayName })}</span>
+      <span className="max-w-[12ch] truncate text-sm text-slate-600 sm:max-w-none">{t("greeting", { name: displayName })}</span>
       {user.role === "admin" ? (
-        <Button href="/admin" variant="secondary" size="sm">
+        <Button href="/admin" variant="ghost" size="sm">
           {t("admin")}
         </Button>
       ) : null}
-      <Button variant="secondary" size="sm" onClick={() => void handleLogout()}>
+      <Button variant="ghost" size="sm" onClick={() => void handleLogout()}>
         {t("logout")}
       </Button>
     </div>

@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ModerationFilterToggle } from "@/components/admin/moderation-filter-toggle";
 import { PendingItemCard } from "@/components/admin/pending-item-card";
 import { RequireUser } from "@/components/auth/require-user";
+import { Button } from "@/components/ui/button";
 import { listPendingItems, setModerationStatus } from "@/lib/data/repository";
 import type { PendingItem } from "@/lib/data/types";
 
@@ -58,35 +58,32 @@ export default function AdminPage() {
 
   return (
     <RequireUser role="admin">
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{t("title")}</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">{t("title")}</h1>
-          </div>
-          <Link href="/" className="rounded-full border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:border-emerald-400">
+      <div className="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold text-slate-900">{t("title")}</h1>
+          <Button href="/" variant="secondary" size="sm">
             {t("backToMap")}
-          </Link>
+          </Button>
         </div>
 
         {error ? (
-          <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>
+          <div role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div>
         ) : null}
 
         {!loading && items.length > 0 ? (
-          <div className="mb-4">
+          <div className="mb-3">
             <ModerationFilterToggle checked={onlyFlagged} onChange={setOnlyFlagged} />
           </div>
         ) : null}
 
         {loading ? (
-          <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-slate-300">{t("loading")}</div>
+          <div role="status" className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">{t("loading")}</div>
         ) : visibleItems.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-slate-300">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-500">
             {onlyFlagged ? t("noFlaggedItems") : t("noItems")}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {visibleItems.map((item) => {
               const key = `${item.kind}-${item.id}`;
 
@@ -102,7 +99,7 @@ export default function AdminPage() {
             })}
           </div>
         )}
-      </main>
+      </div>
     </RequireUser>
   );
 }

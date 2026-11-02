@@ -4,8 +4,9 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
+import { Button } from "@/components/ui/button";
 import { listCities, listStores } from "@/lib/data/repository";
-import { formatRupiah } from "@/lib/format";
+import { formatUnitPrice } from "@/lib/format";
 
 async function CitiesPageContent() {
   const t = await getTranslations("city");
@@ -14,18 +15,15 @@ async function CitiesPageContent() {
   const stores = storesPage.items;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{commonT("city")}</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">{t("title")}</h1>
-        </div>
-        <Link href="/" className="rounded-full border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-200 transition hover:border-emerald-400">
+    <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold text-slate-900">{t("title")}</h1>
+        <Button href="/" variant="secondary" size="sm">
           {commonT("backToMap")}
-        </Link>
+        </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {cities.map((city) => {
           const cityStores = stores.filter((store) => store.city.name === city.name);
           const cheapest = [...cityStores]
@@ -33,38 +31,38 @@ async function CitiesPageContent() {
             .sort((a, b) => (a.price?.normalizedUnitPrice ?? 0) - (b.price?.normalizedUnitPrice ?? 0))[0];
 
           return (
-            <Link
-              key={city.slug}
-              href={`/cities/${city.slug}`}
-              className="rounded-3xl border border-white/10 bg-slate-900 p-5 transition hover:border-emerald-400/60 hover:bg-slate-800"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm text-slate-400">{city.province}</p>
-                  <h2 className="mt-1 text-2xl font-semibold text-white">{city.name}</h2>
-                </div>
-                <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300">
-                  {t("storeCount", { count: city.storeCount })}
-                </span>
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/50 p-3">
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">{t("priceCheapest")}</p>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-slate-200">{cheapest?.price?.productName ?? "-"}</p>
-                    <p className="text-sm text-slate-400">{cheapest?.name ?? commonT("notAvailable")}</p>
+            <li key={city.slug}>
+              <Link
+                href={`/cities/${city.slug}`}
+                className="block rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:border-emerald-300 hover:bg-emerald-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-base font-semibold text-slate-900">{city.name}</h2>
+                    <p className="text-xs text-slate-500">{city.province}</p>
                   </div>
-                  <span className="text-lg font-bold text-emerald-300">
-                    {cheapest ? formatRupiah(cheapest.price?.normalizedUnitPrice ?? 0) : "-"}
+                  <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                    {t("storeCount", { count: city.storeCount })}
                   </span>
                 </div>
-              </div>
-            </Link>
+
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-500">{t("priceCheapest")}</p>
+                    <p className="truncate text-sm text-slate-700">
+                      {cheapest ? `${cheapest.price?.productName ?? "-"} · ${cheapest.name}` : commonT("notAvailable")}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-sm font-semibold text-emerald-700">
+                    {cheapest?.price ? formatUnitPrice(cheapest.price.normalizedUnitPrice, cheapest.price.unit) : "-"}
+                  </span>
+                </div>
+              </Link>
+            </li>
           );
         })}
-      </div>
-    </main>
+      </ul>
+    </div>
   );
 }
 
@@ -72,7 +70,7 @@ export default async function CitiesPage() {
   const t = await getTranslations("city");
 
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-300">{t("loadingCities")}</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">{t("loadingCities")}</div>}>
       <CitiesPageContent />
     </Suspense>
   );

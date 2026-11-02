@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { z } from "zod";
 
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
 import { ApiError } from "@/lib/api-client";
 import { listProducts, submitPriceReport, submitPromo } from "@/lib/data/repository";
 import type { Product, ProductUnit, StoreType } from "@/lib/data/types";
@@ -223,61 +224,54 @@ export function ReportForm() {
   };
 
   const selectedStoreLabel = selectedStore?.name || t("storePlaceholder");
+  const conditionsId = useId();
+
+  const tabClass = (active: boolean) =>
+    `flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${
+      active ? "bg-emerald-600 text-white" : "text-slate-600 hover:bg-white"
+    }`;
 
   if (submitted) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-8 text-center">
-          <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{t("thanks")}</p>
-          <h1 className="mt-3 text-3xl font-bold text-white">{t("submissionPending")}</h1>
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <button type="button" onClick={resetForm} className="rounded-full bg-emerald-500 px-4 py-2.5 font-semibold text-slate-950">
-              {t("reportAgain")}
-            </button>
-            <Link href="/" className="rounded-full border border-white/10 bg-slate-900 px-4 py-2.5 font-medium text-slate-100">
+      <div className="mx-auto w-full max-w-xl px-4 py-5 sm:px-6">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-center">
+          <p className="text-sm font-medium text-emerald-700">{t("thanks")}</p>
+          <h1 className="mt-1 text-xl font-semibold text-slate-900">{t("submissionPending")}</h1>
+          <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
+            <Button onClick={resetForm}>{t("reportAgain")}</Button>
+            <Button href="/" variant="secondary">
               {t("backToMap")}
-            </Link>
+            </Button>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{t("title")}</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">{t("reportFormTitle")}</h1>
-        </div>
-        <Link href="/" className="rounded-full border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:border-emerald-400">
+    <div className="mx-auto w-full max-w-xl px-4 py-5 sm:px-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold text-slate-900">{t("reportFormTitle")}</h1>
+        <Button href="/" variant="secondary" size="sm">
           {t("backToMap")}
-        </Link>
+        </Button>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-slate-900 p-6">
-        <div className="mb-6 flex rounded-full border border-white/10 bg-slate-950/70 p-1">
-          <button
-            type="button"
-            onClick={() => setTab("price")}
-            className={`flex-1 rounded-full px-3 py-2 text-sm font-medium ${tab === "price" ? "bg-emerald-500 text-slate-950" : "text-slate-300"}`}
-          >
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div role="group" aria-label={t("title")} className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
+          <button type="button" aria-pressed={tab === "price"} onClick={() => setTab("price")} className={tabClass(tab === "price")}>
             {t("tabPrice")}
           </button>
-          <button
-            type="button"
-            onClick={() => setTab("promo")}
-            className={`flex-1 rounded-full px-3 py-2 text-sm font-medium ${tab === "promo" ? "bg-emerald-500 text-slate-950" : "text-slate-300"}`}
-          >
+          <button type="button" aria-pressed={tab === "promo"} onClick={() => setTab("promo")} className={tabClass(tab === "promo")}>
             {t("tabPromo")}
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <StorePicker value={selectedStore} onChange={setSelectedStore} error={fieldErrors.storeSlug || fieldErrors.placeId || fieldErrors.storeType} />
 
-          {selectedStore && selectedStoreLabel ? (
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2 text-sm text-slate-300">
+          {selectedStore && selectedStoreLabel && !selectedStore.storeSlug ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700">
               {selectedStoreLabel}
             </div>
           ) : null}
@@ -294,86 +288,81 @@ export function ReportForm() {
                 onUnitChange={setUnit}
                 error={fieldErrors.quantity || fieldErrors.unit}
               />
-              <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-4">
-                <p className="text-xs uppercase tracking-[0.28em] text-emerald-300">{t("livePreview")}</p>
-                <p className="mt-2 text-2xl font-semibold text-white">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2" aria-live="polite">
+                <p className="text-xs font-medium text-emerald-800">{t("livePreview")}</p>
+                <p className="text-base font-semibold text-emerald-700">
                   {t("unitPriceLabel", { unit: defaultUnit, price: formatRupiah(unitPrice) })}
                 </p>
               </div>
             </>
           ) : (
-            <div className="space-y-5">
-              <div className="grid gap-5 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-200">{t("promoPrice")}</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={promoPrice}
-                    onChange={(event) => setPromoPrice(event.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
-                    placeholder="14000"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-200">{t("discountPct")}</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="99"
-                    value={discountPct}
-                    onChange={(event) => setDiscountPct(event.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
-                    placeholder="10"
-                  />
-                </div>
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <TextField
+                  label={t("promoPrice")}
+                  type="number"
+                  min="0"
+                  value={promoPrice}
+                  onChange={(event) => setPromoPrice(event.target.value)}
+                  error={fieldErrors.promoPrice}
+                  placeholder="14000"
+                />
+                <TextField
+                  label={t("discountPct")}
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={discountPct}
+                  onChange={(event) => setDiscountPct(event.target.value)}
+                  error={fieldErrors.discountPct}
+                  placeholder="10"
+                />
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-200">{t("conditions")}</label>
+              <div className="space-y-1">
+                <label htmlFor={conditionsId} className="block text-xs font-medium text-slate-700">
+                  {t("conditions")}
+                </label>
                 <textarea
+                  id={conditionsId}
                   maxLength={200}
                   value={conditions}
                   onChange={(event) => setConditions(event.target.value)}
-                  className="min-h-28 w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+                  className="min-h-20 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
                   placeholder={t("conditionsPlaceholder")}
                 />
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-200">{t("validFrom")}</label>
-                  <input
-                    type="date"
-                    value={validFrom}
-                    onChange={(event) => setValidFrom(event.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-200">{t("validTo")}</label>
-                  <input
-                    type="date"
-                    value={validTo}
-                    onChange={(event) => setValidTo(event.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
-                  />
-                </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <TextField
+                  label={t("validFrom")}
+                  type="date"
+                  value={validFrom}
+                  onChange={(event) => setValidFrom(event.target.value)}
+                  error={fieldErrors.validFrom}
+                />
+                <TextField
+                  label={t("validTo")}
+                  type="date"
+                  value={validTo}
+                  onChange={(event) => setValidTo(event.target.value)}
+                  error={fieldErrors.validTo}
+                />
               </div>
             </div>
           )}
 
-          {serverError ? <p className="rounded-xl border border-red-500/30 bg-red-500/5 px-3 py-2 text-sm text-red-200">{serverError}</p> : null}
+          {serverError ? (
+            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+              {serverError}
+            </p>
+          ) : null}
 
-          <button
-            type="submit"
-            disabled={isSubmitting || !selectedStore || !productSlug}
-            className="w-full rounded-2xl bg-emerald-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
-          >
+          <Button type="submit" disabled={isSubmitting || !selectedStore || !productSlug} className="w-full">
             {isSubmitting ? t("submitting") : t("submit")}
-          </button>
+          </Button>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

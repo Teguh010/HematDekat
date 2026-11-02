@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { buildSearchParams, parseSearchParams } from "@/lib/search-params";
+import { LocateIcon } from "@/components/ui/icons";
 
 export function LocateMeButton() {
   const t = useTranslations("home");
@@ -41,15 +42,22 @@ export function LocateMeButton() {
   };
 
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="relative">
       <button
         type="button"
         onClick={handleClick}
-        className="rounded-full border border-white/10 bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:border-emerald-400"
+        aria-label={t("locateMe")}
+        title={t("locateMe")}
+        className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 sm:px-3"
       >
-        {t("locateMe")}
+        <LocateIcon />
+        <span className="hidden sm:inline">{t("locateMe")}</span>
       </button>
-      {message ? <span className="text-xs text-amber-300">{message}</span> : null}
+      {message ? (
+        <span role="status" className="absolute right-0 top-full z-20 mt-1 whitespace-nowrap rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-800 shadow-sm">
+          {message}
+        </span>
+      ) : null}
     </div>
   );
 }

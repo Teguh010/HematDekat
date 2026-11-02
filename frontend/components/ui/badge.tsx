@@ -7,13 +7,13 @@ type BadgeProps = {
 };
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: "border border-white/10 bg-slate-800 text-slate-200",
-  success: "border border-emerald-400/30 bg-emerald-500/10 text-emerald-300",
-  warning: "border border-amber-500/30 bg-amber-500/10 text-amber-200",
-  danger: "border border-red-500/30 bg-red-500/10 text-red-200",
-  muted: "border border-slate-700 bg-slate-700 text-slate-300",
+  default: "bg-slate-100 text-slate-700",
+  success: "bg-emerald-50 text-emerald-700",
+  warning: "bg-amber-50 text-amber-700",
+  danger: "bg-red-50 text-red-700",
+  muted: "bg-slate-100 text-slate-600",
 };
 
 export function Badge({ variant = "default", className = "", children }: BadgeProps) {
-  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] ${variantClasses[variant]} ${className}`}>{children}</span>;
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${variantClasses[variant]} ${className}`}>{children}</span>;
 }

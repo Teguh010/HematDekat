@@ -93,7 +93,7 @@ export function VoteButton({
   const label = confirmed ? t("confirmed") : t("confirm");
 
   return (
-    <div className={`flex flex-col items-end gap-1 ${className ?? ""}`}>
+    <div className={`flex flex-col items-end gap-0.5 ${className ?? ""}`}>
       <Button
         type="button"
         variant={confirmed ? "secondary" : "primary"}
@@ -104,8 +104,8 @@ export function VoteButton({
       >
         {isSubmitting ? t("submitting") : label}
       </Button>
-      <span className="text-[10px] text-slate-400">{t("count", { count: localCount })}</span>
-      {error ? <span className="text-[10px] text-red-200">{error}</span> : null}
+      <span className="text-xs text-slate-500">{t("count", { count: localCount })}</span>
+      {error ? <span className="text-xs text-red-700">{error}</span> : null}
     </div>
   );
 }

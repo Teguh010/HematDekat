@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { buildSearchParams, parseSearchParams } from "@/lib/search-params";
+import { CloseIcon, SearchIcon } from "@/components/ui/icons";
 
 export function SearchBar() {
   const t = useTranslations("home");
@@ -23,23 +24,25 @@ export function SearchBar() {
   };
 
   return (
-    <div className="relative flex-1">
+    <div className="relative min-w-0 flex-1">
+      <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
       <input
         id="home-search"
         type="search"
         value={value}
         onChange={(event) => handleQueryChange(event.target.value)}
         placeholder={t("searchPlaceholder")}
-        className="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 pr-10 text-sm text-white placeholder:text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+        aria-label={t("searchPlaceholder")}
+        className="h-8 w-full rounded-lg border border-slate-300 bg-white pl-8 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 [&::-webkit-search-cancel-button]:hidden"
       />
       {value ? (
         <button
           type="button"
           onClick={() => handleQueryChange("")}
           aria-label={t("clearSearch")}
-          className="absolute inset-y-0 right-3 flex items-center text-lg text-slate-300 hover:text-white"
+          className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-700"
         >
-          ×
+          <CloseIcon />
         </button>
       ) : null}
     </div>

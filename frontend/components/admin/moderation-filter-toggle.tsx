@@ -11,12 +11,12 @@ export function ModerationFilterToggle({ checked, onChange }: ModerationFilterTo
   const t = useTranslations("admin");
 
   return (
-    <label className="flex w-fit items-center gap-3 rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-slate-200">
+    <label className="flex w-fit items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+        className="accent-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
       />
       <span>{t("onlyFlagged")}</span>
     </label>

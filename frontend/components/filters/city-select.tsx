@@ -31,7 +31,7 @@ export function CitySelect({ cities }: { cities: City[] }) {
       <select
         value={selectedCity}
         onChange={(event) => handleChange(event.target.value)}
-        className="rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+        className="h-8 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
       >
         <option value="all">{t("cityLabel")}</option>
         {cities.map((city) => (

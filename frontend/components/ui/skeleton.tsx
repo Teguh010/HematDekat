@@ -3,5 +3,5 @@ type SkeletonProps = {
 };
 
 export function Skeleton({ className = "" }: SkeletonProps) {
-  return <div aria-hidden="true" className={`animate-pulse rounded-full bg-slate-800 ${className}`} />;
+  return <div aria-hidden="true" className={`animate-pulse rounded-lg bg-slate-200 ${className}`} />;
 }

@@ -20,7 +20,7 @@ export default function Page() {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <Suspense
-        fallback={<div className="flex flex-1 items-center justify-center text-slate-300">Memuat halaman...</div>}
+        fallback={<div className="flex flex-1 items-center justify-center text-sm text-slate-500">Memuat halaman...</div>}
       >
         <HomePageContent />
       </Suspense>

@@ -15,9 +15,9 @@ export function FreshnessBadge({ updatedAt, className = "" }: FreshnessBadgeProp
   const days = daysSince(updatedAt);
 
   const variantClasses = {
-    fresh: "border border-emerald-400/30 bg-emerald-500/10 text-emerald-300",
-    recent: "border border-amber-500/30 bg-amber-500/10 text-amber-200",
-    stale: "border border-slate-700 bg-slate-700 text-slate-300",
+    fresh: "bg-emerald-50 text-emerald-700",
+    recent: "bg-amber-50 text-amber-700",
+    stale: "bg-slate-100 text-slate-600",
   } as const;
 
   const label =
@@ -27,5 +27,5 @@ export function FreshnessBadge({ updatedAt, className = "" }: FreshnessBadgeProp
         ? t("recent", { days })
         : t("stale");
 
-  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] ${variantClasses[level]} ${className}`}>{label}</span>;
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${variantClasses[level]} ${className}`}>{label}</span>;
 }

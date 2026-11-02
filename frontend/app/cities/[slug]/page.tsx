@@ -1,5 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
-
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -44,11 +42,10 @@ async function CityPageContent({ params }: CityPageProps) {
   const introText = t.has(introKey) ? t(introKey) : t("introFallback");
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">{t("cityLabel")}</p>
-        <h1 className="mt-2 text-3xl font-bold text-white">{t("titleCity", { name: city.name })}</h1>
-        <p className="mt-3 max-w-3xl text-base text-slate-300">{introText}</p>
+    <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold text-slate-900">{t("titleCity", { name: city.name })}</h1>
+        <p className="mt-1 max-w-3xl text-sm text-slate-500">{introText}</p>
       </div>
 
       <HomeExplorer
@@ -58,7 +55,7 @@ async function CityPageContent({ params }: CityPageProps) {
         lockedCity={slug}
         fillViewport={false}
       />
-    </main>
+    </div>
   );
 }
 
@@ -66,7 +63,7 @@ export default async function CityPage(props: CityPageProps) {
   const t = await getTranslations("city");
 
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-300">{t("loadingCity")}</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">{t("loadingCity")}</div>}>
       <CityPageContent {...props} />
     </Suspense>
   );

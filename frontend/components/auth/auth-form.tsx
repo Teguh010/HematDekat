@@ -143,36 +143,29 @@ export function AuthForm({ mode }: AuthFormProps) {
   const alternateAction = isRegister ? t("signIn") : t("signUp");
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
-      <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl shadow-slate-950/40 sm:p-8">
-        <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{t("account")}</p>
-        <h1 className="mt-3 text-3xl font-bold text-white">
+    <div className="mx-auto w-full max-w-sm px-4 py-8 sm:px-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h1 className="text-xl font-semibold text-slate-900">
           {isRegister ? t("signUpTitle") : t("signInTitle")}
         </h1>
 
         {searchParams.get("auth") === "google-success" ? (
-          <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <div role="status" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
             {t("googleSuccess")}
           </div>
         ) : null}
 
-        <div className="mt-6 space-y-4">
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-full rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200 transition hover:bg-emerald-500/15"
-          >
-            {t("continueWithGoogle")}
-          </button>
-        </div>
+        <Button type="button" variant="secondary" onClick={handleGoogleLogin} className="mt-4 w-full">
+          {t("continueWithGoogle")}
+        </Button>
 
-        <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-          <div className="h-px flex-1 bg-white/10" />
+        <div className="my-4 flex items-center gap-3 text-xs text-slate-500">
+          <div className="h-px flex-1 bg-slate-200" />
           <span>{t("or")}</span>
-          <div className="h-px flex-1 bg-white/10" />
+          <div className="h-px flex-1 bg-slate-200" />
         </div>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-3" onSubmit={handleSubmit}>
           {isRegister ? (
             <TextField
               id="name"
@@ -222,7 +215,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           ) : null}
 
           {submitError ? (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-100">
+            <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {submitError}
             </div>
           ) : null}
@@ -232,13 +225,17 @@ export function AuthForm({ mode }: AuthFormProps) {
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-slate-400">
-          {alternateText} <Link href={isRegister ? `/login?next=${encodeURIComponent(next)}` : `/register?next=${encodeURIComponent(next)}`} className="font-medium text-emerald-300">{alternateAction}</Link>
+        <div className="mt-4 text-center text-sm text-slate-500">
+          {alternateText}{" "}
+          <Link
+            href={isRegister ? `/login?next=${encodeURIComponent(next)}` : `/register?next=${encodeURIComponent(next)}`}
+            className="font-medium text-emerald-700 hover:text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+          >
+            {alternateAction}
+          </Link>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-4 text-sm text-slate-300">
-          {t("googleInfo")}
-        </div>
+        <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">{t("googleInfo")}</p>
       </div>
     </div>
   );

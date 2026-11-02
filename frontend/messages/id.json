@@ -21,7 +21,6 @@
     "cities": "Kota",
     "reportPrice": "Laporkan harga",
     "brand": "HematDekat",
-    "subtitle": "Map Harga Sembako",
     "login": "Masuk",
     "logout": "Keluar",
     "admin": "Admin",
@@ -97,7 +96,8 @@
   },
   "map": {
     "apiKeyMissing": "Google Maps API key belum tersedia. Isi variabel NEXT_PUBLIC_GOOGLE_MAPS_API_KEY di .env.local.",
-    "searchThisArea": "Cari di area ini"
+    "searchThisArea": "Cari di area ini",
+    "viewStore": "Lihat toko"
   },
   "store": {
     "infoStore": "Info toko",

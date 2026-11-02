@@ -6,8 +6,15 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { getProduct } from "@/lib/data/repository";
-import { formatRupiah } from "@/lib/format";
+import { formatRupiah, formatUnitPrice } from "@/lib/format";
+
+const chipBase =
+  "inline-flex h-8 items-center rounded-full px-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600";
+const chipActive = "bg-emerald-600 text-white";
+const chipIdle = "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50";
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -42,24 +49,19 @@ async function ProductPageContent({ params, searchParams }: ProductPageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-emerald-400">{commonT("product")}</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">{product.product.name}</h1>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/" className="rounded-full border border-white/10 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:border-emerald-400">
-            {commonT("backToMap")}
-          </Link>
-        </div>
+    <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold text-slate-900">{product.product.name}</h1>
+        <Button href="/" variant="secondary" size="sm">
+          {commonT("backToMap")}
+        </Button>
       </div>
 
-      <section className="mb-8 rounded-3xl border border-white/10 bg-slate-900 p-5">
-        <div className="mb-4 flex flex-wrap gap-2">
+      <Card as="section" className="mb-4">
+        <div className="mb-3 flex flex-wrap gap-2">
           <Link
             href={`/products/${slug}`}
-            className={`rounded-full px-3 py-1.5 text-sm ${!selectedCity ? "bg-emerald-500 text-slate-950" : "border border-white/10 bg-slate-800 text-slate-200"}`}
+            className={`${chipBase} ${!selectedCity ? chipActive : chipIdle}`}
           >
             Semua kota
           </Link>
@@ -67,67 +69,70 @@ async function ProductPageContent({ params, searchParams }: ProductPageProps) {
             <Link
               key={city.citySlug}
               href={`/products/${slug}?city=${encodeURIComponent(city.citySlug)}`}
-              className={`rounded-full px-3 py-1.5 text-sm ${selectedCity === city.citySlug ? "bg-emerald-500 text-slate-950" : "border border-white/10 bg-slate-800 text-slate-200"}`}
+              className={`${chipBase} ${selectedCity === city.citySlug ? chipActive : chipIdle}`}
             >
               {city.cityName}
             </Link>
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-white/10">
-          <table className="min-w-full text-left text-sm text-slate-200">
-            <thead className="bg-slate-800 text-slate-300">
+        <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <table className="min-w-full text-left text-sm text-slate-700">
+            <thead className="bg-slate-50 text-slate-500">
               <tr>
-                <th className="px-4 py-3 font-medium">Kota</th>
-                <th className="px-4 py-3 font-medium">Rata-rata</th>
-                <th className="px-4 py-3 font-medium">Laporan</th>
+                <th className="px-3 py-2 font-medium">Kota</th>
+                <th className="px-3 py-2 font-medium">Rata-rata</th>
+                <th className="px-3 py-2 font-medium">Laporan</th>
               </tr>
             </thead>
             <tbody>
               {product.cityAverages.map((city) => (
-                <tr key={city.citySlug} className="border-t border-white/10 bg-slate-900/60">
-                  <td className="px-4 py-3">
-                    <Link href={`/products/${slug}?city=${encodeURIComponent(city.citySlug)}`} className="font-medium text-white hover:text-emerald-300">
+                <tr key={city.citySlug} className="border-t border-slate-100">
+                  <td className="px-3 py-2">
+                    <Link
+                      href={`/products/${slug}?city=${encodeURIComponent(city.citySlug)}`}
+                      className="font-medium text-slate-900 hover:text-emerald-700"
+                    >
                       {city.cityName}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-emerald-300">{formatRupiah(city.averageUnitPrice)}</td>
-                  <td className="px-4 py-3 text-slate-400">{city.reportCount}</td>
+                  <td className="px-3 py-2 font-medium text-emerald-700">{formatRupiah(city.averageUnitPrice)}</td>
+                  <td className="px-3 py-2 text-slate-500">{city.reportCount}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
+      </Card>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {product.cheapest.map((store) => (
-          <Link
-            key={store.id}
-            href={`/stores/${store.slug}`}
-            className="rounded-3xl border border-white/10 bg-slate-900 p-5 transition hover:border-emerald-400/60 hover:bg-slate-800"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{store.city.name}</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">{store.name}</h2>
+          <li key={store.id}>
+            <Link
+              href={`/stores/${store.slug}`}
+              className="block rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:border-emerald-300 hover:bg-emerald-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="truncate text-sm font-semibold text-slate-900">{store.name}</h2>
+                  <p className="text-xs text-slate-500">{store.city.name}</p>
+                </div>
+                <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600">
+                  {store.distanceKm ?? 0} km
+                </span>
               </div>
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300">
-                {store.distanceKm ?? 0} km
-              </span>
-            </div>
 
-            <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/50 p-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{t("price")}</p>
-              <div className="mt-2 flex items-center justify-between gap-3">
-                <span className="text-sm text-slate-300">{product.product.name}</span>
-                <span className="text-lg font-bold text-emerald-300">{formatRupiah(store.price?.normalizedUnitPrice ?? 0)}</span>
+              <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
+                <span className="truncate text-xs text-slate-500">{t("price")}</span>
+                <span className="shrink-0 text-sm font-semibold text-emerald-700">
+                  {store.price ? formatUnitPrice(store.price.normalizedUnitPrice, store.price.unit) : formatRupiah(0)}
+                </span>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </li>
         ))}
-      </div>
-    </main>
+      </ul>
+    </div>
   );
 }
 
@@ -135,7 +140,7 @@ export default async function ProductPage(props: ProductPageProps) {
   const t = await getTranslations("product");
 
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-300">{t("loadingProduct")}</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">{t("loadingProduct")}</div>}>
       <ProductPageContent {...props} />
     </Suspense>
   );
