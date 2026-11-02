@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("common");
 
   return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
     title: {
       template: `%s | ${t("appName")}`,
       default: t("appName"),

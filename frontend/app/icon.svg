@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="HematDekat logo">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#020617"/>
+  <rect x="12" y="12" width="104" height="104" rx="22" fill="url(#bg)"/>
+  <path d="M36 46c0-7.7 6.3-14 14-14h28c7.7 0 14 6.3 14 14v33c0 7.7-6.3 14-14 14H50c-7.7 0-14-6.3-14-14V46Zm10 0v33h28V46H46Zm7 15h14v7H53v-7Zm20 0h14v7H73v-7Z" fill="#f8fafc"/>
+  <circle cx="92" cy="40" r="13" fill="#f8fafc"/>
+  <path d="M92 31v18M83 40h18" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/>
+</svg>

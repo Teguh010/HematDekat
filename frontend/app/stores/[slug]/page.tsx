@@ -55,9 +55,29 @@ async function StorePageContent({ params }: StorePageProps) {
     },
   ];
   const mapApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "GroceryStore",
+    name: store.name,
+    description: t("storePageDescription", { name: store.name }),
+    image: placeDetails.available && placeDetails.photo ? placeDetails.photo.uri : undefined,
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "ID",
+      addressLocality: store.city.name,
+      streetAddress: placeDetails.available && placeDetails.formattedAddress ? placeDetails.formattedAddress : undefined,
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: store.lat,
+      longitude: store.lng,
+    },
+    url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/stores/${encodeURIComponent(store.slug)}`,
+  };
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">{store.type}</p>
