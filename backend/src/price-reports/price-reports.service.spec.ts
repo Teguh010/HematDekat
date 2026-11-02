@@ -1,3 +1,4 @@
+import { UnprocessableEntityException } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 
 import { PriceReportsService } from './price-reports.service.js';
@@ -41,7 +42,19 @@ describe('PriceReportsService', () => {
     } as any;
 
     const service = new PriceReportsService(prisma, {
-      lookup: async () => null,
+      resolveForSubmission: async () => ({
+        id: 'store-1',
+        slug: 'pasar-sukajadi',
+        name: 'Pasar Sukajadi',
+        placeId: 'place-1',
+        cityId: 'city-1',
+        city: { slug: 'bandung', name: 'Bandung' },
+        district: 'Sukajadi',
+        lat: -6.9,
+        lng: 107.6,
+        type: 'MARKET',
+        fetchedAt: new Date(),
+      }),
     } as any);
 
     const result = await service.create({
@@ -84,7 +97,19 @@ describe('PriceReportsService', () => {
     } as any;
 
     const service = new PriceReportsService(prisma, {
-      lookup: async () => null,
+      resolveForSubmission: async () => ({
+        id: 'store-1',
+        slug: 'pasar-sukajadi',
+        name: 'Pasar Sukajadi',
+        placeId: 'place-1',
+        cityId: 'city-1',
+        city: { slug: 'bandung', name: 'Bandung' },
+        district: 'Sukajadi',
+        lat: -6.9,
+        lng: 107.6,
+        type: 'MARKET',
+        fetchedAt: new Date(),
+      }),
     } as any);
 
     await expect(
@@ -121,16 +146,11 @@ describe('PriceReportsService', () => {
     } as any;
 
     const service = new PriceReportsService(prisma, {
-      lookup: async () => ({
-        placeId: 'new-place',
-        name: 'Remote store',
-        lat: 1,
-        lng: 100,
-        formattedAddress: 'Unknown',
-        district: 'Remote',
-        suggestedType: 'market',
-        existingStoreSlug: null,
-      }),
+      resolveForSubmission: async () => {
+        throw Object.assign(new UnprocessableEntityException('Store is outside supported cities'), {
+          response: { statusCode: 422, message: 'Store is outside supported cities' },
+        });
+      },
     } as any);
 
     await expect(

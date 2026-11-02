@@ -1,8 +1,5 @@
 import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { toApiUnit } from '../common/enums.js';
-import { haversineKm } from '../common/geo.js';
-import { slugify } from '../common/slugify.js';
-import { toDbStoreType } from '../common/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StoresService } from '../stores/stores.service.js';
 
@@ -21,98 +18,8 @@ export type PriceReportSubmissionInput = {
 export class PriceReportsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly stores: StoresService | { resolveForSubmission?: (input: PriceReportSubmissionInput) => Promise<any>; lookup?: (input: { placeId: string; sessionToken: string }) => Promise<any> },
+    private readonly stores: StoresService,
   ) {}
-
-  private async resolveStoreForSubmission(input: PriceReportSubmissionInput) {
-    const resolver = this.stores as StoresService & { resolveForSubmission?: (input: PriceReportSubmissionInput) => Promise<any>; lookup?: (input: { placeId: string; sessionToken: string }) => Promise<any> };
-
-    if (typeof resolver.resolveForSubmission === 'function') {
-      return resolver.resolveForSubmission(input);
-    }
-
-    if (input.storeSlug) {
-      const store = await this.prisma.store.findUnique({
-        where: { slug: input.storeSlug },
-        include: { city: true },
-      });
-
-      if (!store) {
-        throw new NotFoundException(`Store with slug "${input.storeSlug}" not found`);
-      }
-
-      return store;
-    }
-
-    if (!input.placeId) {
-      throw new NotFoundException('Either storeSlug or placeId is required');
-    }
-
-    const existing = await this.prisma.store.findUnique({
-      where: { placeId: input.placeId },
-      include: { city: true },
-    });
-
-    if (existing) {
-      return existing;
-    }
-
-    if (typeof resolver.lookup !== 'function') {
-      throw new NotFoundException(`Place with id "${input.placeId}" not found`);
-    }
-
-    const place = await resolver.lookup({
-      placeId: input.placeId,
-      sessionToken: crypto.randomUUID(),
-    });
-
-    if (!place) {
-      throw new NotFoundException(`Place with id "${input.placeId}" not found`);
-    }
-
-    const cities = await this.prisma.city.findMany({
-      select: { id: true, slug: true, name: true, centerLat: true, centerLng: true },
-    });
-
-    let nearestCity: (typeof cities)[number] | null = null;
-    let nearestDistance = Number.POSITIVE_INFINITY;
-
-    for (const city of cities) {
-      const distance = haversineKm(place.lat, place.lng, city.centerLat, city.centerLng);
-      if (distance < nearestDistance) {
-        nearestDistance = distance;
-        nearestCity = city;
-      }
-    }
-
-    if (!nearestCity || nearestDistance > 50) {
-      throw new UnprocessableEntityException('Store is outside supported cities');
-    }
-
-    const baseSlug = slugify(`${place.name} ${place.district ?? nearestCity.name}`) || 'new-store';
-    let slug = baseSlug;
-    let index = 2;
-
-    while (await this.prisma.store.findUnique({ where: { slug }, select: { id: true } })) {
-      slug = `${baseSlug}-${index}`;
-      index += 1;
-    }
-
-    return this.prisma.store.create({
-      data: {
-        slug,
-        name: place.name,
-        placeId: place.placeId,
-        type: toDbStoreType(input.storeType ?? 'grocery-stall'),
-        cityId: nearestCity.id,
-        district: place.district ?? null,
-        lat: place.lat,
-        lng: place.lng,
-        fetchedAt: new Date(),
-      },
-      include: { city: true },
-    });
-  }
 
   async create(input: PriceReportSubmissionInput) {
     const product = await this.prisma.product.findUnique({
@@ -128,7 +35,7 @@ export class PriceReportsService {
       throw new UnprocessableEntityException(`Unit must be ${expectedUnit}`);
     }
 
-    const store = await this.resolveStoreForSubmission(input);
+    const store = await this.stores.resolveForSubmission(input);
     const normalizedUnitPrice = Math.round(input.price / input.quantity);
 
     const report = await this.prisma.$transaction(async (tx) => {
