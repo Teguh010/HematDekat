@@ -741,7 +741,7 @@ Depends on: C2 to C12.
 Ask the user before the sub-step listed.
 
 1. Store names: Google's terms prefer fetching Places content fresh. Recommended: treat `Store.name` like coordinates (a cache, refreshed within 30 days by the follow-up job). Needed by C9.1.
-2. Contact email for the `/feedback` `mailto:` link and the privacy page. Needed by C12.1.
+
 
 ## Status
 
@@ -803,7 +803,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
   - [x] C11.2 Outlier flags
   - [x] C11.3 Admin page upgrade
 - C12. Static pages, SEO, polish
-  - [ ] C12.1 Static pages
+  - [x] C12.1 Static pages
   - [ ] C12.2 SEO files
   - [ ] C12.3 States and accessibility
 - C13. Tests, build, deployment (MVP checkpoint)

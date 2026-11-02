@@ -210,6 +210,48 @@
     "or": "atau",
     "loading": "Memuat..."
   },
+  "static": {
+    "about": {
+      "title": "Tentang HematDekat",
+      "description": "HematDekat membantu masyarakat membandingkan harga sembako terdekat secara cepat dan transparan.",
+      "intro": "HematDekat adalah platform untuk membandingkan harga sembako di sekitar Anda. Tujuannya sederhana: membantu keluarga dan pelaku usaha menemukan pilihan yang lebih murah tanpa harus mengunjungi banyak toko satu per satu.",
+      "section1": "Semua harga di HematDekat berasal dari laporan pengguna, toko, dan pasar yang terdaftar. Data baru ditinjau sebelum terlihat di pencarian umum agar hasil yang ditampilkan lebih konsisten.",
+      "section2": "Setelah harga dikirim, administrator menilai laporan tersebut. Jika harga terlihat mencurigakan, item akan diberi tanda khusus dan tetap menunggu verifikasi sebelum masuk ke hasil utama.",
+      "section3": "Setelah laporan diterima, komunitas dapat mengonfirmasi apakah harga masih relevan. Semakin banyak konfirmasi yang sesuai, semakin kuat kepercayaan pada data yang terlihat di peta dan daftar harga.",
+      "backToHome": "Kembali ke beranda"
+    },
+    "privacy": {
+      "title": "Kebijakan Privasi",
+      "description": "Informasi apa yang kami simpan di HematDekat dan bagaimana pengunaannya.",
+      "intro": "Kami menghargai privasi Anda. HematDekat hanya menyimpan data yang diperlukan untuk mengelola akun, laporan harga, serta proses moderasi dan konfirmasi komunitas.",
+      "section1": "Data akun: kami menyimpan nama, alamat email, dan informasi login dasar agar Anda dapat masuk, mengelola akun, dan melacak kontribusi Anda.",
+      "section2": "Data laporan: harga yang Anda kirim, produk, toko, jumlah, validitas, serta status persetujuan dan konfirmasi akan disimpan untuk menampilkan informasi umum di peta dan halaman produk.",
+      "section3": "Cookie autentikasi: kami memakai satu cookie sesi untuk menjaga Anda tetap masuk. Cookie tersebut hanya dipakai untuk autentikasi dan tidak dipakai untuk iklan atau pelacakan lintas situs.",
+      "section4": "Login Google: jika Anda masuk dengan Google, kami memakai identitas yang disediakan Google untuk membuat atau menghubungkan akun HematDekat Anda.",
+      "contact": "Jika ada pertanyaan, silakan hubungi kami di teguhbaghoy6@gmail.com.",
+      "backToHome": "Kembali ke beranda"
+    },
+    "terms": {
+      "title": "Syarat Layanan",
+      "description": "Syarat penggunaan HematDekat tentang data harga, moderasi, dan tanggung jawab pengguna.",
+      "intro": "Dengan menggunakan HematDekat, Anda setuju bahwa semua data harga dan promo yang tampil adalah informasi yang dilaporkan oleh pengguna dan komunitas, bukan data resmi dari toko atau penyedia jasa.",
+      "section1": "Harga yang terlihat dapat berubah sewaktu-waktu. Toko, pasar, promosi, dan stok bisa berbeda dengan kondisi di lapangan. HematDekat tidak menjamin keakuratan setiap data secara real-time.",
+      "section2": "Kami memproses laporan dan konfirmasi dengan mekanisme moderasi untuk mengurangi data yang mencurigakan. Namun, keputusan akhir tetap bergantung pada kualitas dan kejujuran informasi yang masuk.",
+      "section3": "HematDekat tidak berafiliasi dengan toko, pasar, atau penyedia layanan. Platform ini hanya menyediakan alat perbandingan dan pengingat harga yang dibuat untuk membantu keputusan belanja yang lebih cerdas.",
+      "section4": "Kami berhak meninjau, menolak, atau menghapus laporan yang tidak sesuai dengan ketentuan komunitas atau yang dipertanyakan keandalannya.",
+      "backToHome": "Kembali ke beranda"
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description": "Kirim masukan, bug, atau saran untuk HematDekat.",
+      "intro": "Kami ingin terus memperbaiki HematDekat agar lebih berguna untuk masyarakat. Jika Anda menemukan bug, punya ide fitur, atau ingin memberi masukan tentang data dan pengalaman menggunakan platform, silakan kirim pesan ke kami.",
+      "emailLabel": "Email kontak",
+      "email": "teguhbaghoy6@gmail.com",
+      "cta": "Kirim email",
+      "note": "Feedback tidak dibuat melalui form database; kami memproses masukan lewat email ini agar lebih cepat dan langsung ditangani.",
+      "backToHome": "Kembali ke beranda"
+    }
+  },
   "admin": {
     "title": "Moderasi harga",
     "accessRequired": "Akses admin diperlukan.",
