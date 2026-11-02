@@ -81,8 +81,8 @@ export class AdminService {
         discountPct: null,
         validFrom: null,
         validTo: null,
-        flagged: false,
-        flagReason: null,
+        flagged: report.flagged,
+        flagReason: report.flagReason,
         createdAt: report.createdAt.toISOString(),
       })),
       ...promos.map((promo) => ({

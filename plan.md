@@ -329,7 +329,7 @@ type PendingItem = {
   discountPct: number | null;
   validFrom: string | null;
   validTo: string | null;
-  flagged: boolean;              // always false until C11.2
+  flagged: boolean;              // true for price-report outliers vs. the recent median (C11.2); always false for promos
   flagReason: string | null;
   createdAt: string;
 };
@@ -800,7 +800,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
   - [x] C10.2 Vote button
 - C11. Anti-abuse
   - [x] C11.1 Rate limits
-  - [ ] C11.2 Outlier flags
+  - [x] C11.2 Outlier flags
   - [ ] C11.3 Admin page upgrade
 - C12. Static pages, SEO, polish
   - [ ] C12.1 Static pages

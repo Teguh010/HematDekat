@@ -13,6 +13,8 @@ describe('AdminService', () => {
             quantity: 1,
             normalizedUnitPrice: 15000,
             createdAt: new Date('2026-10-01T00:00:00.000Z'),
+            flagged: false,
+            flagReason: null,
             product: { slug: 'beras-premium', name: 'Beras premium', defaultUnit: 'KG' },
             store: { slug: 'pasar-kramat-jati', name: 'Pasar Kramat Jati' },
             reporter: { name: 'Rina', email: 'rina@example.com' },
@@ -51,6 +53,50 @@ describe('AdminService', () => {
       submittedBy: 'Rina',
       price: 15000,
       product: { defaultUnit: 'kg' },
+    });
+  });
+
+  it('puts flagged price reports before newer unflagged items', async () => {
+    const prisma = {
+      priceReport: {
+        findMany: async () => [
+          {
+            id: 'report-newer',
+            price: 20000,
+            quantity: 1,
+            normalizedUnitPrice: 20000,
+            createdAt: new Date('2026-10-31T00:00:00.000Z'),
+            flagged: false,
+            flagReason: null,
+            product: { slug: 'beras-premium', name: 'Beras premium', defaultUnit: 'KG' },
+            store: { slug: 'pasar-kramat-jati', name: 'Pasar Kramat Jati' },
+            reporter: { name: 'Rina', email: 'rina@example.com' },
+          },
+          {
+            id: 'report-flagged',
+            price: 50000,
+            quantity: 1,
+            normalizedUnitPrice: 50000,
+            createdAt: new Date('2026-10-01T00:00:00.000Z'),
+            flagged: true,
+            flagReason: 'Unit price Rp50.000 vs median Rp15.000',
+            product: { slug: 'beras-premium', name: 'Beras premium', defaultUnit: 'KG' },
+            store: { slug: 'pasar-kramat-jati', name: 'Pasar Kramat Jati' },
+            reporter: { name: 'Doni', email: 'doni@example.com' },
+          },
+        ],
+      },
+      promo: {
+        findMany: async () => [],
+      },
+    } as unknown as PrismaService;
+
+    const pending = await new AdminService(prisma).listPending();
+
+    expect(pending.map((item) => item.id)).toEqual(['report-flagged', 'report-newer']);
+    expect(pending[0]).toMatchObject({
+      flagged: true,
+      flagReason: 'Unit price Rp50.000 vs median Rp15.000',
     });
   });
 });
