@@ -2,6 +2,8 @@
 
 import { useId, type InputHTMLAttributes } from "react";
 
+import { fieldClass } from "./field-styles";
+
 type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: React.ReactNode;
   error?: string;
@@ -15,7 +17,7 @@ export function TextField({ label, id, error, className = "", ...inputProps }: T
   return (
     <div className="space-y-1">
       {label ? (
-        <label htmlFor={inputId} className="text-xs font-medium text-slate-700">
+        <label htmlFor={inputId} className="text-xs font-medium text-ink-700">
           {label}
         </label>
       ) : null}
@@ -23,13 +25,11 @@ export function TextField({ label, id, error, className = "", ...inputProps }: T
         id={inputId}
         aria-invalid={Boolean(error)}
         aria-describedby={describedBy}
-        className={`h-9 w-full rounded-lg border bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${
-          error ? "border-red-300 bg-red-50" : "border-slate-300"
-        } ${className}`}
+        className={`${fieldClass({ error: Boolean(error) })} ${className}`.trim()}
         {...inputProps}
       />
       {error ? (
-        <p id={`${inputId}-error`} className="text-xs text-red-700">
+        <p id={`${inputId}-error`} className="text-xs text-danger-700">
           {error}
         </p>
       ) : null}

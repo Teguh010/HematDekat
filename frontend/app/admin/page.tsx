@@ -7,6 +7,9 @@ import { ModerationFilterToggle } from "@/components/admin/moderation-filter-tog
 import { PendingItemCard } from "@/components/admin/pending-item-card";
 import { RequireUser } from "@/components/auth/require-user";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageContainer } from "@/components/ui/page-container";
+import { PageHeader } from "@/components/ui/page-header";
 import { listPendingItems, setModerationStatus } from "@/lib/data/repository";
 import type { PendingItem } from "@/lib/data/types";
 
@@ -58,16 +61,18 @@ export default function AdminPage() {
 
   return (
     <RequireUser role="admin">
-      <div className="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold text-slate-900">{t("title")}</h1>
-          <Button href="/" variant="secondary" size="sm">
-            {t("backToMap")}
-          </Button>
-        </div>
+      <PageContainer size="lg">
+        <PageHeader
+          title={t("title")}
+          actions={
+            <Button href="/" variant="secondary" size="sm">
+              {t("backToMap")}
+            </Button>
+          }
+        />
 
         {error ? (
-          <div role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div>
+          <div role="alert" className="mb-3 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-800">{error}</div>
         ) : null}
 
         {!loading && items.length > 0 ? (
@@ -77,11 +82,13 @@ export default function AdminPage() {
         ) : null}
 
         {loading ? (
-          <div role="status" className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">{t("loading")}</div>
+          <Card className="text-sm text-ink-500">
+            <div role="status">{t("loading")}</div>
+          </Card>
         ) : visibleItems.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-500">
+          <Card className="text-center text-sm text-ink-500">
             {onlyFlagged ? t("noFlaggedItems") : t("noItems")}
-          </div>
+          </Card>
         ) : (
           <div className="space-y-2">
             {visibleItems.map((item) => {
@@ -99,7 +106,7 @@ export default function AdminPage() {
             })}
           </div>
         )}
-      </div>
+      </PageContainer>
     </RequireUser>
   );
 }

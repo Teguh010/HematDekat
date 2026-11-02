@@ -10,18 +10,18 @@ type MobileViewToggleProps = {
 };
 
 const baseClasses =
-  "flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600";
+  "flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors focus-ring";
 
 export function MobileViewToggle({ value, onChange }: MobileViewToggleProps) {
   const t = useTranslations("home");
 
   return (
-    <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-slate-200 bg-white p-0.5 shadow-sm lg:hidden">
+    <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full border border-ink-200 bg-surface p-0.5 shadow-sm lg:hidden">
       <button
         type="button"
         aria-pressed={value === "map"}
         onClick={() => onChange("map")}
-        className={`${baseClasses} ${value === "map" ? "bg-emerald-600 text-white" : "text-slate-600"}`}
+        className={`${baseClasses} ${value === "map" ? "bg-brand-600 text-on-brand" : "text-ink-600"}`}
       >
         <MapIcon />
         {t("showMap")}
@@ -30,7 +30,7 @@ export function MobileViewToggle({ value, onChange }: MobileViewToggleProps) {
         type="button"
         aria-pressed={value === "list"}
         onClick={() => onChange("list")}
-        className={`${baseClasses} ${value === "list" ? "bg-emerald-600 text-white" : "text-slate-600"}`}
+        className={`${baseClasses} ${value === "list" ? "bg-brand-600 text-on-brand" : "text-ink-600"}`}
       >
         <ListIcon />
         {t("showList")}

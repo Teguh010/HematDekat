@@ -8,7 +8,7 @@ import { UserMenu } from "@/components/user-menu";
 import { CloseIcon, FilterIcon } from "@/components/ui/icons";
 
 const navLinkClasses =
-  "text-sm text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600";
+  "text-sm text-ink-600 transition-colors hover:text-ink-900 focus-ring";
 
 export function AppHeader() {
   const t = useTranslations("header");
@@ -30,11 +30,11 @@ export function AppHeader() {
   }, [menuOpen]);
 
   return (
-    <header className="relative z-40 shrink-0 border-b border-slate-200 bg-white">
+    <header className="relative z-40 shrink-0 border-b border-ink-200 bg-surface">
       <div className="mx-auto flex h-10 max-w-7xl items-center justify-between gap-4 px-4">
         <Link
           href="/"
-          className="text-base font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+          className="text-base font-semibold text-ink-900 focus-ring"
         >
           {t("brand")}
         </Link>
@@ -52,7 +52,7 @@ export function AppHeader() {
         <button
           type="button"
           onClick={() => setMenuOpen((current) => !current)}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 md:hidden"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-600 hover:bg-ink-100 hover:text-ink-900 focus-ring md:hidden"
           aria-label={menuOpen ? t("closeMenu") : t("menu")}
           aria-expanded={menuOpen}
         >
@@ -61,7 +61,7 @@ export function AppHeader() {
       </div>
 
       {menuOpen ? (
-        <nav className="absolute inset-x-0 top-full border-b border-slate-200 bg-white shadow-sm md:hidden">
+        <nav className="absolute inset-x-0 top-full border-b border-ink-200 bg-surface shadow-sm md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col px-4 py-1">
             <Link
               href="/cities"
@@ -77,7 +77,7 @@ export function AppHeader() {
             >
               {t("report")}
             </Link>
-            <div className="flex min-h-10 items-center border-t border-slate-100 py-1">
+            <div className="flex min-h-10 items-center border-t border-ink-100 py-1">
               <UserMenu />
             </div>
           </div>

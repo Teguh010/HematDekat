@@ -41,8 +41,8 @@ export function StoreCard({
     <Link
       href={`/stores/${store.slug}`}
       data-store-id={store.id}
-      className={`block border-b border-slate-100 px-3 py-2 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-600 ${
-        isHighlighted ? "bg-emerald-50" : "bg-white"
+      className={`block border-b border-ink-100 px-3 py-2 transition-colors hover:bg-ink-50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 ${
+        isHighlighted ? "bg-brand-50" : "bg-surface"
       }`}
       onMouseEnter={() => onHoverChange?.(store.id)}
       onMouseLeave={() => onHoverChange?.(null)}
@@ -52,17 +52,17 @@ export function StoreCard({
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <h3 className="truncate text-sm font-medium text-slate-900">{store.name}</h3>
+          <h3 className="truncate text-sm font-medium text-ink-900">{store.name}</h3>
           {store.hasActivePromo ? <Badge variant="success">{t("promo")}</Badge> : null}
         </div>
         {unitPrice !== null ? (
-          <span className="shrink-0 text-sm font-semibold text-emerald-700">{formatUnitPrice(unitPrice, unitLabel)}</span>
+          <span className="shrink-0 text-sm font-semibold text-brand-700">{formatUnitPrice(unitPrice, unitLabel)}</span>
         ) : (
-          <span className="shrink-0 text-xs text-slate-500">{t("noPrice")}</span>
+          <span className="shrink-0 text-xs text-ink-500">{t("noPrice")}</span>
         )}
       </div>
 
-      <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-slate-500">
+      <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-ink-500">
         <span className="truncate">{meta}</span>
         {displayProduct ? <FreshnessBadge updatedAt={displayProduct.verifiedAt} className="shrink-0" /> : null}
       </div>

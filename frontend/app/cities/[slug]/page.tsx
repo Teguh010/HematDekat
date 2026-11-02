@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { HomeExplorer } from "@/components/home/home-explorer";
+import { PageContainer } from "@/components/ui/page-container";
+import { PageHeader } from "@/components/ui/page-header";
 import { getCity, listCities, listProducts, listStores } from "@/lib/data/repository";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -42,11 +44,8 @@ async function CityPageContent({ params }: CityPageProps) {
   const introText = t.has(introKey) ? t(introKey) : t("introFallback");
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
-      <div className="mb-4">
-        <h1 className="text-xl font-semibold text-slate-900">{t("titleCity", { name: city.name })}</h1>
-        <p className="mt-1 max-w-3xl text-sm text-slate-500">{introText}</p>
-      </div>
+    <PageContainer>
+      <PageHeader title={t("titleCity", { name: city.name })} description={introText} />
 
       <HomeExplorer
         products={products}
@@ -55,7 +54,7 @@ async function CityPageContent({ params }: CityPageProps) {
         lockedCity={slug}
         fillViewport={false}
       />
-    </div>
+    </PageContainer>
   );
 }
 
@@ -63,7 +62,7 @@ export default async function CityPage(props: CityPageProps) {
   const t = await getTranslations("city");
 
   return (
-    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">{t("loadingCity")}</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-ink-500">{t("loadingCity")}</div>}>
       <CityPageContent {...props} />
     </Suspense>
   );

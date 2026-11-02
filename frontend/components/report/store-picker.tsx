@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { fieldClass } from "@/components/ui/field-styles";
 import { ApiError } from "@/lib/api-client";
 import { autocompletePlaces, lookupPlace } from "@/lib/data/repository";
 import type { PlaceSuggestion, StoreType } from "@/lib/data/types";
@@ -65,7 +66,7 @@ export function StorePicker({ value, onChange, error }: StorePickerProps) {
 
   return (
     <div className="space-y-1">
-      <label htmlFor="report-store-input" className="block text-xs font-medium text-slate-700">{t("store")}</label>
+      <label htmlFor="report-store-input" className="block text-xs font-medium text-ink-700">{t("store")}</label>
       <input
         id="report-store-input"
         value={query}
@@ -101,9 +102,7 @@ export function StorePicker({ value, onChange, error }: StorePickerProps) {
           }, 300);
         }}
         aria-invalid={Boolean(error || searchError)}
-        className={`h-9 w-full rounded-lg border bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${
-          error || searchError ? "border-red-300 bg-red-50" : "border-slate-300"
-        }`}
+        className={fieldClass({ error: Boolean(error || searchError) })}
         placeholder={t("storePlaceholder")}
         role="combobox"
         aria-expanded={suggestions.length > 0}
@@ -111,30 +110,30 @@ export function StorePicker({ value, onChange, error }: StorePickerProps) {
         aria-autocomplete="list"
       />
       {value?.storeSlug ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm text-emerald-800">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-sm text-brand-800">
           <span>{value.name}</span>
-          <button type="button" onClick={() => onChange(null)} className="font-medium text-emerald-700 hover:text-emerald-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
+          <button type="button" onClick={() => onChange(null)} className="font-medium text-brand-700 hover:text-brand-900 focus-ring">
             {t("changeStore")}
           </button>
         </div>
       ) : null}
       {suggestions.length > 0 ? (
-        <ul id="store-suggestions" className="rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+        <ul id="store-suggestions" className="rounded-lg border border-ink-200 bg-surface p-1 shadow-sm">
           {suggestions.map((suggestion) => (
             <li key={suggestion.placeId}>
               <button
                 type="button"
                 onClick={() => void handleSelect(suggestion)}
-                className="flex w-full flex-col items-start rounded-md px-3 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600"
+                className="flex w-full flex-col items-start rounded-md px-3 py-1.5 text-left text-sm text-ink-700 hover:bg-ink-50 focus-ring"
               >
-                <span className="font-medium text-slate-900">{suggestion.mainText}</span>
-                {suggestion.secondaryText ? <span className="text-xs text-slate-500">{suggestion.secondaryText}</span> : null}
+                <span className="font-medium text-ink-900">{suggestion.mainText}</span>
+                {suggestion.secondaryText ? <span className="text-xs text-ink-500">{suggestion.secondaryText}</span> : null}
               </button>
             </li>
           ))}
         </ul>
       ) : null}
-      {error || searchError ? <p className="text-xs text-red-700">{error ?? searchError}</p> : null}
+      {error || searchError ? <p className="text-xs text-danger-700">{error ?? searchError}</p> : null}
     </div>
   );
 }

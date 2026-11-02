@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 const paddingClasses = {
   sm: "p-3",
   md: "p-4",
+  lg: "p-6",
 };
 
 type CardProps = {
@@ -14,7 +15,7 @@ type CardProps = {
 
 export function Card({ as: Tag = "div", padding = "md", className = "", children }: CardProps) {
   return (
-    <Tag className={`rounded-xl border border-slate-200 bg-white ${paddingClasses[padding]} ${className}`}>
+    <Tag className={`rounded-xl border border-ink-200 bg-surface ${paddingClasses[padding]} ${className}`}>
       {children}
     </Tag>
   );

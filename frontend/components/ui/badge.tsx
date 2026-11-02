@@ -7,11 +7,11 @@ type BadgeProps = {
 };
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: "bg-slate-100 text-slate-700",
-  success: "bg-emerald-50 text-emerald-700",
-  warning: "bg-amber-50 text-amber-700",
-  danger: "bg-red-50 text-red-700",
-  muted: "bg-slate-100 text-slate-600",
+  default: "bg-ink-100 text-ink-700",
+  success: "bg-brand-50 text-brand-700",
+  warning: "bg-warn-50 text-warn-700",
+  danger: "bg-danger-50 text-danger-700",
+  muted: "bg-ink-100 text-ink-600",
 };
 
 export function Badge({ variant = "default", className = "", children }: BadgeProps) {

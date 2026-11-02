@@ -861,6 +861,42 @@ U1 copies this table into the "Design system" section, replacing the dark one.
   - `git grep AIza` returns nothing.
   - The user reviews the result in the browser and approves.
 
+### Phase UT: Theme tokens and reusable components (user request 2026-11-02)
+
+Goal: changing colors, radius, or spacing needs edits in `globals.css` and a few `components/ui/*` files, never in pages.
+
+Rules:
+- No visual change except where a step says so. Output must look the same as after U8.
+- Raw Tailwind palette names (`emerald-*`, `slate-*`, `red-*`, `amber-*`) are allowed only in `app/globals.css`. Everything else uses the tokens below.
+- One component per file in `components/ui/`, named exports, kebab-case. No new dependencies.
+
+Tokens (defined with `@theme static` in `app/globals.css`, same hex values as today):
+- `brand-50..900` = emerald, `ink-50..950` = slate (neutrals), `danger-50..900` = red, `warn-50..900` = amber.
+- `surface` (#ffffff, replaces `bg-white`) and `on-brand` (#ffffff, replaces `text-white`).
+- Utility `focus-ring` (via `@utility`) replaces the repeated `focus-visible:outline ... outline-emerald-600` string.
+
+- UT1. Tokens and codemod
+  - Do: add the tokens and `focus-ring` to `globals.css`; replace palette names across `app/` and `components/` (`emerald`→`brand`, `slate`→`ink`, `red`→`danger`, `amber`→`warn`, `bg-white`→`bg-surface`, `text-white`→`text-on-brand`, the long focus string→`focus-ring`); `body` uses tokens.
+  - Do not: change layout or spacing.
+  - Verify: `git grep -nE "(emerald|slate|red|amber)-[0-9]" -- frontend/app frontend/components` returns nothing; lint, typecheck, test, build pass.
+- UT2. Map pins use tokens
+  - Do: replace `PIN_COLORS` hex values and inline color styles in `components/map/clustered-pins.tsx` with token class names.
+  - Verify: no hex colors left in that file; build passes.
+- UT3. Shared field styles
+  - Do: add `components/ui/field-styles.ts` (`fieldClass(error?)`) and `components/ui/select.tsx`; use them in `text-field`, `search-bar`, `city-select`, `price-input`, `quantity-input`, `store-picker`, `filter-panel`, `report-form` (textarea).
+  - Verify: no duplicated `h-9 w-full rounded-lg border ...` input class strings remain.
+- UT4. Shared layout components
+  - Do: add `PageContainer` (sizes `sm`, `md`, `lg`, `xl`), `PageHeader` (title, optional description and actions), `Section` (Card with title and optional action), `LinkCard`, and `Chip` (button or link, `active` prop) in `components/ui/`; use them in the store, city, product, cities, report, admin, static, login, register, and not-found pages, and in `product-select` and the product page chips.
+  - Verify: page roots no longer repeat `mx-auto w-full max-w-* px-4 py-5 sm:px-6`; headings keep one `<h1>` per page.
+- UT5. Guard test
+  - Do: add `frontend/tests/design-tokens.test.ts` that fails when any file under `app/` or `components/` (except `app/globals.css`) contains `(emerald|slate|red|amber)-[0-9]` or a hex color in a class string.
+  - Verify: test passes; temporarily adding `text-emerald-600` makes it fail.
+- UT6. Document
+  - Do: add a short "Theming" section to `docs/patterns.md` (how to change the brand color, add a variant, add a token) and update AGENTS.md "Styling" to say: use tokens and `components/ui/*`, no raw palette classes.
+  - Verify: AGENTS.md and docs/patterns.md mention the guard test.
+
+Definition of done: lint, typecheck, test, build pass; swapping the `brand-*` values in `globals.css` to another palette changes every green accent without any other edit (checked by changing one value temporarily and reverting).
+
 ## Verification
 
 1. `npm run lint`, `npm run typecheck` (frontend), `npm run test`, `npm run build` pass in both apps; `npm run test:e2e` passes in `backend/`.
@@ -977,3 +1013,12 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - [x] U6. Report form, auth, and vote button
 - [x] U7. Admin and static pages
 - [x] U8. Cleanup, social assets, and final QA (last; needs approval before deleting files)
+
+### Phase UT: Theme tokens and reusable components (user request 2026-11-02)
+
+- [x] UT1. Tokens and codemod
+- [x] UT2. Map pins use tokens
+- [x] UT3. Shared field styles
+- [x] UT4. Shared layout components
+- [x] UT5. Guard test
+- [x] UT6. Document

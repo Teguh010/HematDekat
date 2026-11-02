@@ -104,8 +104,8 @@ export function VoteButton({
       >
         {isSubmitting ? t("submitting") : label}
       </Button>
-      <span className="text-xs text-slate-500">{t("count", { count: localCount })}</span>
-      {error ? <span className="text-xs text-red-700">{error}</span> : null}
+      <span className="text-xs text-ink-500">{t("count", { count: localCount })}</span>
+      {error ? <span className="text-xs text-danger-700">{error}</span> : null}
     </div>
   );
 }

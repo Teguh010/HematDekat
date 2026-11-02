@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { City } from "@/lib/data/types";
+import { Select } from "@/components/ui/select";
 import { buildSearchParams, parseSearchParams } from "@/lib/search-params";
 
 export function CitySelect({ cities }: { cities: City[] }) {
@@ -28,10 +29,11 @@ export function CitySelect({ cities }: { cities: City[] }) {
   return (
     <label className="flex items-center gap-2">
       <span className="sr-only">{t("cityLabel")}</span>
-      <select
+      <Select
+        fieldSize="sm"
+        width="auto"
         value={selectedCity}
         onChange={(event) => handleChange(event.target.value)}
-        className="h-8 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
       >
         <option value="all">{t("cityLabel")}</option>
         {cities.map((city) => (
@@ -39,7 +41,7 @@ export function CitySelect({ cities }: { cities: City[] }) {
             {city.name}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

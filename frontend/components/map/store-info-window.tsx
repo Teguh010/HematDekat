@@ -20,15 +20,15 @@ export function StoreInfoWindow({ store, onClose }: StoreInfoWindowProps) {
 
   return (
     <InfoWindow position={{ lat: store.lat, lng: store.lng }} onCloseClick={onClose}>
-      <div className="min-w-[200px] space-y-1 text-slate-900">
-        <p className="text-sm font-semibold text-slate-900">{store.name}</p>
-        <p className="text-xs text-slate-500">
+      <div className="min-w-[200px] space-y-1 text-ink-900">
+        <p className="text-sm font-semibold text-ink-900">{store.name}</p>
+        <p className="text-xs text-ink-500">
           {store.district ?? "-"}, {store.city.name}
         </p>
         {price ? (
           <>
             <div className="flex items-center justify-between gap-2 pt-1">
-              <p className="text-sm font-semibold text-emerald-700">{formatUnitPrice(price.normalizedUnitPrice, price.unit)}</p>
+              <p className="text-sm font-semibold text-brand-700">{formatUnitPrice(price.normalizedUnitPrice, price.unit)}</p>
               <FreshnessBadge updatedAt={price.verifiedAt} />
             </div>
             <div className="flex items-center justify-between gap-2 pt-1">
@@ -40,7 +40,7 @@ export function StoreInfoWindow({ store, onClose }: StoreInfoWindowProps) {
           </>
         ) : (
           <>
-            <p className="text-xs text-slate-500">{t("store.noPriceRecorded")}</p>
+            <p className="text-xs text-ink-500">{t("store.noPriceRecorded")}</p>
             <div className="flex justify-end pt-1">
               <Button href={`/stores/${store.slug}`} size="sm">
                 {t("map.viewStore")}

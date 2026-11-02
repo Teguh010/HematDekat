@@ -32,26 +32,26 @@ export function PendingItemCard({ item, isSubmitting, onApprove, onReject }: Pen
   return (
     <div
       className={`flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ${
-        item.flagged ? "border-red-200 bg-red-50" : "border-slate-200 bg-white"
+        item.flagged ? "border-danger-200 bg-danger-50" : "border-ink-200 bg-surface"
       }`}
     >
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           {item.flagged ? <Badge variant="danger">{t("flagged")}</Badge> : null}
-          <Link href={`/stores/${item.store.slug}`} className="text-sm font-semibold text-slate-900 hover:text-emerald-700">
+          <Link href={`/stores/${item.store.slug}`} className="text-sm font-semibold text-ink-900 hover:text-brand-700">
             {item.store.name}
           </Link>
-          <span className="text-sm text-slate-500">{item.product.name}</span>
+          <span className="text-sm text-ink-500">{item.product.name}</span>
         </div>
 
-        {item.flagged && item.flagReason ? <p className="mt-1 text-xs text-red-700">{item.flagReason}</p> : null}
+        {item.flagged && item.flagReason ? <p className="mt-1 text-xs text-danger-700">{item.flagReason}</p> : null}
 
-        <div className="mt-1 text-sm text-slate-700">
+        <div className="mt-1 text-sm text-ink-700">
           {item.kind === "price-report" ? (
             <p>
               {item.normalizedUnitPrice !== null ? formatUnitPrice(item.normalizedUnitPrice, unitLabel) : "-"}
               {item.price !== null && item.quantity !== null ? (
-                <span className="text-slate-500">
+                <span className="text-ink-500">
                   {" "}
                   &middot; {formatRupiah(item.price)} / {item.quantity} {unitLabel}
                 </span>
@@ -65,7 +65,7 @@ export function PendingItemCard({ item, isSubmitting, onApprove, onReject }: Pen
                   ? t("discount", { pct: item.discountPct })
                   : "-"}
               {item.validFrom && item.validTo ? (
-                <span className="text-slate-500">
+                <span className="text-ink-500">
                   {" "}
                   &middot; {t("validRange", { from: formatDateTime(item.validFrom), to: formatDateTime(item.validTo) })}
                 </span>
@@ -74,7 +74,7 @@ export function PendingItemCard({ item, isSubmitting, onApprove, onReject }: Pen
           )}
         </div>
 
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-ink-500">
           {item.submittedBy} &middot; {t("submittedAt", { date: formatDateTime(item.createdAt) })}
         </p>
       </div>

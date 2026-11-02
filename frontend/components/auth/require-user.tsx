@@ -25,7 +25,7 @@ export function RequireUser({ children, role }: RequireUserProps) {
   }, [pathname, router, status]);
 
   if (status === "loading") {
-    return <div className="flex min-h-48 items-center justify-center text-sm text-slate-500">{t("loading")}</div>;
+    return <div className="flex min-h-48 items-center justify-center text-sm text-ink-500">{t("loading")}</div>;
   }
 
   if (status === "signed-out") {
@@ -35,8 +35,8 @@ export function RequireUser({ children, role }: RequireUserProps) {
   if (role === "admin" && user?.role !== "admin") {
     return (
       <div className="mx-auto w-full max-w-sm px-4 py-10 sm:px-6">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-center">
-          <h1 className="text-xl font-semibold text-red-800">{t("noAccess")}</h1>
+        <div className="rounded-xl border border-danger-200 bg-danger-50 p-5 text-center">
+          <h1 className="text-xl font-semibold text-danger-800">{t("noAccess")}</h1>
           <Button href="/" variant="secondary" className="mt-4">
             {t("goToMap")}
           </Button>

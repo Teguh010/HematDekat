@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { useCurrentUser } from "@/components/current-user-provider";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { TextField } from "@/components/ui/text-field";
 import { ApiError, apiFetch, getApiBaseUrl } from "@/lib/api-client";
 import { currentUserSchema } from "@/lib/data/types";
@@ -144,13 +145,13 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <div className="mx-auto w-full max-w-sm px-4 py-8 sm:px-6">
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h1 className="text-xl font-semibold text-slate-900">
+      <Card padding="lg">
+        <h1 className="text-xl font-semibold text-ink-900">
           {isRegister ? t("signUpTitle") : t("signInTitle")}
         </h1>
 
         {searchParams.get("auth") === "google-success" ? (
-          <div role="status" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          <div role="status" className="mt-3 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-800">
             {t("googleSuccess")}
           </div>
         ) : null}
@@ -159,10 +160,10 @@ export function AuthForm({ mode }: AuthFormProps) {
           {t("continueWithGoogle")}
         </Button>
 
-        <div className="my-4 flex items-center gap-3 text-xs text-slate-500">
-          <div className="h-px flex-1 bg-slate-200" />
+        <div className="my-4 flex items-center gap-3 text-xs text-ink-500">
+          <div className="h-px flex-1 bg-ink-200" />
           <span>{t("or")}</span>
-          <div className="h-px flex-1 bg-slate-200" />
+          <div className="h-px flex-1 bg-ink-200" />
         </div>
 
         <form className="space-y-3" onSubmit={handleSubmit}>
@@ -215,7 +216,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           ) : null}
 
           {submitError ? (
-            <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div role="alert" className="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-800">
               {submitError}
             </div>
           ) : null}
@@ -225,18 +226,18 @@ export function AuthForm({ mode }: AuthFormProps) {
           </Button>
         </form>
 
-        <div className="mt-4 text-center text-sm text-slate-500">
+        <div className="mt-4 text-center text-sm text-ink-500">
           {alternateText}{" "}
           <Link
             href={isRegister ? `/login?next=${encodeURIComponent(next)}` : `/register?next=${encodeURIComponent(next)}`}
-            className="font-medium text-emerald-700 hover:text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+            className="font-medium text-brand-700 hover:text-brand-800 focus-ring"
           >
             {alternateAction}
           </Link>
         </div>
 
-        <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">{t("googleInfo")}</p>
-      </div>
+        <p className="mt-4 rounded-lg bg-ink-50 px-3 py-2 text-xs text-ink-500">{t("googleInfo")}</p>
+      </Card>
     </div>
   );
 }

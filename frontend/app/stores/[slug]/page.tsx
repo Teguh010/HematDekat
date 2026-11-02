@@ -8,8 +8,10 @@ import { Suspense } from "react";
 import { VoteButton } from "@/components/vote-button";
 import { StoreMap } from "@/components/map/store-map";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { FreshnessBadge } from "@/components/ui/freshness-badge";
+import { PageContainer } from "@/components/ui/page-container";
+import { PageHeader } from "@/components/ui/page-header";
+import { Section } from "@/components/ui/section";
 import { getStore, getStorePlaceDetails } from "@/lib/data/repository";
 import type { StoreSummary } from "@/lib/data/types";
 import { formatRupiah, formatUnitPrice } from "@/lib/format";
@@ -78,47 +80,43 @@ async function StorePageContent({ params }: StorePageProps) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:px-6">
+    <PageContainer>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-xl font-semibold text-slate-900">{store.name}</h1>
-          <p className="mt-0.5 text-sm text-slate-500">
-            {[typeT(store.type), store.district, store.city.name].filter(Boolean).join(" · ")}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button href={store.googleMapsUrl} target="_blank" rel="noopener noreferrer" variant="secondary" size="sm">
-            {t("openInGoogleMaps")}
-          </Button>
-          <Button href={`/report?store=${encodeURIComponent(slug)}`} size="sm">
-            {t("reportThisPrice")}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={store.name}
+        description={[typeT(store.type), store.district, store.city.name].filter(Boolean).join(" · ")}
+        actions={
+          <>
+            <Button href={store.googleMapsUrl} target="_blank" rel="noopener noreferrer" variant="secondary" size="sm">
+              {t("openInGoogleMaps")}
+            </Button>
+            <Button href={`/report?store=${encodeURIComponent(slug)}`} size="sm">
+              {t("reportThisPrice")}
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <div className="space-y-4">
-          <Card as="section">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <h2 className="text-base font-semibold text-slate-900">{t("priceList")}</h2>
-              {latestPrice ? <FreshnessBadge updatedAt={latestPrice.verifiedAt} /> : null}
-            </div>
-
+          <Section
+            title={t("priceList")}
+            action={latestPrice ? <FreshnessBadge updatedAt={latestPrice.verifiedAt} /> : null}
+          >
             {store.prices.length > 0 ? (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-ink-100">
                 {store.prices.map((price) => (
                   <li key={price.priceReportId} className="flex items-center justify-between gap-3 py-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">{price.productName}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="truncate text-sm font-medium text-ink-900">{price.productName}</p>
+                      <p className="text-xs text-ink-500">
                         {formatRupiah(price.price)} / {price.quantity} {price.unit}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-3 text-right">
                       <div>
-                        <p className="text-sm font-semibold text-emerald-700">{formatUnitPrice(price.normalizedUnitPrice, price.unit)}</p>
-                        {store.hasActivePromo ? <p className="text-xs text-emerald-700">{t("promoActive")}</p> : null}
+                        <p className="text-sm font-semibold text-brand-700">{formatUnitPrice(price.normalizedUnitPrice, price.unit)}</p>
+                        {store.hasActivePromo ? <p className="text-xs text-brand-700">{t("promoActive")}</p> : null}
                       </div>
                       <VoteButton priceReportId={price.priceReportId} count={price.confirmationCount} />
                     </div>
@@ -126,23 +124,22 @@ async function StorePageContent({ params }: StorePageProps) {
                 ))}
               </ul>
             ) : (
-              <p className="py-4 text-center text-sm text-slate-500">Belum ada harga tercatat untuk toko ini.</p>
+              <p className="py-4 text-center text-sm text-ink-500">Belum ada harga tercatat untuk toko ini.</p>
             )}
-          </Card>
+          </Section>
 
           {store.promos.length > 0 ? (
-            <Card as="section">
-              <h2 className="mb-2 text-base font-semibold text-slate-900">{t("promoActive")}</h2>
-              <ul className="divide-y divide-slate-100">
+            <Section title={t("promoActive")}>
+              <ul className="divide-y divide-ink-100">
                 {store.promos.map((promo) => (
                   <li key={promo.id} className="flex items-center justify-between gap-3 py-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">{promo.productName}</p>
-                      <p className="text-sm text-emerald-700">
+                      <p className="truncate text-sm font-medium text-ink-900">{promo.productName}</p>
+                      <p className="text-sm text-brand-700">
                         {promo.discountPct ? `${promo.discountPct}% off` : promo.promoPrice ? formatRupiah(promo.promoPrice) : "Promo"}
                       </p>
-                      {promo.conditions ? <p className="text-xs text-slate-500">{promo.conditions}</p> : null}
-                      <p className="text-xs text-slate-500">
+                      {promo.conditions ? <p className="text-xs text-ink-500">{promo.conditions}</p> : null}
+                      <p className="text-xs text-ink-500">
                         {promo.validFrom} – {promo.validTo}
                       </p>
                     </div>
@@ -150,38 +147,37 @@ async function StorePageContent({ params }: StorePageProps) {
                   </li>
                 ))}
               </ul>
-            </Card>
+            </Section>
           ) : null}
         </div>
 
         <div className="space-y-4">
-          <section className="h-64 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+          <section className="h-64 overflow-hidden rounded-xl border border-ink-200 bg-ink-100">
             <StoreMap stores={mapStores} apiKey={mapApiKey} defaultCenter={{ lat: store.lat, lng: store.lng }} defaultZoom={14} />
           </section>
 
-          <Card as="section">
-            <h2 className="mb-2 text-base font-semibold text-slate-900">{t("infoStore")}</h2>
-            <dl className="divide-y divide-slate-100 text-sm">
+          <Section title={t("infoStore")}>
+            <dl className="divide-y divide-ink-100 text-sm">
               <div className="flex items-center justify-between gap-3 py-1.5">
-                <dt className="text-slate-500">{t("city")}</dt>
-                <dd className="font-medium text-slate-900">{store.city.name}</dd>
+                <dt className="text-ink-500">{t("city")}</dt>
+                <dd className="font-medium text-ink-900">{store.city.name}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 py-1.5">
-                <dt className="text-slate-500">{t("district")}</dt>
-                <dd className="font-medium text-slate-900">{store.district ?? "-"}</dd>
+                <dt className="text-ink-500">{t("district")}</dt>
+                <dd className="font-medium text-ink-900">{store.district ?? "-"}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 py-1.5">
-                <dt className="text-slate-500">{t("distance")}</dt>
-                <dd className="font-medium text-slate-900">{store.hasActivePromo ? "Promo aktif" : "-"}</dd>
+                <dt className="text-ink-500">{t("distance")}</dt>
+                <dd className="font-medium text-ink-900">{store.hasActivePromo ? "Promo aktif" : "-"}</dd>
               </div>
               <div className="flex items-center justify-between gap-3 py-1.5">
-                <dt className="text-slate-500">{t("rating")}</dt>
-                <dd className="font-medium text-slate-900">
+                <dt className="text-ink-500">{t("rating")}</dt>
+                <dd className="font-medium text-ink-900">
                   {placeDetails.available ? `★ ${Number(placeDetails.rating ?? 0).toFixed(1)} (${placeDetails.userRatingCount ?? 0} ulasan)` : "-"}
                 </dd>
               </div>
             </dl>
-          </Card>
+          </Section>
 
           {placeDetails.available && placeDetails.photo ? (
             <section>
@@ -192,13 +188,13 @@ async function StorePageContent({ params }: StorePageProps) {
                 className="h-40 w-full rounded-xl object-cover"
                 loading="lazy"
               />
-              <p className="mt-1 text-xs text-slate-500">{t("placesData")}</p>
+              <p className="mt-1 text-xs text-ink-500">{t("placesData")}</p>
               {placeDetails.photo.attributions.length ? (
-                <ul className="space-y-0.5 text-xs text-slate-500">
+                <ul className="space-y-0.5 text-xs text-ink-500">
                   {placeDetails.photo.attributions.map((attribution) => (
                     <li key={`${attribution.displayName}-${attribution.uri ?? "no-link"}`}>
                       {attribution.uri ? (
-                        <a href={attribution.uri} target="_blank" rel="noopener noreferrer" className="text-emerald-700 underline underline-offset-2">
+                        <a href={attribution.uri} target="_blank" rel="noopener noreferrer" className="text-brand-700 underline underline-offset-2">
                           {attribution.displayName}
                         </a>
                       ) : (
@@ -212,7 +208,7 @@ async function StorePageContent({ params }: StorePageProps) {
           ) : null}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -220,7 +216,7 @@ export default async function StorePage(props: StorePageProps) {
   const t = await getTranslations("store");
 
   return (
-    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">{t("loading")}</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-ink-500">{t("loading")}</div>}>
       <StorePageContent {...props} />
     </Suspense>
   );

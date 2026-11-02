@@ -4,7 +4,7 @@ Reference implementations for patterns that repeat across [plan.md](../plan.md) 
 
 Contents:
 
-- Frontend: [next-intl setup](#next-intl-setup), [lint rule for hardcoded strings](#lint-rule-for-hardcoded-strings), [format helpers](#format-helpers), [API client](#api-client), [types and repository function](#repository-function), [server page](#server-page), [current user](#current-user), [URL state](#url-state), [error state](#error-state), [map clustering](#map-clustering), [frontend test](#frontend-test)
+- Frontend: [next-intl setup](#next-intl-setup), [lint rule for hardcoded strings](#lint-rule-for-hardcoded-strings), [format helpers](#format-helpers), [API client](#api-client), [types and repository function](#repository-function), [server page](#server-page), [current user](#current-user), [URL state](#url-state), [error state](#error-state), [map clustering](#map-clustering), [theming](#theming), [frontend test](#frontend-test)
 - Backend: [module, service, controller](#module-service-controller), [DTO mapper and public rules](#dto-mapper-and-public-rules), [roles guard](#roles-guard), [Places API (New)](#places-api-new), [backend unit test](#backend-unit-test)
 - [Troubleshooting](#troubleshooting)
 
@@ -715,6 +715,40 @@ test("daysSince never returns a negative number", () => {
 ```
 
 To mock the backend in repository tests, replace `global.fetch` and restore it in `finally` (see the existing `tests/repository.test.ts`).
+
+### Theming
+
+Colors live only in `frontend/app/globals.css` as tokens: `brand-*` (accent), `ink-*` (neutral), `danger-*`, `warn-*`, `surface`, `on-brand`. Components use the token names (`bg-brand-600`, `text-ink-700`, `bg-surface`, `text-on-brand`), never raw palette classes (`emerald-600`, `slate-700`) or hex values. `tests/design-tokens.test.ts` fails when one slips in.
+
+Change the brand color: edit the `--color-brand-*` values in `globals.css`. Nothing else changes.
+
+```css
+/* app/globals.css */
+@theme static {
+  --color-brand-600: #2563eb;
+  /* ...and the other brand steps */
+}
+```
+
+Add a token: define `--color-<name>-<step>` in `@theme static`, then use `bg-<name>-<step>`. Use `@theme static` so Tailwind always emits the variable.
+
+Shared styles live in `components/ui/`. Change them there, not at call sites:
+
+- `field-styles.ts` (`fieldClass({ error, size, width })`) and `select.tsx`: inputs, selects, textareas.
+- `button.tsx` (variants `primary`, `secondary`, `ghost`; sizes `sm`, `md`), `badge.tsx`, `card.tsx` (`padding` `sm`/`md`/`lg`), `chip.tsx` (pill link or toggle button).
+- `page-container.tsx` (`size` `sm`/`md`/`lg`/`xl`), `page-header.tsx` (the page's only `<h1>`), `section.tsx` (card with `<h2>`), `link-card.tsx`.
+- The `focus-ring` utility (in `globals.css`) is the one focus style. Do not write `focus-visible:outline-*` strings.
+
+Add a button variant: add an entry to the `variants` map in `button.tsx`; use only token classes.
+
+Page shape:
+
+```tsx
+<PageContainer size="md">
+  <PageHeader title={t("title")} actions={<Button href="/" variant="secondary" size="sm">{t("back")}</Button>} />
+  <Section title={t("section")}>...</Section>
+</PageContainer>
+```
 
 ---
 

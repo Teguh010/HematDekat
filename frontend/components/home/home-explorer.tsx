@@ -193,11 +193,11 @@ export function HomeExplorer({
 
   return (
     <div
-      className={`relative flex min-h-0 flex-col overflow-hidden bg-slate-50 text-slate-900 ${
+      className={`relative flex min-h-0 flex-col overflow-hidden bg-ink-50 text-ink-900 ${
         fillViewport ? "h-full flex-1" : "h-[70dvh] min-h-[28rem]"
       }`}
     >
-      <div className="shrink-0 border-b border-slate-200 bg-white px-3 py-2">
+      <div className="shrink-0 border-b border-ink-200 bg-surface px-3 py-2">
         <div className="flex w-full flex-col gap-2">
           <div className="flex items-center gap-2">
             <SearchBar />
@@ -211,10 +211,10 @@ export function HomeExplorer({
       </div>
 
       <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
-        <aside className="flex w-[360px] shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white">
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
-            <h2 className="text-sm font-semibold text-slate-900">{t("nearestStores")}</h2>
-            <span aria-live="polite" className="text-xs text-slate-500">{t("resultCount", { count: filteredStores.length })}</span>
+        <aside className="flex w-[360px] shrink-0 flex-col overflow-hidden border-r border-ink-200 bg-surface">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-ink-200 px-3 py-2">
+            <h2 className="text-sm font-semibold text-ink-900">{t("nearestStores")}</h2>
+            <span aria-live="polite" className="text-xs text-ink-500">{t("resultCount", { count: filteredStores.length })}</span>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
             {filteredStores.map((store) => (
@@ -230,7 +230,7 @@ export function HomeExplorer({
           </div>
         </aside>
 
-        <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-slate-100">
+        <div className="min-h-0 min-w-0 flex-1 overflow-hidden bg-ink-100">
           <StoreMap
             stores={filteredStores}
             apiKey={apiKey}
@@ -246,7 +246,7 @@ export function HomeExplorer({
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
         {mobileView === "map" ? (
-          <div className="min-h-0 w-full flex-1 overflow-hidden bg-slate-100">
+          <div className="min-h-0 w-full flex-1 overflow-hidden bg-ink-100">
             <StoreMap
               stores={filteredStores}
               apiKey={apiKey}
@@ -259,8 +259,8 @@ export function HomeExplorer({
             />
           </div>
         ) : (
-          <div className="min-h-0 w-full flex-1 overflow-y-auto bg-white pb-14">
-            <p aria-live="polite" className="border-b border-slate-100 px-3 py-2 text-xs text-slate-500">
+          <div className="min-h-0 w-full flex-1 overflow-y-auto bg-surface pb-14">
+            <p aria-live="polite" className="border-b border-ink-100 px-3 py-2 text-xs text-ink-500">
               {t("resultCount", { count: filteredStores.length })}
             </p>
             {filteredStores.map((store) => (

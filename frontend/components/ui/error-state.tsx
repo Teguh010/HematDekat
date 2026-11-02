@@ -15,7 +15,7 @@ export function ErrorState({ title, onRetry }: ErrorStateProps) {
   const t = useTranslations("errors");
 
   return (
-    <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+    <div role="alert" className="rounded-xl border border-danger-200 bg-danger-50 p-4 text-danger-800">
       <p className="font-medium">{title ?? t("generic")}</p>
       <Button variant="secondary" size="sm" className="mt-3" onClick={onRetry ?? (() => router.refresh())}>
         {t("retry")}

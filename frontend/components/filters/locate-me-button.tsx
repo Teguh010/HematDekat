@@ -48,13 +48,13 @@ export function LocateMeButton() {
         onClick={handleClick}
         aria-label={t("locateMe")}
         title={t("locateMe")}
-        className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 sm:px-3"
+        className="flex h-8 items-center gap-1.5 rounded-lg border border-ink-300 bg-surface px-2 text-sm text-ink-700 hover:bg-ink-50 focus-ring sm:px-3"
       >
         <LocateIcon />
         <span className="hidden sm:inline">{t("locateMe")}</span>
       </button>
       {message ? (
-        <span role="status" className="absolute right-0 top-full z-20 mt-1 whitespace-nowrap rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-800 shadow-sm">
+        <span role="status" className="absolute right-0 top-full z-20 mt-1 whitespace-nowrap rounded-lg border border-warn-200 bg-warn-50 px-2 py-1 text-xs text-warn-800 shadow-sm">
           {message}
         </span>
       ) : null}

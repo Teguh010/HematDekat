@@ -15,68 +15,31 @@ type ClusteredPinsProps = {
   onHover: (storeId: string | null) => void;
 };
 
-// Pins are DOM elements with inline styles, so these hex values mirror the
-// Tailwind tokens in plan.md "Target design tokens".
-const PIN_COLORS = {
-  emerald600: "#059669",
-  emerald700: "#047857",
-  slate900: "#0f172a",
-  slate400: "#94a3b8",
-  white: "#ffffff",
-};
-
+// Pins are DOM elements, so they use Tailwind token classes (brand-*, ink-*, surface)
+// instead of hex values. Keep the class names as full literals so Tailwind can see them.
 function paintPin(content: HTMLElement, store: StoreSummary, state: { hovered: boolean; selected: boolean }) {
   const price = store.price?.normalizedUnitPrice ?? null;
 
-  content.style.cssText = `display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:${
-    state.selected ? 10 : "auto"
-  };`;
+  content.className = "flex cursor-pointer items-center justify-center";
+  content.style.zIndex = state.selected ? "10" : "auto";
 
   const button = document.createElement("button");
   button.type = "button";
   button.tabIndex = 0;
+  button.className = "focus-ring flex items-center justify-center rounded-full bg-transparent p-0";
   button.setAttribute("aria-label", price === null ? store.name : `${store.name}, ${formatRupiah(price)}`);
-  Object.assign(button.style, {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "0",
-    background: "transparent",
-    padding: "0",
-    cursor: "pointer",
-    font: "inherit",
-  });
 
   const face = document.createElement("span");
 
   if (price === null) {
-    Object.assign(face.style, {
-      display: "inline-block",
-      width: "12px",
-      height: "12px",
-      borderRadius: "9999px",
-      background: state.selected ? PIN_COLORS.slate900 : PIN_COLORS.slate400,
-      boxShadow: `0 0 0 2px ${PIN_COLORS.white}`,
-    });
+    face.className = `inline-block h-3 w-3 rounded-full ring-2 ring-surface ${
+      state.selected ? "bg-ink-900" : "bg-ink-400"
+    }`;
   } else {
     face.textContent = formatRupiah(price);
-    Object.assign(face.style, {
-      borderRadius: "9999px",
-      background: state.selected
-        ? PIN_COLORS.slate900
-        : state.hovered
-          ? PIN_COLORS.emerald700
-          : PIN_COLORS.emerald600,
-      color: PIN_COLORS.white,
-      fontSize: "12px",
-      fontWeight: "600",
-      lineHeight: "16px",
-      padding: "2px 8px",
-      whiteSpace: "nowrap",
-      boxShadow: state.selected
-        ? `0 0 0 2px ${PIN_COLORS.white}, 0 1px 3px rgba(15,23,42,0.35)`
-        : `0 0 0 1px ${PIN_COLORS.white}, 0 1px 2px rgba(15,23,42,0.25)`,
-    });
+    const tone = state.selected ? "bg-ink-900" : state.hovered ? "bg-brand-700" : "bg-brand-600";
+    const ring = state.selected ? "ring-2 shadow-md" : "ring-1 shadow-sm";
+    face.className = `whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold leading-4 text-on-brand ring-surface ${ring} ${tone}`;
   }
 
   button.appendChild(face);
@@ -112,19 +75,10 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
           const size = count < 10 ? 32 : count < 50 ? 38 : 44;
           const element = document.createElement("div");
           element.textContent = String(count);
-          Object.assign(element.style, {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: `${size}px`,
-            height: `${size}px`,
-            borderRadius: "9999px",
-            background: PIN_COLORS.emerald600,
-            color: PIN_COLORS.white,
-            fontSize: "12px",
-            fontWeight: "600",
-            boxShadow: `0 0 0 2px ${PIN_COLORS.white}, 0 1px 3px rgba(15,23,42,0.35)`,
-          });
+          element.className =
+            "flex items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-on-brand shadow-md ring-2 ring-surface";
+          element.style.width = `${size}px`;
+          element.style.height = `${size}px`;
 
           return new markerLibrary.AdvancedMarkerElement({ position, content: element });
         },

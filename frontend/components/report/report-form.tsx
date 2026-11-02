@@ -6,6 +6,9 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageContainer } from "@/components/ui/page-container";
+import { PageHeader } from "@/components/ui/page-header";
 import { TextField } from "@/components/ui/text-field";
 import { ApiError } from "@/lib/api-client";
 import { listProducts, submitPriceReport, submitPromo } from "@/lib/data/repository";
@@ -13,6 +16,7 @@ import type { Product, ProductUnit, StoreType } from "@/lib/data/types";
 import { formatRupiah } from "@/lib/format";
 import { toDefaultUnitQuantity } from "@/lib/units";
 import { PriceInput } from "@/components/report/price-input";
+import { fieldClass } from "@/components/ui/field-styles";
 import { ProductSelect } from "@/components/report/product-select";
 import { QuantityInput } from "@/components/report/quantity-input";
 import { StorePicker } from "@/components/report/store-picker";
@@ -227,16 +231,16 @@ export function ReportForm() {
   const conditionsId = useId();
 
   const tabClass = (active: boolean) =>
-    `flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${
-      active ? "bg-emerald-600 text-white" : "text-slate-600 hover:bg-white"
+    `flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-ring ${
+      active ? "bg-brand-600 text-on-brand" : "text-ink-600 hover:bg-surface"
     }`;
 
   if (submitted) {
     return (
-      <div className="mx-auto w-full max-w-xl px-4 py-5 sm:px-6">
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-center">
-          <p className="text-sm font-medium text-emerald-700">{t("thanks")}</p>
-          <h1 className="mt-1 text-xl font-semibold text-slate-900">{t("submissionPending")}</h1>
+      <PageContainer size="sm">
+        <div className="rounded-xl border border-brand-200 bg-brand-50 p-5 text-center">
+          <p className="text-sm font-medium text-brand-700">{t("thanks")}</p>
+          <h1 className="mt-1 text-xl font-semibold text-ink-900">{t("submissionPending")}</h1>
           <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
             <Button onClick={resetForm}>{t("reportAgain")}</Button>
             <Button href="/" variant="secondary">
@@ -244,21 +248,23 @@ export function ReportForm() {
             </Button>
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-5 sm:px-6">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-slate-900">{t("reportFormTitle")}</h1>
-        <Button href="/" variant="secondary" size="sm">
-          {t("backToMap")}
-        </Button>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader
+        title={t("reportFormTitle")}
+        actions={
+          <Button href="/" variant="secondary" size="sm">
+            {t("backToMap")}
+          </Button>
+        }
+      />
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <div role="group" aria-label={t("title")} className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
+      <Card>
+        <div role="group" aria-label={t("title")} className="mb-4 flex gap-1 rounded-lg bg-ink-100 p-1">
           <button type="button" aria-pressed={tab === "price"} onClick={() => setTab("price")} className={tabClass(tab === "price")}>
             {t("tabPrice")}
           </button>
@@ -271,7 +277,7 @@ export function ReportForm() {
           <StorePicker value={selectedStore} onChange={setSelectedStore} error={fieldErrors.storeSlug || fieldErrors.placeId || fieldErrors.storeType} />
 
           {selectedStore && selectedStoreLabel && !selectedStore.storeSlug ? (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700">
+            <div className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-1.5 text-sm text-ink-700">
               {selectedStoreLabel}
             </div>
           ) : null}
@@ -288,9 +294,9 @@ export function ReportForm() {
                 onUnitChange={setUnit}
                 error={fieldErrors.quantity || fieldErrors.unit}
               />
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2" aria-live="polite">
-                <p className="text-xs font-medium text-emerald-800">{t("livePreview")}</p>
-                <p className="text-base font-semibold text-emerald-700">
+              <div className="rounded-lg border border-brand-200 bg-brand-50 px-3 py-2" aria-live="polite">
+                <p className="text-xs font-medium text-brand-800">{t("livePreview")}</p>
+                <p className="text-base font-semibold text-brand-700">
                   {t("unitPriceLabel", { unit: defaultUnit, price: formatRupiah(unitPrice) })}
                 </p>
               </div>
@@ -320,7 +326,7 @@ export function ReportForm() {
               </div>
 
               <div className="space-y-1">
-                <label htmlFor={conditionsId} className="block text-xs font-medium text-slate-700">
+                <label htmlFor={conditionsId} className="block text-xs font-medium text-ink-700">
                   {t("conditions")}
                 </label>
                 <textarea
@@ -328,7 +334,7 @@ export function ReportForm() {
                   maxLength={200}
                   value={conditions}
                   onChange={(event) => setConditions(event.target.value)}
-                  className="min-h-20 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+                  className={fieldClass({ size: "area" })}
                   placeholder={t("conditionsPlaceholder")}
                 />
               </div>
@@ -353,7 +359,7 @@ export function ReportForm() {
           )}
 
           {serverError ? (
-            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <p role="alert" className="rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-800">
               {serverError}
             </p>
           ) : null}
@@ -362,7 +368,7 @@ export function ReportForm() {
             {isSubmitting ? t("submitting") : t("submit")}
           </Button>
         </form>
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 }

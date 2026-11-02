@@ -3,14 +3,14 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 
 const baseClasses = [
   "inline-flex items-center justify-center rounded-lg font-medium transition-colors",
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600",
+  "focus-ring",
   "disabled:pointer-events-none disabled:opacity-50",
 ].join(" ");
 
 const variantClasses = {
-  primary: "bg-emerald-600 text-white hover:bg-emerald-700",
-  secondary: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50",
-  ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+  primary: "bg-brand-600 text-on-brand hover:bg-brand-700",
+  secondary: "border border-ink-300 bg-surface text-ink-700 hover:bg-ink-50",
+  ghost: "text-ink-600 hover:bg-ink-100 hover:text-ink-900",
 };
 
 const sizeClasses = {

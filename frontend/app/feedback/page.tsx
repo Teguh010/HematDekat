@@ -1,6 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageContainer } from "@/components/ui/page-container";
+import { PageHeader } from "@/components/ui/page-header";
 
 export async function generateMetadata() {
   const t = await getTranslations("static.feedback");
@@ -16,22 +19,22 @@ export default async function Page() {
   const email = t("email");
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-5 sm:px-6">
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-5">
-        <h1 className="text-xl font-semibold text-slate-900">{t("title")}</h1>
-        <p className="text-sm leading-6 text-slate-700">{t("intro")}</p>
+    <PageContainer size="md">
+      <PageHeader title={t("title")} />
+      <Card className="space-y-3">
+        <p className="text-sm leading-6 text-ink-700">{t("intro")}</p>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <p className="text-xs font-medium text-slate-500">{t("emailLabel")}</p>
+        <div className="rounded-lg border border-ink-200 bg-ink-50 p-3">
+          <p className="text-xs font-medium text-ink-500">{t("emailLabel")}</p>
           <a
             href={`mailto:${email}`}
-            className="mt-1 inline-block text-base font-semibold text-emerald-700 hover:text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+            className="mt-1 inline-block text-base font-semibold text-brand-700 hover:text-brand-800 focus-ring"
           >
             {email}
           </a>
         </div>
 
-        <p className="text-sm leading-6 text-slate-700">{t("note")}</p>
+        <p className="text-sm leading-6 text-ink-700">{t("note")}</p>
 
         <div className="flex flex-wrap gap-2">
           <Button href={`mailto:${email}`}>{t("cta")}</Button>
@@ -39,7 +42,7 @@ export default async function Page() {
             {t("backToHome")}
           </Button>
         </div>
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 }

@@ -15,9 +15,9 @@ export function FreshnessBadge({ updatedAt, className = "" }: FreshnessBadgeProp
   const days = daysSince(updatedAt);
 
   const variantClasses = {
-    fresh: "bg-emerald-50 text-emerald-700",
-    recent: "bg-amber-50 text-amber-700",
-    stale: "bg-slate-100 text-slate-600",
+    fresh: "bg-brand-50 text-brand-700",
+    recent: "bg-warn-50 text-warn-700",
+    stale: "bg-ink-100 text-ink-600",
   } as const;
 
   const label =
