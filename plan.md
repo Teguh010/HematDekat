@@ -141,7 +141,6 @@ Frontend (`frontend/`):
 | Home page | Dashboard cards with a 420px map; no split view or mobile toggle; product list hardcoded; "Lihat semua" does nothing; cards do not link to store pages | C5 |
 | Filters | No search, filters, sort, URL query params, or geolocation | C6 |
 | City page | Name derived from the slug; filters all stores client-side; no map | C7.2 |
-| Report form | Inputs not wired, `type="button"` submit, labels not linked, no autocomplete, no backend call | C9 |
 | Login | "Masuk dengan email" does nothing; no sign-up page | C8 |
 | Votes | No confirm-price button | C10 |
 | Static/SEO | No about/privacy/terms/feedback pages, sitemap, robots, OG image, manifest; `public/` has Next.js template SVGs | C12 |
@@ -795,7 +794,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - C9. Report a price or promo
   - [x] C9.1 Price report endpoint
   - [x] C9.2 Promo endpoint
-  - [ ] C9.3 Report page
+  - [x] C9.3 Report page
 - C10. Confirm price
   - [ ] C10.1 Vote endpoint
   - [ ] C10.2 Vote button
