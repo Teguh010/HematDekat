@@ -1,11 +1,11 @@
 "use client";
 
-import { MarkerClusterer } from "@googlemaps/markerclusterer";
-import { AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
-import { memo, useCallback, useEffect, useRef } from "react";
+import { MarkerClusterer, SuperClusterAlgorithm } from "@googlemaps/markerclusterer";
+import { useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
+import { useEffect, useRef } from "react";
 
 import type { StoreSummary } from "@/lib/data/types";
-import { PricePin } from "./price-pin";
+import { formatRupiah } from "@/lib/format";
 
 type ClusteredPinsProps = {
   stores: StoreSummary[];
@@ -15,121 +15,127 @@ type ClusteredPinsProps = {
   onHover: (storeId: string | null) => void;
 };
 
-type PinProps = {
-  store: StoreSummary;
-  hovered: boolean;
-  selected: boolean;
-  onSelect: (storeId: string) => void;
-  onHover: (storeId: string | null) => void;
-  setMarkerRef: (marker: google.maps.marker.AdvancedMarkerElement | null, id: string) => void;
-};
-
-const ClusteredPin = memo(function ClusteredPin({
-  store,
-  hovered,
-  selected,
-  onSelect,
-  onHover,
-  setMarkerRef,
-}: PinProps) {
-  // Keep the ref callback identity stable for this store so React does not
-  // call the previous ref with null on every parent re-render (hover/select).
-  const ref = useCallback(
-    (marker: google.maps.marker.AdvancedMarkerElement | null) => {
-      setMarkerRef(marker, store.id);
-    },
-    [setMarkerRef, store.id],
-  );
-
-  return (
-    <AdvancedMarker
-      position={{ lat: store.lat, lng: store.lng }}
-      ref={ref}
-      onMouseEnter={() => onHover(store.id)}
-      onMouseLeave={() => onHover(null)}
-      onClick={() => onSelect(store.id)}
-      zIndex={selected ? 10 : undefined}
-    >
-      <PricePin store={store} hovered={hovered} selected={selected} />
-    </AdvancedMarker>
-  );
-});
+function paintPin(content: HTMLElement, store: StoreSummary, active: boolean) {
+  const price = store.price?.normalizedUnitPrice ?? 0;
+  content.style.cssText =
+    "display:flex;align-items:center;justify-content:center;transform:translateY(-12px);cursor:pointer;";
+  content.innerHTML = `
+    <div style="
+      border-radius:9999px;
+      border:1px solid ${active ? "#a7f3d0" : "#6ee7b7"};
+      background:${active ? "#10b981" : "rgba(16,185,129,0.9)"};
+      color:#fff;
+      font-size:10px;
+      font-weight:700;
+      padding:4px 8px;
+      box-shadow:0 10px 15px -3px rgba(16,185,129,0.35);
+      white-space:nowrap;
+    ">${formatRupiah(price)}</div>
+    <div style="
+      margin-left:4px;
+      width:16px;
+      height:16px;
+      border-radius:9999px;
+      border:2px solid #fff;
+      background:${active ? "#34d399" : "#6ee7b7"};
+      box-shadow:0 4px 6px rgba(16,185,129,0.4);
+    "></div>
+  `;
+}
 
 export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelect, onHover }: ClusteredPinsProps) {
   const map = useMap();
+  const markerLibrary = useMapsLibrary("marker");
   const clustererRef = useRef<MarkerClusterer | null>(null);
-  const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
+  const markersRef = useRef(new Map<string, google.maps.marker.AdvancedMarkerElement>());
+  const storesRef = useRef(new Map<string, StoreSummary>());
+  const onSelectRef = useRef(onSelect);
+  const onHoverRef = useRef(onHover);
 
+  onSelectRef.current = onSelect;
+  onHoverRef.current = onHover;
+
+  // Keep one clusterer + marker set in sync. Combined so Strict Mode remounts
+  // always re-attach markers to the live clusterer.
   useEffect(() => {
-    if (!map) {
+    if (!map || !markerLibrary) {
       return;
     }
 
-    const clusterer = new MarkerClusterer({ map });
+    const clusterer = new MarkerClusterer({
+      map,
+      algorithm: new SuperClusterAlgorithm({ radius: 100, maxZoom: 14 }),
+    });
     clustererRef.current = clusterer;
 
-    return () => {
-      clusterer.setMap(null);
-      clustererRef.current = null;
-    };
-  }, [map]);
+    const nextIds = new Set(stores.map((store) => store.id));
+    storesRef.current = new Map(stores.map((store) => [store.id, store]));
 
-  const syncClusterer = useCallback(() => {
-    const clusterer = clustererRef.current;
-    if (!clusterer) {
-      return;
-    }
-
-    clusterer.clearMarkers();
-    clusterer.addMarkers([...markersRef.current.values()]);
-  }, []);
-
-  // Drop markers for stores that left the list (for example after a product change).
-  useEffect(() => {
-    const validIds = new Set(stores.map((store) => store.id));
-    let removed = false;
-
-    for (const id of markersRef.current.keys()) {
-      if (!validIds.has(id)) {
+    for (const [id, marker] of markersRef.current) {
+      if (!nextIds.has(id)) {
+        marker.map = null;
         markersRef.current.delete(id);
-        removed = true;
       }
     }
 
-    if (removed) {
-      syncClusterer();
-    }
-  }, [stores, syncClusterer]);
+    for (const store of stores) {
+      let marker = markersRef.current.get(store.id);
+      const position = new google.maps.LatLng(store.lat, store.lng);
 
-  const setMarkerRef = useCallback(
-    (marker: google.maps.marker.AdvancedMarkerElement | null, id: string) => {
-      const markers = markersRef.current;
+      if (!marker) {
+        const content = document.createElement("div");
+        paintPin(content, store, store.id === hoveredStoreId || store.id === selectedStoreId);
 
-      if (marker) {
-        if (markers.get(id) === marker) {
-          return;
-        }
-        markers.set(id, marker);
-      } else if (markers.has(id)) {
-        markers.delete(id);
+        marker = new markerLibrary.AdvancedMarkerElement({
+          position,
+          content,
+          title: store.name,
+          gmpClickable: true,
+        });
+
+        marker.addEventListener("gmp-click", () => {
+          onSelectRef.current(store.id);
+        });
+        content.addEventListener("mouseenter", () => {
+          onHoverRef.current(store.id);
+        });
+        content.addEventListener("mouseleave", () => {
+          onHoverRef.current(null);
+        });
+
+        markersRef.current.set(store.id, marker);
       } else {
-        return;
+        marker.position = position;
+        marker.title = store.name;
+      }
+    }
+
+    clusterer.addMarkers([...markersRef.current.values()]);
+
+    return () => {
+      clusterer.clearMarkers();
+      clusterer.setMap(null);
+      if (clustererRef.current === clusterer) {
+        clustererRef.current = null;
+      }
+    };
+    // hovered/selected intentionally omitted: pin chrome updates in the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid rebuild clusters on hover
+  }, [map, markerLibrary, stores]);
+
+  useEffect(() => {
+    for (const [id, marker] of markersRef.current) {
+      const store = storesRef.current.get(id);
+      const content = marker.content;
+      if (!store || !(content instanceof HTMLElement)) {
+        continue;
       }
 
-      syncClusterer();
-    },
-    [syncClusterer],
-  );
+      const active = id === hoveredStoreId || id === selectedStoreId;
+      paintPin(content, store, active);
+      marker.zIndex = id === selectedStoreId ? 10 : null;
+    }
+  }, [hoveredStoreId, selectedStoreId, stores]);
 
-  return stores.map((store) => (
-    <ClusteredPin
-      key={store.id}
-      store={store}
-      hovered={store.id === hoveredStoreId}
-      selected={store.id === selectedStoreId}
-      onSelect={onSelect}
-      onHover={onHover}
-      setMarkerRef={setMarkerRef}
-    />
-  ));
+  return null;
 }
