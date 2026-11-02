@@ -5,10 +5,45 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { MapIcon, SatelliteIcon } from "@/components/ui/icons";
 import type { StoreSummary } from "@/lib/data/types";
 import { buildSearchParams, parseSearchParams } from "@/lib/search-params";
 import { ClusteredPins } from "./clustered-pins";
 import { StoreInfoWindow } from "./store-info-window";
+
+type MapTypeId = "roadmap" | "satellite";
+
+const mapTypeBaseClasses =
+  "flex h-8 w-8 items-center justify-center rounded-full transition-colors focus-ring";
+
+function MapTypeToggle({ value, onChange }: { value: MapTypeId; onChange: (next: MapTypeId) => void }) {
+  const t = useTranslations("map");
+
+  return (
+    <div className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-ink-200 bg-surface/90 p-0.5 shadow-warm backdrop-blur-sm">
+      <button
+        type="button"
+        aria-pressed={value === "roadmap"}
+        aria-label={t("mapTypeRoadmap")}
+        title={t("mapTypeRoadmap")}
+        onClick={() => onChange("roadmap")}
+        className={`${mapTypeBaseClasses} ${value === "roadmap" ? "bg-brand-600 text-on-brand" : "text-ink-600 hover:bg-ink-50"}`}
+      >
+        <MapIcon />
+      </button>
+      <button
+        type="button"
+        aria-pressed={value === "satellite"}
+        aria-label={t("mapTypeSatellite")}
+        title={t("mapTypeSatellite")}
+        onClick={() => onChange("satellite")}
+        className={`${mapTypeBaseClasses} ${value === "satellite" ? "bg-brand-600 text-on-brand" : "text-ink-600 hover:bg-ink-50"}`}
+      >
+        <SatelliteIcon />
+      </button>
+    </div>
+  );
+}
 
 type StoreMapProps = {
   stores: StoreSummary[];
@@ -40,11 +75,16 @@ function MapView({
   const programmaticUpdateRef = useRef(false);
   const appliedCityCameraRef = useRef<string | null>(null);
   const [showAreaSearch, setShowAreaSearch] = useState(false);
+  const [mapTypeId, setMapTypeId] = useState<MapTypeId>("roadmap");
   const selectedStore = useMemo(
     () => stores.find((store) => store.id === selectedStoreId) ?? null,
     [selectedStoreId, stores],
   );
   const t = useTranslations("map");
+
+  useEffect(() => {
+    map?.setMapTypeId(mapTypeId);
+  }, [map, mapTypeId]);
 
   useEffect(() => {
     if (!map) return;
@@ -135,6 +175,10 @@ function MapView({
 
   return (
     <>
+      <div className="pointer-events-none absolute left-3 top-3 z-10">
+        <MapTypeToggle value={mapTypeId} onChange={setMapTypeId} />
+      </div>
+
       <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center">
         {shouldShowAreaSearch ? (
           <button
@@ -192,6 +236,7 @@ export function StoreMap({
           defaultZoom={defaultZoom}
           gestureHandling="greedy"
           disableDefaultUI={false}
+          mapTypeControl={false}
           mapId={process.env.NEXT_PUBLIC_GOOGLE_MAP_ID ?? "DEMO_MAP_ID"}
           style={{ width: "100%", height: "100%" }}
         >

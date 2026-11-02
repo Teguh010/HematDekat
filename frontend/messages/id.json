@@ -100,7 +100,9 @@
   "map": {
     "apiKeyMissing": "Google Maps API key belum tersedia. Isi variabel NEXT_PUBLIC_GOOGLE_MAPS_API_KEY di .env.local.",
     "searchThisArea": "Cari di area ini",
-    "viewStore": "Lihat toko"
+    "viewStore": "Lihat toko",
+    "mapTypeRoadmap": "Peta",
+    "mapTypeSatellite": "Satelit"
   },
   "store": {
     "infoStore": "Info toko",

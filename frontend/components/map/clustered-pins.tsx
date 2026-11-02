@@ -82,15 +82,44 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
       algorithm: new SuperClusterAlgorithm({ radius: 100, maxZoom: 14 }),
       renderer: {
         render: ({ count, position }: Cluster) => {
-          const size = count < 10 ? 32 : count < 50 ? 38 : 44;
-          const element = document.createElement("div");
-          element.textContent = String(count);
-          element.className =
-            "flex items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-on-brand shadow-warm ring-2 ring-surface";
-          element.style.width = `${size}px`;
-          element.style.height = `${size}px`;
+          // SVG circles with their own opacity. A div background, even at 55%,
+          // plus blur and shadow reads as a solid disc and hides the map.
+          const size = count < 10 ? 48 : count < 50 ? 56 : 64;
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 240 240");
+          svg.setAttribute("width", String(size));
+          svg.setAttribute("height", String(size));
+          svg.setAttribute("aria-hidden", "true");
 
-          return new markerLibrary.AdvancedMarkerElement({ position, content: element });
+          for (const [radius, opacity] of [["92", "0.28"]] as const) {
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", "120");
+            circle.setAttribute("cy", "120");
+            circle.setAttribute("r", radius);
+            circle.setAttribute("fill", "var(--color-brand-600)");
+            circle.setAttribute("opacity", opacity);
+            svg.append(circle);
+          }
+
+          const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          label.setAttribute("x", "120");
+          label.setAttribute("y", "120");
+          label.setAttribute("text-anchor", "middle");
+          label.setAttribute("dominant-baseline", "central");
+          label.setAttribute("fill", "var(--color-brand-800)");
+          label.setAttribute("font-size", "72");
+          label.setAttribute("font-weight", "700");
+          label.textContent = String(count);
+          svg.append(label);
+
+          return new markerLibrary.AdvancedMarkerElement({
+            position,
+            content: svg,
+            title: String(count),
+            // Default anchor is the bottom center, which floats the bubble above the point.
+            anchorLeft: "-50%",
+            anchorTop: "-50%",
+          });
         },
       },
     });

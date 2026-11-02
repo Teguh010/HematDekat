@@ -81,6 +81,16 @@ export function ListIcon(props: IconProps) {
   );
 }
 
+export function SatelliteIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m13 7 4 4-7.5 7.5a2.1 2.1 0 0 1-3-3L14 7Z" />
+      <path d="m17 3 4 4-2 2-4-4Z" />
+      <path d="m2 14 2.5 2.5M5 11l2.5 2.5" />
+    </Icon>
+  );
+}
+
 /** Small rice-sack mark. Face cutouts use the light brand tint so they read on the sack. */
 export function BrandMark(props: IconProps) {
   return (
