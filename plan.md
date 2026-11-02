@@ -796,7 +796,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
   - [x] C9.2 Promo endpoint
   - [x] C9.3 Report page
 - C10. Confirm price
-  - [ ] C10.1 Vote endpoint
+  - [x] C10.1 Vote endpoint
   - [ ] C10.2 Vote button
 - C11. Anti-abuse
   - [ ] C11.1 Rate limits

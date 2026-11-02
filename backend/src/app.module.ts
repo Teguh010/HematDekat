@@ -11,6 +11,7 @@ import { PriceReportsModule } from './price-reports/price-reports.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { PromosModule } from './promos/promos.module.js';
 import { StoresModule } from './stores/stores.module.js';
+import { VotesModule } from './votes/votes.module.js';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { StoresModule } from './stores/stores.module.js';
     PlacesModule,
     PriceReportsModule,
     PromosModule,
+    VotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
