@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
@@ -34,7 +35,8 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(ThrottlerGuard, LocalAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   async login(
     @Body(new ZodValidationPipe(loginSchema)) body: z.infer<typeof loginSchema>,
     @Req() req: Request & { user?: AuthUser },
@@ -56,6 +58,8 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(201)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   async register(
     @Body(new ZodValidationPipe(registerSchema)) body: z.infer<typeof registerSchema>,
     @Res({ passthrough: true }) res: Response,

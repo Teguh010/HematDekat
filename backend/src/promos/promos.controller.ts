@@ -1,8 +1,10 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { AuthUser } from '../auth/auth.service.js';
+import { UserThrottlerGuard } from '../common/user-throttler.guard.js';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import { PromosService } from './promos.service.js';
 
@@ -74,6 +76,8 @@ export class PromosController {
   constructor(private readonly promos: PromosService) {}
 
   @Post()
+  @UseGuards(UserThrottlerGuard)
+  @Throttle({ default: { limit: 20, ttl: 60 * 60_000 } })
   create(
     @Body(new ZodValidationPipe(promoSchema)) body: z.infer<typeof promoSchema>,
     @Req() req: Request & { user?: AuthUser },

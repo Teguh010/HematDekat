@@ -799,7 +799,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
   - [x] C10.1 Vote endpoint
   - [x] C10.2 Vote button
 - C11. Anti-abuse
-  - [ ] C11.1 Rate limits
+  - [x] C11.1 Rate limits
   - [ ] C11.2 Outlier flags
   - [ ] C11.3 Admin page upgrade
 - C12. Static pages, SEO, polish

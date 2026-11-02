@@ -1,6 +1,8 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { z } from 'zod';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { UserThrottlerGuard } from '../common/user-throttler.guard.js';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import { PlacesService } from './places.service.js';
 
@@ -19,7 +21,8 @@ const detailsSchema = z.object({
 });
 
 @Controller('places')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, UserThrottlerGuard)
+@Throttle({ default: { limit: 30, ttl: 60_000 } })
 export class PlacesController {
   constructor(private readonly places: PlacesService) {}
 

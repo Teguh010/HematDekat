@@ -152,6 +152,9 @@ model PriceReport {
   verifiedAt           DateTime?
   confirmationCount    Int          @default(0)
 
+  flagged              Boolean      @default(false)
+  flagReason           String?
+
   votes                Vote[]
   activities           Activity[]
 

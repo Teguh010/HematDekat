@@ -1,7 +1,5 @@
 import {
   ConflictException,
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -32,8 +30,6 @@ const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
-  private readonly loginAttempts = new Map<string, number[]>();
-
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
@@ -77,8 +73,6 @@ export class AuthService {
   }
 
   async validateLocalUser(email: string, password: string): Promise<AuthUser> {
-    await this.enforceRateLimit(email);
-
     const normalizedEmail = email.toLowerCase();
     const user = await this.prisma.user.findUnique({
       where: { email: normalizedEmail },
@@ -178,22 +172,5 @@ export class AuthService {
         maxAge: COOKIE_MAX_AGE_MS,
       },
     };
-  }
-
-  private async enforceRateLimit(email: string): Promise<void> {
-    const normalizedEmail = email.toLowerCase();
-    const attempts = this.loginAttempts.get(normalizedEmail) ?? [];
-    const windowStart = Date.now() - 60_000;
-    const recentAttempts = attempts.filter((timestamp) => timestamp > windowStart);
-
-    if (recentAttempts.length >= 5) {
-      throw new HttpException(
-        'Too many login attempts. Please wait a minute and try again.',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-
-    recentAttempts.push(Date.now());
-    this.loginAttempts.set(normalizedEmail, recentAttempts);
   }
 }
