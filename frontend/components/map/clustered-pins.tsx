@@ -17,29 +17,49 @@ type ClusteredPinsProps = {
 
 function paintPin(content: HTMLElement, store: StoreSummary, active: boolean) {
   const price = store.price?.normalizedUnitPrice ?? 0;
+  const priceLabel = `${store.name}, ${formatRupiah(price)}`;
+
   content.style.cssText =
     `display:flex;align-items:center;justify-content:center;transform:translateY(-12px);cursor:pointer;z-index:${active ? 10 : "auto"};`;
   content.innerHTML = `
-    <div style="
-      border-radius:9999px;
-      border:1px solid ${active ? "#a7f3d0" : "#6ee7b7"};
-      background:${active ? "#10b981" : "rgba(16,185,129,0.9)"};
-      color:#fff;
-      font-size:10px;
-      font-weight:700;
-      padding:4px 8px;
-      box-shadow:0 10px 15px -3px rgba(16,185,129,0.35);
-      white-space:nowrap;
-    ">${formatRupiah(price)}</div>
-    <div style="
-      margin-left:4px;
-      width:16px;
-      height:16px;
-      border-radius:9999px;
-      border:2px solid #fff;
-      background:${active ? "#34d399" : "#6ee7b7"};
-      box-shadow:0 4px 6px rgba(16,185,129,0.4);
-    "></div>
+    <button
+      type="button"
+      tabindex="0"
+      aria-label="${priceLabel}"
+      style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:4px;
+        border:none;
+        border-radius:9999px;
+        background:transparent;
+        padding:0;
+        cursor:pointer;
+        font:inherit;
+      "
+    >
+      <span style="
+        border-radius:9999px;
+        border:1px solid ${active ? "#a7f3d0" : "#6ee7b7"};
+        background:${active ? "#10b981" : "rgba(16,185,129,0.9)"};
+        color:#fff;
+        font-size:10px;
+        font-weight:700;
+        padding:4px 8px;
+        box-shadow:0 10px 15px -3px rgba(16,185,129,0.35);
+        white-space:nowrap;
+      ">${formatRupiah(price)}</span>
+      <span style="
+        display:inline-block;
+        width:16px;
+        height:16px;
+        border-radius:9999px;
+        border:2px solid #fff;
+        background:${active ? "#34d399" : "#6ee7b7"};
+        box-shadow:0 4px 6px rgba(16,185,129,0.4);
+      "></span>
+    </button>
   `;
 }
 
@@ -97,6 +117,15 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
 
         marker.addEventListener("gmp-click", () => {
           onSelectRef.current(store.id);
+        });
+        content.addEventListener("click", () => {
+          onSelectRef.current(store.id);
+        });
+        content.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onSelectRef.current(store.id);
+          }
         });
         content.addEventListener("mouseenter", () => {
           onHoverRef.current(store.id);

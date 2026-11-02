@@ -805,7 +805,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - C12. Static pages, SEO, polish
   - [x] C12.1 Static pages
   - [x] C12.2 SEO files
-  - [ ] C12.3 States and accessibility
+  - [x] C12.3 States and accessibility
 - C13. Tests, build, deployment (MVP checkpoint)
   - [ ] C13.1 Frontend tests
   - [ ] C13.2 Backend e2e coverage

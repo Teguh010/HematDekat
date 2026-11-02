@@ -28,7 +28,8 @@
     "greeting": "Halo, {name}",
     "report": "Laporkan",
     "menu": "Menu",
-    "closeMenu": "Tutup"
+    "closeMenu": "Tutup",
+    "skipToContent": "Langsung ke konten"
   },
   "footer": {
     "copyright": "© HematDekat",
@@ -48,6 +49,7 @@
     "locationsCount": "{count} lokasi",
     "promo": "Promo",
     "standard": "Standar",
+    "resultCount": "{count} toko",
     "searchPlaceholder": "Cari toko atau kecamatan",
     "cityLabel": "Kota",
     "locateMe": "Cari di sekitar saya",
@@ -283,6 +285,11 @@
   "errors": {
     "generic": "Terjadi masalah saat memuat data.",
     "retry": "Coba lagi"
+  },
+  "notFound": {
+    "title": "Halaman tidak ditemukan",
+    "message": "Halaman yang Anda cari tidak tersedia atau sudah dipindahkan.",
+    "backToHome": "Kembali ke beranda"
   },
   "freshness": {
     "fresh": "Baru diverifikasi",

@@ -218,7 +218,10 @@ export function HomeExplorer({
       <div className="hidden min-h-0 flex-1 gap-3 overflow-hidden p-4 lg:flex">
         <aside className="flex w-[400px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-slate-900">
           <div className="shrink-0 border-b border-white/10 px-4 py-3">
-            <h2 className="text-lg font-semibold text-white">{t("nearestStores")}</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-white">{t("nearestStores")}</h2>
+              <span aria-live="polite" className="text-sm text-slate-300">{t("resultCount", { count: filteredStores.length })}</span>
+            </div>
           </div>
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
             {filteredStores.map((store) => (
