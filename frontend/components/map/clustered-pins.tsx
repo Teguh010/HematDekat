@@ -18,7 +18,7 @@ type ClusteredPinsProps = {
 function paintPin(content: HTMLElement, store: StoreSummary, active: boolean) {
   const price = store.price?.normalizedUnitPrice ?? 0;
   content.style.cssText =
-    "display:flex;align-items:center;justify-content:center;transform:translateY(-12px);cursor:pointer;";
+    `display:flex;align-items:center;justify-content:center;transform:translateY(-12px);cursor:pointer;z-index:${active ? 10 : "auto"};`;
   content.innerHTML = `
     <div style="
       border-radius:9999px;
@@ -52,8 +52,10 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
   const onSelectRef = useRef(onSelect);
   const onHoverRef = useRef(onHover);
 
-  onSelectRef.current = onSelect;
-  onHoverRef.current = onHover;
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+    onHoverRef.current = onHover;
+  }, [onSelect, onHover]);
 
   // Keep one clusterer + marker set in sync. Combined so Strict Mode remounts
   // always re-attach markers to the live clusterer.
@@ -133,7 +135,6 @@ export function ClusteredPins({ stores, hoveredStoreId, selectedStoreId, onSelec
 
       const active = id === hoveredStoreId || id === selectedStoreId;
       paintPin(content, store, active);
-      marker.zIndex = id === selectedStoreId ? 10 : null;
     }
   }, [hoveredStoreId, selectedStoreId, stores]);
 

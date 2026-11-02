@@ -106,6 +106,7 @@
     "priceList": "Daftar harga sembako",
     "lastUpdated": "Terakhir update {date}",
     "promoActive": "Promo aktif",
+    "noPriceRecorded": "Belum ada harga tercatat",
     "loading": "Memuat toko...",
     "openInGoogleMaps": "Buka di Google Maps",
     "reportThisPrice": "Laporkan harga di toko ini",
@@ -223,6 +224,14 @@
     "reporter": "Reporter",
     "submitter": "Submitter",
     "backToMap": "Ke peta"
+  },
+  "vote": {
+    "confirm": "Harga masih sama",
+    "confirmed": "Terkonfirmasi",
+    "submitting": "Mengirim...",
+    "count": "{count} konfirmasi",
+    "selfVote": "Tidak bisa mengonfirmasi laporanmu sendiri",
+    "submitError": "Gagal mengirim konfirmasi. Silakan coba lagi."
   },
   "errors": {
     "generic": "Terjadi masalah saat memuat data.",

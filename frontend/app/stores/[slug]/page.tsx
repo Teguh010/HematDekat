@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { VoteButton } from "@/components/vote-button";
 import { StoreMap } from "@/components/store-map";
 import { FreshnessBadge } from "@/components/ui/freshness-badge";
 import { getStore, getStorePlaceDetails } from "@/lib/data/repository";
@@ -121,9 +122,12 @@ async function StorePageContent({ params }: StorePageProps) {
                       {price.quantity} {price.unit} · {formatUnitPrice(price.normalizedUnitPrice, price.unit)}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-emerald-300">{formatRupiah(price.normalizedUnitPrice)}</p>
-                    {store.hasActivePromo ? <p className="text-xs text-emerald-300">{t("promoActive")}</p> : null}
+                  <div className="flex items-start gap-3 text-right">
+                    <div>
+                      <p className="text-lg font-bold text-emerald-300">{formatRupiah(price.normalizedUnitPrice)}</p>
+                      {store.hasActivePromo ? <p className="text-xs text-emerald-300">{t("promoActive")}</p> : null}
+                    </div>
+                    <VoteButton priceReportId={price.priceReportId} count={price.confirmationCount} className="mt-0.5" />
                   </div>
                 </div>
               ))
@@ -135,6 +139,32 @@ async function StorePageContent({ params }: StorePageProps) {
           </div>
         </div>
       </section>
+
+      {store.promos.length > 0 ? (
+        <section className="mt-6 rounded-3xl border border-white/10 bg-slate-900 p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold text-white">{t("promoActive")}</h2>
+          </div>
+
+          <div className="space-y-3">
+            {store.promos.map((promo) => (
+              <div key={promo.id} className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-3">
+                <div>
+                  <p className="font-medium text-white">{promo.productName}</p>
+                  <p className="text-sm text-slate-400">
+                    {promo.discountPct ? `${promo.discountPct}% off` : promo.promoPrice ? formatRupiah(promo.promoPrice) : "Promo"}
+                  </p>
+                  {promo.conditions ? <p className="mt-1 text-xs text-slate-400">{promo.conditions}</p> : null}
+                  <p className="mt-1 text-xs text-slate-500">
+                    {promo.validFrom} – {promo.validTo}
+                  </p>
+                </div>
+                <VoteButton promoId={promo.id} count={promo.confirmationCount} className="mt-0.5" />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900">
         <div className="h-60 w-full">
