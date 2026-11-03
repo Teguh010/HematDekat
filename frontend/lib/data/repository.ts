@@ -217,3 +217,22 @@ export function getLeaderboard(params: { period?: LeaderboardPeriod; city?: stri
     schema: z.object({ items: z.array(leaderboardItemSchema) }),
   }).then((payload) => payload.items);
 }
+
+export function listSavedStores(): Promise<StoreSummary[]> {
+  return apiFetch("/me/saved-stores", { schema: z.array(storeSummarySchema) });
+}
+
+export function saveStore(storeSlug: string): Promise<void> {
+  return apiFetch(`/me/saved-stores/${encodeURIComponent(storeSlug)}`, {
+    method: "PUT",
+    schema: z.null(),
+  }).then(() => undefined);
+}
+
+export function unsaveStore(storeSlug: string): Promise<void> {
+  return apiFetch(`/me/saved-stores/${encodeURIComponent(storeSlug)}`, {
+    method: "DELETE",
+    schema: z.null(),
+  }).then(() => undefined);
+}
+

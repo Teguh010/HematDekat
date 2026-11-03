@@ -102,6 +102,7 @@ model Store {
   priceReports PriceReport[]
   promos       Promo[]
   activities   Activity[]
+  savedBy      SavedStore[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,6 +137,7 @@ model User {
   promos       Promo[]
   votes        Vote[]
   activities   Activity[]
+  savedStores  SavedStore[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -246,4 +248,16 @@ model PointEvent {
 
   @@unique([type, sourceId])
   @@index([userId, createdAt])
+}
+
+model SavedStore {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  store     Store    @relation(fields: [storeId], references: [id])
+  storeId   String
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, storeId])
+  @@index([storeId])
 }

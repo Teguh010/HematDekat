@@ -12,6 +12,7 @@ import { PlacesModule } from './places/places.module.js';
 import { PriceReportsModule } from './price-reports/price-reports.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { PromosModule } from './promos/promos.module.js';
+import { SavedStoresModule } from './saved-stores/saved-stores.module.js';
 import { StoresModule } from './stores/stores.module.js';
 import { VotesModule } from './votes/votes.module.js';
 
@@ -32,6 +33,7 @@ import { VotesModule } from './votes/votes.module.js';
     PromosModule,
     VotesModule,
     LeaderboardModule,
+    SavedStoresModule,
   ],
   controllers: [AppController],
   providers: [AppService],

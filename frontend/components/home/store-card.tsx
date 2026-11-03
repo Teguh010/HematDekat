@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { FreshnessBadge } from "@/components/ui/freshness-badge";
+import { SaveStoreButton } from "@/components/save-store-button";
 import type { StoreSummary } from "@/lib/data/types";
 import { formatUnitPrice } from "@/lib/format";
 
@@ -38,34 +39,39 @@ export function StoreCard({
     .join(" · ");
 
   return (
-    <Link
-      href={`/stores/${store.slug}`}
+    <div
       data-store-id={store.id}
-      className={`block border-b border-ink-100 px-3 py-2 transition-colors hover:bg-ink-50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 ${
+      className={`relative border-b border-ink-100 transition-colors hover:bg-ink-50 ${
         isHighlighted ? "bg-brand-50" : "bg-surface"
       }`}
       onMouseEnter={() => onHoverChange?.(store.id)}
       onMouseLeave={() => onHoverChange?.(null)}
-      onFocus={() => onHoverChange?.(store.id)}
-      onBlur={() => onHoverChange?.(null)}
-      onClick={() => onSelect?.(store.id)}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="truncate text-sm font-medium text-ink-900">{store.name}</h3>
-          {store.hasActivePromo ? <Badge variant="warning">{t("promo")}</Badge> : null}
+      <Link
+        href={`/stores/${store.slug}`}
+        className="block px-3 py-2 pr-12 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600"
+        onFocus={() => onHoverChange?.(store.id)}
+        onBlur={() => onHoverChange?.(null)}
+        onClick={() => onSelect?.(store.id)}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="truncate text-sm font-medium text-ink-900">{store.name}</h3>
+            {store.hasActivePromo ? <Badge variant="warning">{t("promo")}</Badge> : null}
+          </div>
+          {unitPrice !== null ? (
+            <span className="shrink-0 text-sm font-semibold text-brand-700">{formatUnitPrice(unitPrice, unitLabel)}</span>
+          ) : (
+            <span className="shrink-0 text-xs text-ink-500">{t("noPrice")}</span>
+          )}
         </div>
-        {unitPrice !== null ? (
-          <span className="shrink-0 text-sm font-semibold text-brand-700">{formatUnitPrice(unitPrice, unitLabel)}</span>
-        ) : (
-          <span className="shrink-0 text-xs text-ink-500">{t("noPrice")}</span>
-        )}
-      </div>
 
-      <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-ink-500">
-        <span className="truncate">{meta}</span>
-        {displayProduct ? <FreshnessBadge updatedAt={displayProduct.verifiedAt} className="shrink-0" /> : null}
-      </div>
-    </Link>
+        <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-ink-500">
+          <span className="truncate">{meta}</span>
+          {displayProduct ? <FreshnessBadge updatedAt={displayProduct.verifiedAt} className="shrink-0" /> : null}
+        </div>
+      </Link>
+      <SaveStoreButton storeSlug={store.slug} className="absolute right-1 top-1" />
+    </div>
   );
 }

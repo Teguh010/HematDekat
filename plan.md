@@ -350,6 +350,9 @@ Endpoints:
 | PATCH | `/admin/price-reports/:id/status` | admin | C3.2 | `{ status: "approved" | "rejected" }` | `{ id, status }` |
 | PATCH | `/admin/promos/:id/status` | admin | C3.2 | `{ status: "approved" | "rejected" }` | `{ id, status }` |
 | GET | `/leaderboard` | public | D2 | `?period=week|month|all` (default `all`) `&city=<slug>` (optional) | `{ items: LeaderboardItem[] }` (top 50 by points, city resolved via joins at query time, no `PointEvent.cityId` column); 404 unknown city slug |
+| GET | `/me/saved-stores` | user | D3 | none | `StoreSummary[]` (newest saved first) |
+| PUT | `/me/saved-stores/:storeSlug` | user | D3 | none | 204; idempotent; 404 unknown store slug |
+| DELETE | `/me/saved-stores/:storeSlug` | user | D3 | none | 204; idempotent; 404 unknown store slug |
 
 ## Steps
 
@@ -1003,7 +1006,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 
 - [x] D1. Contributor points
 - [x] D2. Leaderboard
-- [ ] D3. Saved stores
+- [x] D3. Saved stores
 - [ ] D4. Profile page
 
 ### Phase U: UI revamp (user request 2026-11-02; do before C13.3)

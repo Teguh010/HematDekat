@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { AppFooter } from "@/components/app-footer";
 import { AppHeader } from "@/components/app-header";
 import { CurrentUserProvider } from "@/components/current-user-provider";
+import { SavedStoresProvider } from "@/components/saved-stores-provider";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -45,11 +46,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
         <NextIntlClientProvider>
           <CurrentUserProvider>
-            <AppHeader />
-            <main id="content" className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-              {children}
-            </main>
-            <AppFooter />
+            <SavedStoresProvider>
+              <AppHeader />
+              <main id="content" className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+                {children}
+              </main>
+              <AppFooter />
+            </SavedStoresProvider>
           </CurrentUserProvider>
         </NextIntlClientProvider>
       </body>

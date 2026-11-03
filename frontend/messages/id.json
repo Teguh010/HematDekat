@@ -120,7 +120,9 @@
     "reportThisPrice": "Laporkan harga di toko ini",
     "placesData": "Data dari Google Maps",
     "storePageTitle": "{name} | HematDekat",
-    "storePageDescription": "Lihat harga sembako dan promo terbaru di {name}."
+    "storePageDescription": "Lihat harga sembako dan promo terbaru di {name}.",
+    "save": "Simpan toko",
+    "unsave": "Hapus dari simpanan"
   },
   "city": {
     "title": "Kota dan pasar",

@@ -7,6 +7,7 @@ import { Suspense } from "react";
 
 import { VoteButton } from "@/components/vote-button";
 import { StoreMap } from "@/components/map/store-map";
+import { SaveStoreButton } from "@/components/save-store-button";
 import { Button } from "@/components/ui/button";
 import { FreshnessBadge } from "@/components/ui/freshness-badge";
 import { PageContainer } from "@/components/ui/page-container";
@@ -87,6 +88,7 @@ async function StorePageContent({ params }: StorePageProps) {
         description={[typeT(store.type), store.district, store.city.name].filter(Boolean).join(" · ")}
         actions={
           <>
+            <SaveStoreButton storeSlug={store.slug} />
             <Button href={store.googleMapsUrl} target="_blank" rel="noopener noreferrer" variant="secondary" size="sm">
               {t("openInGoogleMaps")}
             </Button>

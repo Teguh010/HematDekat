@@ -91,6 +91,14 @@ export function SatelliteIcon(props: IconProps) {
   );
 }
 
+export function HeartIcon({ filled = false, ...props }: IconProps & { filled?: boolean }) {
+  return (
+    <Icon {...props} fill={filled ? "currentColor" : "none"}>
+      <path d="M12 20.5s-7-4.35-9.5-8.8C.77 8.64 2.1 5 5.6 5c1.9 0 3.3 1 4.4 2.5C11.1 6 12.5 5 14.4 5c3.5 0 4.83 3.64 3.1 6.7C19 16.15 12 20.5 12 20.5Z" />
+    </Icon>
+  );
+}
+
 /** Small rice-sack mark. Face cutouts use the light brand tint so they read on the sack. */
 export function BrandMark(props: IconProps) {
   return (
