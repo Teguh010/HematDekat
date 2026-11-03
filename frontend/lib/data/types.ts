@@ -154,6 +154,15 @@ export const currentUserSchema = z.object({
   points: z.number().int(),
 });
 
+export const leaderboardPeriodSchema = z.enum(["week", "month", "all"]);
+
+export const leaderboardItemSchema = z.object({
+  rank: z.number().int().positive(),
+  userId: z.string(),
+  displayName: z.string(),
+  points: z.number().int(),
+});
+
 export const pageSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
   z.object({
     items: z.array(itemSchema),
@@ -176,4 +185,6 @@ export type PlaceSuggestion = z.infer<typeof placeSuggestionSchema>;
 export type PlaceLookup = z.infer<typeof placeLookupSchema>;
 export type PendingItem = z.infer<typeof pendingItemSchema>;
 export type CurrentUser = z.infer<typeof currentUserSchema>;
+export type LeaderboardPeriod = z.infer<typeof leaderboardPeriodSchema>;
+export type LeaderboardItem = z.infer<typeof leaderboardItemSchema>;
 export type Page<T> = { items: T[]; total: number; offset: number; limit: number };

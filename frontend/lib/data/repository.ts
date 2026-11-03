@@ -4,6 +4,7 @@ import { apiFetch } from "@/lib/api-client";
 import {
   citySchema,
   currentUserSchema,
+  leaderboardItemSchema,
   pageSchema,
   pendingItemSchema,
   placeDetailsSchema,
@@ -15,6 +16,8 @@ import {
   storeSummarySchema,
   type City,
   type CurrentUser,
+  type LeaderboardItem,
+  type LeaderboardPeriod,
   type PendingItem,
   type PlaceDetails,
   type PlaceLookup,
@@ -206,4 +209,11 @@ export function setModerationStatus(
 
 export function getCurrentUser(): Promise<CurrentUser> {
   return apiFetch("/auth/me", { schema: currentUserSchema });
+}
+
+export function getLeaderboard(params: { period?: LeaderboardPeriod; city?: string } = {}): Promise<LeaderboardItem[]> {
+  const query = toQuery({ period: params.period, city: params.city });
+  return apiFetch(`/leaderboard${query}`, {
+    schema: z.object({ items: z.array(leaderboardItemSchema) }),
+  }).then((payload) => payload.items);
 }

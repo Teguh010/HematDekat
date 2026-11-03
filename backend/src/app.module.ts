@@ -7,6 +7,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CitiesModule } from './cities/cities.module.js';
+import { LeaderboardModule } from './leaderboard/leaderboard.module.js';
 import { PlacesModule } from './places/places.module.js';
 import { PriceReportsModule } from './price-reports/price-reports.module.js';
 import { ProductsModule } from './products/products.module.js';
@@ -30,6 +31,7 @@ import { VotesModule } from './votes/votes.module.js';
     PriceReportsModule,
     PromosModule,
     VotesModule,
+    LeaderboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

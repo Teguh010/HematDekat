@@ -3,7 +3,7 @@ import test from "node:test";
 import { z } from "zod";
 
 import { ApiError, apiFetch } from "../lib/api-client";
-import { getCity, listStores } from "../lib/data/repository";
+import { getCity, getLeaderboard, listStores } from "../lib/data/repository";
 import { storesPageFixture, storeSummaryFixture } from "./fixtures/stores";
 
 test("listStores parses a valid paginated response", async () => {
@@ -75,6 +75,36 @@ test("network failure throws ApiError without mock fallback", async () => {
       assert.equal(error.message, "offline");
       return true;
     });
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("getLeaderboard parses a ranked list and never requests an email field", async () => {
+  const originalFetch = global.fetch;
+  let requestedUrl = "";
+  global.fetch = async (input: RequestInfo | URL) => {
+    requestedUrl = String(input);
+    return new Response(
+      JSON.stringify({
+        items: [
+          { rank: 1, userId: "user-1", displayName: "Dewi", points: 25 },
+          { rank: 2, userId: "user-2", displayName: "Kontributor #er-2", points: 11 },
+        ],
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  };
+
+  try {
+    const items = await getLeaderboard({ period: "week", city: "jakarta" });
+    assert.equal(items.length, 2);
+    assert.equal(items[0]?.displayName, "Dewi");
+    assert.equal(items[1]?.points, 11);
+    assert.ok(requestedUrl.includes("/leaderboard?"));
+    assert.ok(requestedUrl.includes("period=week"));
+    assert.ok(requestedUrl.includes("city=jakarta"));
+    assert.ok(!JSON.stringify(items).includes("email"));
   } finally {
     global.fetch = originalFetch;
   }

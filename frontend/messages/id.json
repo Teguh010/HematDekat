@@ -26,6 +26,7 @@
     "admin": "Admin",
     "greeting": "Halo, {name}",
     "report": "Laporkan",
+    "leaderboard": "Peringkat",
     "menu": "Menu",
     "closeMenu": "Tutup",
     "skipToContent": "Langsung ke konten"
@@ -286,6 +287,22 @@
     "count": "{count} konfirmasi",
     "selfVote": "Tidak bisa mengonfirmasi laporanmu sendiri",
     "submitError": "Gagal mengirim konfirmasi. Silakan coba lagi."
+  },
+  "leaderboard": {
+    "title": "Peringkat kontributor",
+    "description": "Pengguna dengan kontribusi laporan harga dan promo terbanyak.",
+    "metaDescription": "Lihat kontributor harga dan promo teratas di HematDekat.",
+    "backToMap": "Kembali ke peta",
+    "periodWeek": "Minggu ini",
+    "periodMonth": "Bulan ini",
+    "periodAll": "Sepanjang waktu",
+    "cityLabel": "Kota",
+    "allCities": "Semua kota",
+    "points": "{points} poin",
+    "rank": "#{rank}",
+    "emptyTitle": "Belum ada kontributor",
+    "emptyDescription": "Jadilah yang pertama melaporkan harga atau promo untuk muncul di peringkat ini.",
+    "loading": "Memuat peringkat..."
   },
   "errors": {
     "generic": "Terjadi masalah saat memuat data.",

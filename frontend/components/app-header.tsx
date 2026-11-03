@@ -43,6 +43,9 @@ export function AppHeader() {
           <Link href="/cities" className={navLinkClasses}>
             {t("cities")}
           </Link>
+          <Link href="/leaderboard" className={navLinkClasses}>
+            {t("leaderboard")}
+          </Link>
           <Link href="/report" className={navLinkClasses}>
             {t("report")}
           </Link>
@@ -69,6 +72,13 @@ export function AppHeader() {
               className={`flex h-10 items-center ${navLinkClasses}`}
             >
               {t("cities")}
+            </Link>
+            <Link
+              href="/leaderboard"
+              onClick={() => setMenuOpen(false)}
+              className={`flex h-10 items-center ${navLinkClasses}`}
+            >
+              {t("leaderboard")}
             </Link>
             <Link
               href="/report"

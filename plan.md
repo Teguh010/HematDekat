@@ -319,6 +319,8 @@ type PendingItem = {
 
 type CurrentUser = { id: string; email: string; name: string | null; role: "user" | "admin"; points: number };
 
+type LeaderboardItem = { rank: number; userId: string; displayName: string; points: number };
+
 type Page<T> = { items: T[]; total: number; offset: number; limit: number };
 ```
 
@@ -347,6 +349,7 @@ Endpoints:
 | GET | `/admin/pending` | admin | C3.2 | none | `{ items: PendingItem[] }` (flagged first, then newest) |
 | PATCH | `/admin/price-reports/:id/status` | admin | C3.2 | `{ status: "approved" | "rejected" }` | `{ id, status }` |
 | PATCH | `/admin/promos/:id/status` | admin | C3.2 | `{ status: "approved" | "rejected" }` | `{ id, status }` |
+| GET | `/leaderboard` | public | D2 | `?period=week|month|all` (default `all`) `&city=<slug>` (optional) | `{ items: LeaderboardItem[] }` (top 50 by points, city resolved via joins at query time, no `PointEvent.cityId` column); 404 unknown city slug |
 
 ## Steps
 
@@ -999,7 +1002,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 ### Phase D: Post-MVP (needs user approval)
 
 - [x] D1. Contributor points
-- [ ] D2. Leaderboard
+- [x] D2. Leaderboard
 - [ ] D3. Saved stores
 - [ ] D4. Profile page
 
