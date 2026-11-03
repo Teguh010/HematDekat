@@ -317,7 +317,7 @@ type PendingItem = {
   createdAt: string;
 };
 
-type CurrentUser = { id: string; email: string; name: string | null; role: "user" | "admin" };
+type CurrentUser = { id: string; email: string; name: string | null; role: "user" | "admin"; points: number };
 
 type Page<T> = { items: T[]; total: number; offset: number; limit: number };
 ```
@@ -994,11 +994,11 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
   - [ ] C13.2 Backend e2e coverage
   - [ ] C13.3 Builds and manual verification
   - [ ] C13.4 Deployment notes
-  - [ ] C13.5 User approval
+  - [x] C13.5 User approval (2026-11-03: user explicitly approved starting Phase D now; C13.1-C13.4 deferred to later)
 
 ### Phase D: Post-MVP (needs user approval)
 
-- [ ] D1. Contributor points
+- [x] D1. Contributor points
 - [ ] D2. Leaderboard
 - [ ] D3. Saved stores
 - [ ] D4. Profile page

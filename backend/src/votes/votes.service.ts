@@ -6,6 +6,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 
+import { PointsService } from '../points/points.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type VoteInput = {
@@ -16,7 +17,10 @@ export type VoteInput = {
 
 @Injectable()
 export class VotesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly points: PointsService,
+  ) {}
 
   async create(input: VoteInput) {
     const hasPriceReport = input.priceReportId != null;
@@ -48,7 +52,7 @@ export class VotesService {
 
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-        await tx.vote.create({
+        const vote = await tx.vote.create({
           data: {
             userId: input.userId,
             priceReportId: input.priceReportId,
@@ -72,6 +76,11 @@ export class VotesService {
             priceReportId: report.id,
           },
         });
+
+        if (report.reporterId) {
+          await this.points.awardReportConfirmed(tx, report.reporterId, updated.confirmationCount, vote.id);
+        }
+        await this.points.awardVoteGiven(tx, input.userId, vote.id);
 
         return {
           confirmationCount: updated.confirmationCount,
@@ -104,7 +113,7 @@ export class VotesService {
 
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-        await tx.vote.create({
+        const vote = await tx.vote.create({
           data: {
             userId: input.userId,
             promoId: input.promoId,
@@ -124,6 +133,11 @@ export class VotesService {
             promoId: promo.id,
           },
         });
+
+        if (promo.submitterId) {
+          await this.points.awardReportConfirmed(tx, promo.submitterId, confirmationCount, vote.id);
+        }
+        await this.points.awardVoteGiven(tx, input.userId, vote.id);
 
         return {
           confirmationCount,

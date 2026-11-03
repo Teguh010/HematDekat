@@ -61,6 +61,14 @@ enum ActivityType {
   VOTE_CAST
 }
 
+enum PointEventType {
+  PRICE_REPORT_APPROVED
+  PROMO_APPROVED
+  REPORT_CONFIRMED
+  VOTE_GIVEN
+  REVOKED
+}
+
 model City {
   id        String  @id @default(cuid())
   slug      String  @unique
@@ -226,4 +234,16 @@ model Activity {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+}
+
+model PointEvent {
+  id        String         @id @default(cuid())
+  userId    String
+  type      PointEventType
+  points    Int
+  sourceId  String
+  createdAt DateTime       @default(now())
+
+  @@unique([type, sourceId])
+  @@index([userId, createdAt])
 }

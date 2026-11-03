@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
+import { PointsService } from '../points/points.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type AppRole = 'USER' | 'ADMIN';
@@ -24,6 +25,7 @@ export interface CurrentUserDto {
   email: string;
   name: string | null;
   role: PublicRole;
+  points: number;
 }
 
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -33,6 +35,7 @@ export class AuthService {
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(PointsService) private readonly points: PointsService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -64,12 +67,15 @@ export class AuthService {
       },
     });
 
-    return this.toCurrentUser({
-      id: createdUser.id,
-      email: createdUser.email,
-      name: createdUser.name,
-      role: createdUser.role,
-    });
+    return this.toCurrentUser(
+      {
+        id: createdUser.id,
+        email: createdUser.email,
+        name: createdUser.name,
+        role: createdUser.role,
+      },
+      0,
+    );
   }
 
   async validateLocalUser(email: string, password: string): Promise<AuthUser> {
@@ -135,15 +141,17 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return this.toCurrentUser(user);
+    const points = await this.points.getTotalPoints(userId);
+    return this.toCurrentUser(user, points);
   }
 
-  toCurrentUser(user: Pick<AuthUser, 'id' | 'email' | 'name' | 'role'>): CurrentUserDto {
+  toCurrentUser(user: Pick<AuthUser, 'id' | 'email' | 'name' | 'role'>, points: number): CurrentUserDto {
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role === 'ADMIN' ? 'admin' : 'user',
+      points,
     };
   }
 

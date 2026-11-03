@@ -53,7 +53,7 @@ export class AuthController {
 
     res.cookie(cookie.name, cookie.value, cookie.options);
 
-    return this.authService.toCurrentUser(user);
+    return this.authService.getCurrentUser(user.id);
   }
 
   @Post('register')

@@ -1,6 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import { describe, expect, it } from 'vitest';
+import type { PointsService } from '../points/points.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import { AuthService } from './auth.service.js';
 import { assertJwtSecret } from './jwt-secret.js';
@@ -14,7 +15,7 @@ type StoredUser = {
   googleId: string | null;
 };
 
-function createService(users: Map<string, StoredUser>) {
+function createService(users: Map<string, StoredUser>, pointsByUser: Map<string, number> = new Map()) {
   const prisma = {
     user: {
       findUnique: async ({ where }: { where: { email?: string; id?: string } }) => {
@@ -44,7 +45,11 @@ function createService(users: Map<string, StoredUser>) {
     sign: () => 'signed-token',
   } as unknown as JwtService;
 
-  return new AuthService(jwtService, prisma);
+  const points = {
+    getTotalPoints: async (userId: string) => pointsByUser.get(userId) ?? 0,
+  } as unknown as PointsService;
+
+  return new AuthService(jwtService, prisma, points);
 }
 
 describe('assertJwtSecret', () => {
@@ -112,7 +117,7 @@ describe('AuthService', () => {
     );
   });
 
-  it('loads the current user from the database with a lowercase role', async () => {
+  it('loads the current user from the database with a lowercase role and their total points', async () => {
     const users = new Map<string, StoredUser>([
       [
         'rina@example.com',
@@ -127,13 +132,14 @@ describe('AuthService', () => {
       ],
     ]);
 
-    const currentUser = await createService(users).getCurrentUser('user-2');
+    const currentUser = await createService(users, new Map([['user-2', 42]])).getCurrentUser('user-2');
 
     expect(currentUser).toEqual({
       id: 'user-2',
       email: 'rina@example.com',
       name: 'Rina',
       role: 'user',
+      points: 42,
     });
   });
 
@@ -153,6 +159,7 @@ describe('AuthService', () => {
       email: 'sari@example.com',
       name: 'Sari',
       role: 'user',
+      points: 0,
     });
     expect(storedUser?.passwordHash).toBeTruthy();
     expect(storedUser?.passwordHash).not.toBe('sembako123');

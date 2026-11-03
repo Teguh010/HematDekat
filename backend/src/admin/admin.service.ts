@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma, ProductUnit } from '@prisma/client';
+import { PointsService } from '../points/points.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 const unitToApi = {
@@ -47,7 +48,10 @@ const pendingInclude = {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly points: PointsService,
+  ) {}
 
   async listPending(): Promise<PendingItem[]> {
     const [priceReports, promos] = await Promise.all([
@@ -119,44 +123,72 @@ export class AdminService {
 
   async setPriceReportStatus(id: string, status: 'approved' | 'rejected') {
     const prismaStatus = toPrismaStatus(status);
-    const report = await this.prisma.priceReport.update({
-      where: { id },
-      data: {
-        status: prismaStatus,
-        ...(prismaStatus === 'APPROVED' ? { verifiedAt: new Date() } : {}),
-      },
-    });
 
-    await this.prisma.activity.create({
-      data: {
-        type: prismaStatus === 'APPROVED' ? 'PRICE_REPORT_APPROVED' : 'PRICE_REPORT_REJECTED',
-        userId: report.reporterId ?? undefined,
-        storeId: report.storeId,
-        productId: report.productId,
-        priceReportId: report.id,
-      },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.priceReport.findUnique({ where: { id } });
+      if (!existing) {
+        throw new NotFoundException(`Price report with id "${id}" not found`);
+      }
 
-    return { id: report.id, status };
+      const report = await tx.priceReport.update({
+        where: { id },
+        data: {
+          status: prismaStatus,
+          ...(prismaStatus === 'APPROVED' ? { verifiedAt: new Date() } : {}),
+        },
+      });
+
+      await tx.activity.create({
+        data: {
+          type: prismaStatus === 'APPROVED' ? 'PRICE_REPORT_APPROVED' : 'PRICE_REPORT_REJECTED',
+          userId: report.reporterId ?? undefined,
+          storeId: report.storeId,
+          productId: report.productId,
+          priceReportId: report.id,
+        },
+      });
+
+      if (prismaStatus === 'APPROVED' && report.reporterId) {
+        await this.points.awardPriceReportApproved(tx, report.reporterId, report.id);
+      } else if (prismaStatus === 'REJECTED' && existing.status === 'APPROVED') {
+        await this.points.revokeApproval(tx, 'PRICE_REPORT_APPROVED', report.id);
+      }
+
+      return { id: report.id, status };
+    });
   }
 
   async setPromoStatus(id: string, status: 'approved' | 'rejected') {
     const prismaStatus = toPrismaStatus(status);
-    const promo = await this.prisma.promo.update({
-      where: { id },
-      data: { status: prismaStatus },
-    });
 
-    await this.prisma.activity.create({
-      data: {
-        type: prismaStatus === 'APPROVED' ? 'PROMO_APPROVED' : 'PROMO_REJECTED',
-        userId: promo.submitterId ?? undefined,
-        storeId: promo.storeId,
-        productId: promo.productId,
-        promoId: promo.id,
-      },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.promo.findUnique({ where: { id } });
+      if (!existing) {
+        throw new NotFoundException(`Promo with id "${id}" not found`);
+      }
 
-    return { id: promo.id, status };
+      const promo = await tx.promo.update({
+        where: { id },
+        data: { status: prismaStatus },
+      });
+
+      await tx.activity.create({
+        data: {
+          type: prismaStatus === 'APPROVED' ? 'PROMO_APPROVED' : 'PROMO_REJECTED',
+          userId: promo.submitterId ?? undefined,
+          storeId: promo.storeId,
+          productId: promo.productId,
+          promoId: promo.id,
+        },
+      });
+
+      if (prismaStatus === 'APPROVED' && promo.submitterId) {
+        await this.points.awardPromoApproved(tx, promo.submitterId, promo.id);
+      } else if (prismaStatus === 'REJECTED' && existing.status === 'APPROVED') {
+        await this.points.revokeApproval(tx, 'PROMO_APPROVED', promo.id);
+      }
+
+      return { id: promo.id, status };
+    });
   }
 }

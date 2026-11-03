@@ -151,6 +151,7 @@ export const currentUserSchema = z.object({
   email: z.string().email(),
   name: z.string().nullable(),
   role: z.enum(["user", "admin"]),
+  points: z.number().int(),
 });
 
 export const pageSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
