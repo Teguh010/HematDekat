@@ -54,7 +54,7 @@ async function ProductPageContent({ params, searchParams }: ProductPageProps) {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <Icon icon={iconForProduct(slug)} className="h-6 w-6 shrink-0 text-brand-600" aria-hidden />
+            <Icon icon={iconForProduct(slug)} className="h-6 w-6 shrink-0" aria-hidden />
             {product.product.name}
           </span>
         }

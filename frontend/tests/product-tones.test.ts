@@ -43,7 +43,7 @@ test("each seeded product has a distinct, attribution-free category icon", () =>
 
   for (const slug of seededSlugs) {
     const icon = iconForProduct(slug);
-    assert.match(icon, /^(mdi|iconoven):/);
+    assert.match(icon, /^(iconito|fluent-emoji-flat):/);
     icons.add(icon);
   }
 

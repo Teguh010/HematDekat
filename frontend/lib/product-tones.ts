@@ -75,21 +75,23 @@ export function toneForProduct(slug: string | null | undefined): ProductTone {
   return fallback;
 }
 
-// Iconify icon names, all from attribution-free sets (mdi: Apache-2.0, iconoven: MIT).
+// Iconify icon names, all from attribution-free, MIT/Apache-2.0-licensed sets:
+// iconito (https://github.com/iconi-to/free-food, MIT, full-color illustrated food icons)
+// with fluent-emoji-flat (MIT) for the two staples iconito has no icon for.
 const iconsBySlug: Record<string, string> = {
-  "beras-premium": "mdi:rice",
-  "minyak-goreng-curah": "mdi:oil",
-  "gula-pasir": "mdi:sugar",
-  "telur-ayam": "mdi:egg-outline",
-  "tepung-terigu": "mdi:wheat",
-  garam: "mdi:salt",
-  "mie-instan": "mdi:noodles",
-  "cabai-merah": "mdi:chili-hot",
-  "bawang-merah": "iconoven:onion",
-  "bawang-putih": "iconoven:garlic",
-  "ayam-broiler": "mdi:chicken-leg",
-  "daging-sapi": "mdi:beef",
-  "ikan-bandeng": "mdi:fish",
+  "beras-premium": "iconito:rice",
+  "minyak-goreng-curah": "iconito:olive-oil",
+  "gula-pasir": "iconito:sugar",
+  "telur-ayam": "iconito:egg",
+  "tepung-terigu": "iconito:flour",
+  garam: "fluent-emoji-flat:salt",
+  "mie-instan": "iconito:noodles",
+  "cabai-merah": "fluent-emoji-flat:hot-pepper",
+  "bawang-merah": "iconito:onion",
+  "bawang-putih": "iconito:garlic",
+  "ayam-broiler": "iconito:chicken",
+  "daging-sapi": "iconito:beef",
+  "ikan-bandeng": "iconito:fish",
 };
 
 const fallbackIcon = "mdi:basket-outline";
