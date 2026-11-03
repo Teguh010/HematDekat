@@ -717,6 +717,13 @@ Depends on: C2 to C12.
 - Do: `GET /me/profile` → `{ user: CurrentUser, rank: number | null, badges: { key, earnedAt }[], savedStores: StoreSummary[], reports: { id, kind, store, product, status, createdAt }[] }` (last 50 reports). Badges are derived: `first-report` (1 approved report), `price-hunter` (10 approved reports), `price-guardian` (50 votes given), `market-expert` (10 approved reports at `market` stores). `/profile` page (inside `RequireUser`) with sections for points and rank, badges, saved stores, and "Laporan saya" with status badges; link in the user menu.
 - Verify: a new user sees zero states; after an approval the report shows "Disetujui" and points increase.
 
+#### D5. Category icons (user request 2026-11-04)
+
+- Do: add a per-product icon (Iconify icon name) in `frontend/lib/product-tones.ts` next to the existing color tone map, keyed by the same product slugs: `iconsBySlug` + `iconForProduct(slug)`. Icons come only from attribution-free Iconify sets already available through `@iconify/react` (no Flaticon/raster assets, no new dependency, no attribution text needed): `mdi:*` (Apache-2.0) for every staple except onion and garlic, which use `iconoven:onion` / `iconoven:garlic` (MIT) since `mdi` has no onion/garlic icon. Render the icon in `components/home/product-selector.tsx` chips (before the name) and in the `/products/[slug]` page header (next to the product name), using `<Icon icon={iconForProduct(slug)} />` from `@iconify/react` directly, matching the sizing convention in `components/ui/icons.tsx` (`h-4 w-4` in compact chips, `h-6 w-6` in headers).
+- Do not: download or self-host any Flaticon SVG/PNG files; add a new npm dependency; add icons to map pins (pins stay a color dot per `toneForProduct`, too small for a legible icon).
+- Files: `frontend/lib/product-tones.ts`, `frontend/components/home/product-selector.tsx`, `frontend/app/products/[slug]/page.tsx`, `frontend/tests/product-tones.test.ts`.
+- Verify: `npm run lint`, `npm run typecheck`, `npm run test` (new `iconForProduct` cases: every seeded slug has a distinct `mdi:`/`iconoven:` icon, unknown slug falls back to `mdi:basket-outline`), `npm run build`.
+
 ### Phase U: UI revamp (light, clean, compact)
 
 User request (2026-11-02): the current UI looks bad; it should be **clean, simple, fresh, and compact**. Decisions the user made: light theme with an emerald accent; compact density (14px body text, 40px header).
@@ -1022,6 +1029,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - [x] D2. Leaderboard
 - [x] D3. Saved stores
 - [x] D4. Profile page
+- [x] D5. Category icons
 
 ### Phase U: UI revamp (user request 2026-11-02; do before C13.3)
 

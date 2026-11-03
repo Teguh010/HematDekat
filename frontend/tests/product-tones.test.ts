@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { toneForProduct } from "../lib/product-tones";
+import { iconForProduct, toneForProduct } from "../lib/product-tones";
 
 const seededSlugs = [
   "beras-premium",
@@ -36,4 +36,21 @@ test("each seeded product has a pastel chip tone and a pin dot", () => {
 test("an unknown product falls back to a neutral tone", () => {
   assert.equal(toneForProduct("tidak-ada").dot, toneForProduct(null).dot);
   assert.match(toneForProduct(undefined).idle, /bg-surface/);
+});
+
+test("each seeded product has a distinct, attribution-free category icon", () => {
+  const icons = new Set<string>();
+
+  for (const slug of seededSlugs) {
+    const icon = iconForProduct(slug);
+    assert.match(icon, /^(mdi|iconoven):/);
+    icons.add(icon);
+  }
+
+  assert.equal(icons.size, seededSlugs.length, "every staple should have its own icon");
+});
+
+test("an unknown product falls back to a generic icon", () => {
+  assert.equal(iconForProduct("tidak-ada"), iconForProduct(null));
+  assert.equal(iconForProduct(undefined), "mdi:basket-outline");
 });

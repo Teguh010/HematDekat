@@ -1,5 +1,6 @@
 /* eslint-disable i18next/no-literal-string */
 
+import { Icon } from "@iconify/react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -14,6 +15,7 @@ import { PageContainer } from "@/components/ui/page-container";
 import { PageHeader } from "@/components/ui/page-header";
 import { getProduct } from "@/lib/data/repository";
 import { formatRupiah, formatUnitPrice } from "@/lib/format";
+import { iconForProduct } from "@/lib/product-tones";
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -50,7 +52,12 @@ async function ProductPageContent({ params, searchParams }: ProductPageProps) {
   return (
     <PageContainer>
       <PageHeader
-        title={product.product.name}
+        title={
+          <span className="flex items-center gap-2">
+            <Icon icon={iconForProduct(slug)} className="h-6 w-6 shrink-0 text-brand-600" aria-hidden />
+            {product.product.name}
+          </span>
+        }
         actions={
           <Button href="/" variant="secondary" size="sm">
             {commonT("backToMap")}

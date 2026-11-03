@@ -1,7 +1,9 @@
 "use client";
 
+import { Icon } from "@iconify/react";
+
 import type { Product } from "@/lib/data/types";
-import { toneForProduct } from "@/lib/product-tones";
+import { iconForProduct, toneForProduct } from "@/lib/product-tones";
 
 type ProductSelectorProps = {
   products: Product[];
@@ -21,10 +23,11 @@ export function ProductSelector({ products, value, onChange }: ProductSelectorPr
               type="button"
               aria-pressed={product.slug === value}
               onClick={() => onChange(product.slug)}
-              className={`h-8 shrink-0 rounded-full border px-3 text-sm font-medium transition-colors focus-ring ${
+              className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition-colors focus-ring ${
                 product.slug === value ? tone.active : tone.idle
               }`}
             >
+              <Icon icon={iconForProduct(product.slug)} className="h-4 w-4 shrink-0" aria-hidden />
               {product.name}
             </button>
           );
@@ -33,3 +36,4 @@ export function ProductSelector({ products, value, onChange }: ProductSelectorPr
     </div>
   );
 }
+

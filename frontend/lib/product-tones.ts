@@ -74,3 +74,29 @@ export function toneForProduct(slug: string | null | undefined): ProductTone {
   }
   return fallback;
 }
+
+// Iconify icon names, all from attribution-free sets (mdi: Apache-2.0, iconoven: MIT).
+const iconsBySlug: Record<string, string> = {
+  "beras-premium": "mdi:rice",
+  "minyak-goreng-curah": "mdi:oil",
+  "gula-pasir": "mdi:sugar",
+  "telur-ayam": "mdi:egg-outline",
+  "tepung-terigu": "mdi:wheat",
+  garam: "mdi:salt",
+  "mie-instan": "mdi:noodles",
+  "cabai-merah": "mdi:chili-hot",
+  "bawang-merah": "iconoven:onion",
+  "bawang-putih": "iconoven:garlic",
+  "ayam-broiler": "mdi:chicken-leg",
+  "daging-sapi": "mdi:beef",
+  "ikan-bandeng": "mdi:fish",
+};
+
+const fallbackIcon = "mdi:basket-outline";
+
+export function iconForProduct(slug: string | null | undefined): string {
+  if (slug && iconsBySlug[slug]) {
+    return iconsBySlug[slug];
+  }
+  return fallbackIcon;
+}
