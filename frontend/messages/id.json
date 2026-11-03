@@ -27,6 +27,7 @@
     "greeting": "Halo, {name}",
     "report": "Laporkan",
     "leaderboard": "Peringkat",
+    "profile": "Profil",
     "menu": "Menu",
     "closeMenu": "Tutup",
     "skipToContent": "Langsung ke konten"
@@ -305,6 +306,43 @@
     "emptyTitle": "Belum ada kontributor",
     "emptyDescription": "Jadilah yang pertama melaporkan harga atau promo untuk muncul di peringkat ini.",
     "loading": "Memuat peringkat..."
+  },
+  "profile": {
+    "title": "Profil saya",
+    "backToMap": "Kembali ke peta",
+    "loading": "Memuat profil...",
+    "loadError": "Gagal memuat profil.",
+    "points": "{points} poin",
+    "pointsTitle": "Poin dan peringkat",
+    "rankLabel": "Peringkat #{rank}",
+    "noRank": "Belum masuk peringkat",
+    "badgesTitle": "Lencana",
+    "noBadges": "Belum ada lencana. Mulai laporkan harga untuk mendapatkan lencana pertamamu.",
+    "badgeNames": {
+      "first-report": "Laporan pertama",
+      "price-hunter": "Pemburu harga",
+      "price-guardian": "Penjaga harga",
+      "market-expert": "Ahli pasar"
+    },
+    "badgeDescriptions": {
+      "first-report": "Mengirim 1 laporan harga yang disetujui",
+      "price-hunter": "Mengirim 10 laporan harga yang disetujui",
+      "price-guardian": "Memberi 50 konfirmasi harga",
+      "market-expert": "Mengirim 10 laporan harga disetujui di pasar tradisional"
+    },
+    "savedStoresTitle": "Toko simpanan",
+    "noSavedStores": "Belum ada toko yang disimpan. Ketuk ikon hati pada sebuah toko untuk menyimpannya.",
+    "reportsTitle": "Laporan saya",
+    "noReports": "Belum ada laporan. Laporkan harga pertamamu sekarang.",
+    "kind": {
+      "price-report": "Harga",
+      "promo": "Promo"
+    },
+    "status": {
+      "pending": "Menunggu",
+      "approved": "Disetujui",
+      "rejected": "Ditolak"
+    }
   },
   "errors": {
     "generic": "Terjadi masalah saat memuat data.",

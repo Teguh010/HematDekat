@@ -11,6 +11,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module.js';
 import { PlacesModule } from './places/places.module.js';
 import { PriceReportsModule } from './price-reports/price-reports.module.js';
 import { ProductsModule } from './products/products.module.js';
+import { ProfileModule } from './profile/profile.module.js';
 import { PromosModule } from './promos/promos.module.js';
 import { SavedStoresModule } from './saved-stores/saved-stores.module.js';
 import { StoresModule } from './stores/stores.module.js';
@@ -34,6 +35,7 @@ import { VotesModule } from './votes/votes.module.js';
     VotesModule,
     LeaderboardModule,
     SavedStoresModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

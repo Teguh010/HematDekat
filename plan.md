@@ -321,6 +321,19 @@ type CurrentUser = { id: string; email: string; name: string | null; role: "user
 
 type LeaderboardItem = { rank: number; userId: string; displayName: string; points: number };
 
+type ProfileBadge = { key: "first-report" | "price-hunter" | "price-guardian" | "market-expert"; earnedAt: string };
+
+type ProfileReport = {
+  id: string;
+  kind: "price-report" | "promo";
+  store: { slug: string; name: string };
+  product: { slug: string; name: string };
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+};
+
+type Profile = { user: CurrentUser; rank: number | null; badges: ProfileBadge[]; savedStores: StoreSummary[]; reports: ProfileReport[] };
+
 type Page<T> = { items: T[]; total: number; offset: number; limit: number };
 ```
 
@@ -353,6 +366,7 @@ Endpoints:
 | GET | `/me/saved-stores` | user | D3 | none | `StoreSummary[]` (newest saved first) |
 | PUT | `/me/saved-stores/:storeSlug` | user | D3 | none | 204; idempotent; 404 unknown store slug |
 | DELETE | `/me/saved-stores/:storeSlug` | user | D3 | none | 204; idempotent; 404 unknown store slug |
+| GET | `/me/profile` | user | D4 | none | `Profile` (`reports` newest first, capped at 50 total across both kinds; `rank` null if the user has no positive points) |
 
 ## Steps
 
@@ -1007,7 +1021,7 @@ Tick a sub-step only when all its "Verify" checks pass. Agents: read "How to use
 - [x] D1. Contributor points
 - [x] D2. Leaderboard
 - [x] D3. Saved stores
-- [ ] D4. Profile page
+- [x] D4. Profile page
 
 ### Phase U: UI revamp (user request 2026-11-02; do before C13.3)
 

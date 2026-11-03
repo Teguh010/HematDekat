@@ -8,5 +8,6 @@ import { SavedStoresService } from './saved-stores.service.js';
   imports: [PrismaModule],
   controllers: [SavedStoresController],
   providers: [SavedStoresService],
+  exports: [SavedStoresService],
 })
 export class SavedStoresModule {}

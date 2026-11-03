@@ -171,6 +171,37 @@ export const pageSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
     limit: z.number().int().positive(),
   });
 
+export const profileBadgeKeySchema = z.enum([
+  "first-report",
+  "price-hunter",
+  "price-guardian",
+  "market-expert",
+]);
+
+export const profileBadgeSchema = z.object({
+  key: profileBadgeKeySchema,
+  earnedAt: z.string(),
+});
+
+export const profileReportStatusSchema = z.enum(["pending", "approved", "rejected"]);
+
+export const profileReportSchema = z.object({
+  id: z.string(),
+  kind: z.enum(["price-report", "promo"]),
+  store: z.object({ slug: z.string(), name: z.string() }),
+  product: z.object({ slug: z.string(), name: z.string() }),
+  status: profileReportStatusSchema,
+  createdAt: z.string(),
+});
+
+export const profileSchema = z.object({
+  user: currentUserSchema,
+  rank: z.number().int().positive().nullable(),
+  badges: z.array(profileBadgeSchema),
+  savedStores: z.array(storeSummarySchema),
+  reports: z.array(profileReportSchema),
+});
+
 export type StoreType = z.infer<typeof storeTypeSchema>;
 export type ProductUnit = z.infer<typeof productUnitSchema>;
 export type City = z.infer<typeof citySchema>;
@@ -188,3 +219,8 @@ export type CurrentUser = z.infer<typeof currentUserSchema>;
 export type LeaderboardPeriod = z.infer<typeof leaderboardPeriodSchema>;
 export type LeaderboardItem = z.infer<typeof leaderboardItemSchema>;
 export type Page<T> = { items: T[]; total: number; offset: number; limit: number };
+export type ProfileBadgeKey = z.infer<typeof profileBadgeKeySchema>;
+export type ProfileBadge = z.infer<typeof profileBadgeSchema>;
+export type ProfileReportStatus = z.infer<typeof profileReportStatusSchema>;
+export type ProfileReport = z.infer<typeof profileReportSchema>;
+export type Profile = z.infer<typeof profileSchema>;

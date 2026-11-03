@@ -12,6 +12,7 @@ import {
   placeSuggestionSchema,
   productDetailSchema,
   productSchema,
+  profileSchema,
   storeDetailSchema,
   storeSummarySchema,
   type City,
@@ -24,6 +25,7 @@ import {
   type PlaceSuggestion,
   type Product,
   type ProductDetail,
+  type Profile,
   type StoreDetail,
   type StoreSummary,
   type StoreType,
@@ -234,5 +236,9 @@ export function unsaveStore(storeSlug: string): Promise<void> {
     method: "DELETE",
     schema: z.null(),
   }).then(() => undefined);
+}
+
+export function getProfile(): Promise<Profile> {
+  return apiFetch("/me/profile", { schema: profileSchema });
 }
 

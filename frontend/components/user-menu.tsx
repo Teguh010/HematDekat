@@ -40,6 +40,9 @@ export function UserMenu() {
   return (
     <div className="flex items-center gap-2">
       <span className="max-w-[12ch] truncate text-sm text-ink-600 sm:max-w-none">{t("greeting", { name: displayName })}</span>
+      <Button href="/profile" variant="ghost" size="sm">
+        {t("profile")}
+      </Button>
       {user.role === "admin" ? (
         <Button href="/admin" variant="ghost" size="sm">
           {t("admin")}
